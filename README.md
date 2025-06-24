@@ -5,10 +5,10 @@ Aetherial Arena is a mini game Dalamud plugin for FFXIV
 https://raw.githubusercontent.com/rail2025/AetherialArena/refs/heads/master/repo.json
 ## How To Use
 /aarena, travel to zones, search for battles, win and enslave?
-### Die
+### PvP when
 
 
-### Something about not dying so often
+### No ultimates means this is what I spend my time on
 
 
 ### Playing
