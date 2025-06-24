@@ -1,0 +1,14 @@
+[
+    {
+        "TerritoryTypeID": 129,
+        "SpriteIDs": [ 1 ]
+    },
+    {
+        "TerritoryTypeID": 130,
+        "SpriteIDs": [ 2 ]
+    },
+    {
+        "TerritoryTypeID": 132,
+        "SpriteIDs": [ 3 ]
+    }
+]

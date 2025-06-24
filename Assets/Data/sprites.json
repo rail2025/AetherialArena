@@ -1,0 +1,38 @@
+[
+    {
+        "ID": 1,
+        "Name": "Tanky Turtle",
+        "Type": "Beast",
+        "IconName": "turtle_base.png",
+        "MaxHealth": 140,
+        "Health": 140,
+        "MaxMana": 5,
+        "Mana": 5,
+        "Speed": 5,
+        "Attack": 7
+    },
+    {
+        "ID": 2,
+        "Name": "Speedy Serpent",
+        "Type": "Beast",
+        "IconName": "snake_base.png",
+        "MaxHealth": 60,
+        "Health": 60,
+        "MaxMana": 10,
+        "Mana": 10,
+        "Speed": 15,
+        "Attack": 15
+    },
+    {
+        "ID": 3,
+        "Name": "Balanced Badger",
+        "Type": "Wildlife",
+        "IconName": "badger_base.png",
+        "MaxHealth": 100,
+        "Health": 100,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Speed": 10,
+        "Attack": 10
+    }
+]
