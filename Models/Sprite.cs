@@ -5,7 +5,8 @@ namespace AetherialArena.Models
         public int ID { get; set; }
         public string Name { get; set; } = string.Empty;
         public SpriteType Type { get; set; }
-        public string IconName { get; set; } = string.Empty; // Added IconName
+        public RarityTier Rarity { get; set; } // Added Rarity
+        public string IconName { get; set; } = string.Empty;
         public int MaxHealth { get; set; }
         public int Health { get; set; }
         public int MaxMana { get; set; }
@@ -20,7 +21,8 @@ namespace AetherialArena.Models
             ID = other.ID;
             Name = other.Name;
             Type = other.Type;
-            IconName = other.IconName; // Added IconName
+            Rarity = other.Rarity; // Added Rarity
+            IconName = other.IconName;
             MaxHealth = other.MaxHealth;
             Health = other.Health;
             MaxMana = other.MaxMana;

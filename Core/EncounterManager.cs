@@ -14,7 +14,6 @@ namespace AetherialArena.Core
             plugin = p;
         }
 
-        // Overload the method to accept a territory ID for debugging
         public void SearchForEncounter(ushort? overrideTerritory = null)
         {
             if (plugin.PlayerProfile.CurrentAether <= 0)
@@ -52,6 +51,9 @@ namespace AetherialArena.Core
             }
 
             plugin.BattleManager.StartBattle(new Sprite(playerData), new Sprite(opponentData));
+
+            plugin.HubWindow.IsOpen = false;
+            plugin.MainWindow.IsOpen = true;
         }
     }
 }

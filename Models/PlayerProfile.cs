@@ -10,7 +10,11 @@ namespace AetherialArena.Models
         public int CurrentAether { get; set; } = 10;
         public int MaxAether { get; set; } = 10;
 
-        // We will add the list of attuned sprites here later.
-        // public List<int> AttunedSpriteIDs { get; set; } = new();
+        // A list of IDs for all sprites the player has successfully captured.
+        public List<int> AttunedSpriteIDs { get; set; } = new();
+
+        // A dictionary to track progress towards capturing a sprite.
+        // Key: Sprite ID, Value: number of times defeated.
+        public Dictionary<int, int> DefeatCounts { get; set; } = new();
     }
 }

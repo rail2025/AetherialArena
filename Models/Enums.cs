@@ -2,13 +2,20 @@ using System.Collections.Generic;
 
 namespace AetherialArena.Models
 {
-    // We will use this later for type advantages
+    // Corrected to match the types used in your data (e.g., sprite.csv)
     public enum SpriteType
     {
         Figure,
         Beast,
-        Wildlife,
-        Machina
+        Creature,  // Changed from Wildlife
+        Mechanical // Changed from Machina
+    }
+
+    public enum RarityTier
+    {
+        Common,
+        Uncommon,
+        Rare
     }
 
     // A class to hold the data from encountertables.json

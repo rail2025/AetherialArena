@@ -5,15 +5,20 @@ namespace AetherialArena.Core
 {
     public class BattleManager
     {
-        // Add a "None" state to represent when no battle is active.
         public enum BattleState { None, InProgress, PlayerVictory, OpponentVictory }
         public enum BattleTurn { Player, Opponent }
+
+        private readonly Plugin plugin;
 
         public Sprite? PlayerSprite { get; private set; }
         public Sprite? OpponentSprite { get; private set; }
         public BattleTurn CurrentTurn { get; private set; }
-        // The state will now correctly default to "None" (value 0).
         public BattleState State { get; private set; } = BattleState.None;
+
+        public BattleManager(Plugin p)
+        {
+            plugin = p;
+        }
 
         public void StartBattle(Sprite playerSprite, Sprite opponentSprite)
         {
@@ -23,12 +28,14 @@ namespace AetherialArena.Core
             DetermineTurnOrder();
         }
 
-        // This new method will be called when a battle ends.
         public void EndBattle()
         {
             State = BattleState.None;
             PlayerSprite = null;
             OpponentSprite = null;
+
+            plugin.MainWindow.IsOpen = false;
+            plugin.HubWindow.IsOpen = true;
         }
 
         public void Update()
@@ -72,6 +79,53 @@ namespace AetherialArena.Core
             {
                 OpponentSprite.Health = 0;
                 State = BattleState.PlayerVictory;
+
+                if (plugin.PlayerProfile.AttunedSpriteIDs.Contains(OpponentSprite.ID))
+                {
+                    return;
+                }
+
+                int defeatsNeeded;
+                switch (OpponentSprite.Rarity)
+                {
+                    case RarityTier.Uncommon:
+                        defeatsNeeded = 3;
+                        break;
+                    case RarityTier.Rare:
+                        defeatsNeeded = 5;
+                        break;
+                    default: // Common
+                        defeatsNeeded = 1;
+                        break;
+                }
+
+                plugin.PlayerProfile.DefeatCounts.TryGetValue(OpponentSprite.ID, out var currentDefeats);
+                currentDefeats++;
+
+                if (currentDefeats >= defeatsNeeded)
+                {
+                    plugin.PlayerProfile.AttunedSpriteIDs.Add(OpponentSprite.ID);
+                    plugin.PlayerProfile.DefeatCounts.Remove(OpponentSprite.ID);
+                    Plugin.Log.Info($"Attuned with new Sprite: {OpponentSprite.Name} (ID: {OpponentSprite.ID})!");
+
+                    int attunedCount = plugin.PlayerProfile.AttunedSpriteIDs.Count;
+                    int potentialNewMaxAether = 10 + (attunedCount / 5);
+                    int newMaxAether = Math.Min(20, potentialNewMaxAether);
+
+                    if (newMaxAether > plugin.PlayerProfile.MaxAether)
+                    {
+                        plugin.PlayerProfile.MaxAether = newMaxAether;
+                        plugin.PlayerProfile.CurrentAether++;
+                        Plugin.Log.Info($"Max Aether increased to {newMaxAether}!");
+                    }
+                }
+                else
+                {
+                    plugin.PlayerProfile.DefeatCounts[OpponentSprite.ID] = currentDefeats;
+                    Plugin.Log.Info($"Defeated {OpponentSprite.Name}. Progress: {currentDefeats}/{defeatsNeeded}");
+                }
+
+                plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
             }
             else if (PlayerSprite != null && PlayerSprite.Health <= 0)
             {
@@ -84,7 +138,7 @@ namespace AetherialArena.Core
         {
             if (PlayerSprite == null || OpponentSprite == null) return;
 
-            if (PlayerSprite.Speed > OpponentSprite.Speed)
+            if (PlayerSprite.Speed > PlayerSprite.Speed)
             {
                 CurrentTurn = BattleTurn.Player;
             }
