@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/12.0.2">
   <PropertyGroup>
-    <Version>0.2.0.0</Version>
+    <Version>0.3.0.0</Version>
     <Description>A collectable battling mini game</Description>
     <PackageProjectUrl>https://github.com/rail2025/AetherialArena</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -14,8 +14,9 @@
       <Visible>false</Visible>
     </Content>
     <Content Include="Assets\Data\abilities.json" />
-    <Content Include="Assets\Data\spritedatanolocation.json" />
     <EmbeddedResource Include="Assets\Icons\placeholder_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\aacodex.png" />
+    <EmbeddedResource Include="Assets\Data\spritedatanolocation.json" />
       <Reference Include="Lumina.Excel" HintPath="$(DalamudLibPath)Lumina.Excel.dll" Private="false" />
     <EmbeddedResource Include="icon.png" />
     <EmbeddedResource Include="Assets\Data\encountertables.json" />
@@ -41,6 +42,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Data\codex.xlsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Data\PlaceName-arrzonescombined.csv" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

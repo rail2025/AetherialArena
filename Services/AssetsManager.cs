@@ -1,78 +1,85 @@
-using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Textures.TextureWraps;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Dalamud.Interface.Textures;
-using Dalamud.Interface.Textures.TextureWraps;
 
 namespace AetherialArena.Services
 {
     public class AssetManager : IDisposable
     {
-        private readonly ITextureProvider textureProvider;
-        private readonly IDalamudPluginInterface pluginInterface;
-        private readonly Dictionary<string, IDalamudTextureWrap> textureCache = new();
+        private readonly Dictionary<string, IDalamudTextureWrap?> loadedTextures = new();
 
-        public AssetManager(ITextureProvider textureProvider, IDalamudPluginInterface pluginInterface)
+        public IDalamudTextureWrap? GetIcon(string iconName)
         {
-            this.textureProvider = textureProvider;
-            this.pluginInterface = pluginInterface;
-        }
+            if (string.IsNullOrEmpty(iconName)) return null;
 
-        public IDalamudTextureWrap? GetTexture(string path)
-        {
-            if (textureCache.TryGetValue(path, out var texture))
+            if (loadedTextures.TryGetValue(iconName, out var texture))
             {
                 return texture;
+            }
+
+            var stream = GetStreamFromEmbeddedResource(iconName);
+
+            if (stream == null)
+            {
+                Plugin.Log.Error($"Failed to load icon resource: {iconName}. This icon will not be checked again this session.");
+                loadedTextures.Add(iconName, null);
+                return null;
             }
 
             try
             {
-                var newTexture = this.textureProvider.GetFromGame(path) ?? this.textureProvider.GetFromDalamud(path);
-
-                if (newTexture != null)
-                {
-                    textureCache[path] = newTexture;
-                    return newTexture;
-                }
+                using var memoryStream = new MemoryStream();
+                stream.CopyTo(memoryStream);
+                var newTexture = Plugin.TextureProvider.CreateFromImageAsync(memoryStream.ToArray()).Result;
+                loadedTextures.Add(iconName, newTexture);
+                return newTexture;
             }
             catch (Exception ex)
             {
-                Plugin.Log.Error(ex, $"Failed to get texture from path: {path}");
+                Plugin.Log.Error(ex, $"Exception loading icon: {iconName}");
+                loadedTextures.Add(iconName, null);
                 return null;
             }
-
-            return null;
+            finally
+            {
+                stream.Dispose();
+            }
         }
 
-        public IDalamudTextureWrap? GetEmbed(string resourcePath)
+        private Stream? GetStreamFromEmbeddedResource(string iconName)
         {
-            if (textureCache.TryGetValue(resourcePath, out var texture))
+            var assembly = GetType().Assembly;
+
+            // Define a list of possible paths to check
+            var possiblePaths = new List<string>
             {
-                return texture;
-            }
+                $"AetherialArena.Assets.Icons.{iconName}", // Original path
+                $"AetherialArena.Assets.{iconName}",      // Check in root of Assets
+                $"AetherialArena.{iconName}"              // Check in root of project
+            };
 
-            var assembly = Assembly.GetExecutingAssembly();
-            using var stream = assembly.GetManifestResourceStream(resourcePath);
-
-            if (stream != null)
+            foreach (var path in possiblePaths)
             {
-                var memoryStream = new MemoryStream();
-                stream.CopyTo(memoryStream);
-                var rawImage = memoryStream.ToArray();
-
-                var newTexture = this.textureProvider.CreateFromImageAsync(rawImage).Result;
-                if (newTexture != null)
+                var stream = assembly.GetManifestResourceStream(path);
+                if (stream != null)
                 {
-                    textureCache[resourcePath] = newTexture;
-                    return newTexture;
+                    Plugin.Log.Info($"Found and attempting to load resource: {path}");
+                    return stream;
                 }
             }
-            else
+
+            // Also try lowercase versions as a fallback
+            foreach (var path in possiblePaths)
             {
-                Plugin.Log.Error($"Failed to load embedded resource: {resourcePath}.");
+                var stream = assembly.GetManifestResourceStream(path.ToLower());
+                if (stream != null)
+                {
+                    Plugin.Log.Info($"Found and attempting to load resource: {path.ToLower()}");
+                    return stream;
+                }
             }
 
             return null;
@@ -80,11 +87,11 @@ namespace AetherialArena.Services
 
         public void Dispose()
         {
-            foreach (var texture in textureCache.Values)
+            foreach (var texture in loadedTextures.Values)
             {
                 texture?.Dispose();
             }
-            textureCache.Clear();
+            loadedTextures.Clear();
         }
     }
 }

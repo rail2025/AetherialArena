@@ -71,7 +71,8 @@ namespace AetherialArena.Windows
             ImGui.Separator();
             ImGui.Spacing();
 
-            if (ImGui.Button("View Collection")) { plugin.CollectionWindow.Toggle(); }
+            // Changed to open the Codex window
+            if (ImGui.Button("View Codex")) { plugin.CodexWindow.Toggle(); }
             ImGui.SameLine();
             if (ImGui.Button("Settings")) { plugin.ConfigWindow.Toggle(); }
             ImGui.SameLine();

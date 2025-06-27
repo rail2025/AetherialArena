@@ -11,14 +11,20 @@ namespace AetherialArena.Models
         public SpriteType Type { get; set; }
         public string IconName { get; set; } = string.Empty;
 
-        // Stats
+        // Base Stats
         public int MaxHealth { get; set; }
         public int MaxMana { get; set; }
         public int Attack { get; set; }
-        public int Defense { get; set; } 
+        public int Defense { get; set; }
         public int Speed { get; set; }
-        public string SpecialAbility { get; set; } = string.Empty; 
-        public string BaseHeal { get; set; } = string.Empty; 
+        public string SpecialAbility { get; set; } = string.Empty;
+        public string BaseHeal { get; set; } = string.Empty;
+
+        // Detailed properties from spritedatanolocation.json
+        public string SubType { get; set; } = string.Empty;
+        public List<string> AttackType { get; set; } = new();
+        public List<string> Weaknesses { get; set; } = new();
+        public List<string> Resistances { get; set; } = new();
 
         public List<int> SubLocationIDs { get; set; } = new();
 
@@ -39,14 +45,18 @@ namespace AetherialArena.Models
             this.MaxHealth = s.MaxHealth;
             this.MaxMana = s.MaxMana;
             this.Attack = s.Attack;
-            this.Defense = s.Defense; // Added
+            this.Defense = s.Defense;
             this.Speed = s.Speed;
-            this.SpecialAbility = s.SpecialAbility; // Added
-            this.BaseHeal = s.BaseHeal; // Added
+            this.SpecialAbility = s.SpecialAbility;
+            this.BaseHeal = s.BaseHeal;
             this.SubLocationIDs = s.SubLocationIDs;
-
             this.Health = s.MaxHealth;
             this.Mana = s.MaxMana;
+
+            this.SubType = s.SubType;
+            this.AttackType = s.AttackType;
+            this.Weaknesses = s.Weaknesses;
+            this.Resistances = s.Resistances;
         }
     }
 }

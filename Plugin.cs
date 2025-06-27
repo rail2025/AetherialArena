@@ -43,6 +43,7 @@ namespace AetherialArena
         public readonly MainWindow MainWindow;
         public readonly ConfigWindow ConfigWindow;
         public readonly DebugWindow DebugWindow;
+        public readonly CollectionWindow CollectionWindow;
         public readonly CodexWindow CodexWindow;
 
         private readonly Stopwatch regenTimer = new();
@@ -58,9 +59,7 @@ namespace AetherialArena
             this.Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             this.Configuration.Initialize(PluginInterface);
 
-            // Correctly initialize AssetManager with required services
-            this.AssetManager = new AssetManager(TextureProvider, PluginInterface);
-
+            this.AssetManager = new AssetManager(); // Corrected to use the parameterless constructor
             this.DataManager = new DataManager();
             this.SaveManager = new SaveManager();
             this.PlayerProfile = this.SaveManager.LoadProfile();
@@ -74,6 +73,7 @@ namespace AetherialArena
             this.MainWindow = new MainWindow(this, this.BattleUIComponent);
             this.ConfigWindow = new ConfigWindow(this);
             this.DebugWindow = new DebugWindow(this);
+            this.CollectionWindow = new CollectionWindow(this);
             this.CodexWindow = new CodexWindow(this);
 
             this.WindowSystem.AddWindow(HubWindow);
@@ -82,6 +82,7 @@ namespace AetherialArena
             this.WindowSystem.AddWindow(MainWindow);
             this.WindowSystem.AddWindow(ConfigWindow);
             this.WindowSystem.AddWindow(DebugWindow);
+            this.WindowSystem.AddWindow(CollectionWindow);
             this.WindowSystem.AddWindow(CodexWindow);
 
             CommandManager.AddHandler("/aarena", new CommandInfo(OnCommand) { HelpMessage = "Opens the Aetherial Arena main window." });

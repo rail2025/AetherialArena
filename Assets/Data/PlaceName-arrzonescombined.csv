@@ -1,0 +1,88 @@
+Sprite rarity,sprite ID,sprite icon,sprite name,Main type,sub type,attack type,resistances,weaknesses,LocationID,Location name,SublocationID,Sublocation Name,Location hint
+c,1,,,Mechanical,DPS,piercing,ground,,128,Limsa upper deck,,,
+c,2,,,Creature,DPS,air,"air, fire",electric,128,Limsa upper deck,,,
+c,3,,,Figure,Status,ground,,ground,128,Limsa upper deck,,,
+,,,,,,,,,,,,,
+u,4,,,Mechanical,Status,"fire, air",,,147,Northern thanalan,328,Abandoned Amajina Mythril Mine,a bunch of lunatics!
+r,5,,,Creature,Tank,blunt,,,147,Northern thanalan,326,East Watchtower,Lookout!
+c,6,,,Mechanical,Tank,"air, physical",,blunt,147,Northern thanalan,,,
+c,7,,,Mechanical,Status,"electric, air",,,147,Northern thanalan,,,
+,,,,,,,,,,,,,
+c,8,,,Mechanical,Status,magic,,,141,Central Thanalan,,,
+u,9,,,Mechanical,DPS,fire,,,141,Central Thanalan,293,Hellsbrood Holes,ant ant ant
+r,10,,,Beast,Tank,air,,,141,Central Thanalan,295,The Bonfire,gem exchange
+,,,,,,,,,,,,,
+c,11,,,Creature,Tank,"piercing, magic, fire",,,140,Western Thanalan,,,
+c,12,,,Beast,DPS,"air, physical, piercing",,,140,Western Thanalan,,,
+c,13,,,Figure,Status,"fire, ice",,,140,Western Thanalan,,,
+u,14,,,Beast,Tank,"blunt, electic",,electric,140,Western Thanalan,262,Beaconhill Lighthouse,light on a hill
+,,,,,,,,,,,,,
+r,15,,,Figure,Tank,fire,,magic,145,Eastern Thanalan,307,Highbridge,long way down!
+c,16,,,Mechanical,Status,physical,,,145,Eastern Thanalan,,,
+c,17,,,Mechanical,Tank,air,,,145,Eastern Thanalan,,,
+c,18,,,Creature,Tank,physical,,,145,Eastern Thanalan,,,
+,,,,,,,,,,,,,
+u,19,,,Figure,Status,fire,magic,,146,Southern Thanalan,315,The Sepulchre,Infernal troupe
+r,20,,,Figure,Tank,electric,ice,"physical, fire",146,Southern Thanalan,324,Byregot's Strike,drill baby drill
+c,21,,,Figure,Status,"ice, blunt",,"physical, fire",146,Southern Thanalan,,,
+c,22,,,Creature,DPS,electric,,ground,146,Southern Thanalan,,,
+,,,,,,,,,,,,,
+c,23,,,Beast,Status,"air, magic, blunt",,,134,Middle la noscea,,,
+u,24,,,Creature,Tank,"ground, fire",,,134,Middle la noscea,194,Foremast,yellow formation
+r,25,,,Creature ,DPS,magic,,,134,Middle la noscea,187,The Cookpot,thats a lotta bull
+,,,,,,,,,,,,,
+c,26,,,Beast,Tank,ice,,,135,lower la noscea,,,
+c,27,,,Creature,Status,fire,,,135,lower la noscea,,,
+c,28,,,Beast,DPS,slash,,,135,lower la noscea,,,
+u,29,,,Creature,Status,ground,"piercing, ground","blunt, fire",135,lower la noscea,338,The Salt Strand,if you want some eggs...
+,,,,,,,,,,,,,
+r,30,,,Figure,DPS,"physical, blunt",fire,,137,eastern la noscea,209,The Garlok's Lair,that's not a big scary hole...
+c,31,,,Figure,DPS,piercing,"blunt, fire","air, physical",137,eastern la noscea,,,
+c,32,,,Creature,DPS,blunt,,,137,eastern la noscea,,,
+,,,,,,,,,,,,,
+c,33,,,Creature,Status,"ground, ice, slash",,,138,western la noscea,,,
+u,34,,,Figure,Status,physical,,,138,western la noscea,220,The Brewer's Beacon,guiding light
+r,35,,,Figure,DPS,"ground, ice, slash",,,138,western la noscea,946,Moonshade Isle,of course theres one all the way out there
+c,36,,,Creature,Tank,"ground, physical, blunt",,,138,western la noscea,,,
+,,,,,,,,,,,,,
+c,37,,,Beast,Status,piercing,,,139,upper la noscea,,,
+c,38,,,Beast,Tank,"slash, electric, blunt","physical, ground",,139,upper la noscea,,,
+u,39,,,Beast,DPS,blunt,,,139,upper la noscea,233,Thalaos,Cliffside skull
+,,,,,,,,,,,,,
+r,40,,,Mechanical,Tank,air,,,180,outer la noscea,236,The Floating City of Nym,hovering colors
+c,41,,,Beast,Tank,air,,,180,outer la noscea,,,
+c,42,,,Beast,Tank,ground,,,180,outer la noscea,,,
+c,43,,,Beast,Tank,fire,,,180,outer la noscea,,,
+,,,,,,,,,,,,,
+u,44,,,Figure,Status,physical,,,148,central shroud,104,Hopeseed Pond,halitosis
+r,45,,,Beast,Tank,ice,,,148,central shroud,92,Naked Rock,saddest wings on a lizard ever
+c,46,,,Mechanical,Tank,ice,,,148,central shroud,,,
+,,,,,,,,,,,,,
+c,47,,,Creature,DPS,"air, fire, blunt",,magic,152,east shroud,,,
+c,48,,,Mechanical,DPS,blunt,ground,blunt,152,east shroud,,,
+u,49,,,Creature,Status,piercing,,,152,east shroud,112,Sanctum of the Twelve,2 become 1
+r,50,,,Mechanical,Status,magic,,,152,east shroud,114,Moonspore Grove,"purple, no lavender, no lilac! is my color"
+,,,,,,,,,,,,,
+c,51,,,Creature,Status,blunt,,,153,south shroud,,,
+c,52,,,Mechanical,DPS,"electric, fire",,,153,south shroud,,,
+c,53,,,Beast,Tank,"ground, magic",physical,,153,south shroud,,,
+u,54,,,Creature,Status,ground,,,153,south shroud,133,Urth's Fount,Iron cutting sword
+,,,,,,,,,,,,,
+r,55,,,Figure,DPS,magic,,,154,north shroud,145,Ixali Logging Grounds,hot air balloon
+c,56,,,Figure,Tank,ground,,,154,north shroud,,,
+c,57,,,Figure,Status,ice,"electric, ground",,154,north shroud,,,
+c,58,,,Beast,DPS,magic,,,154,north shroud,,,
+u,59,,,Figure,Status,fire,,,154,north shroud,139,Hyrstmill,mead lover
+,,,,,,,,,,,,,
+r,60,,,Mechanical,Status,"ice, ground, electric",ground,,155,central high lands,400,Gates of Judgement,judge not lest ye be
+c,61,,,Figure,Status,"air, physical",,,155,central high lands,,,
+c,62,,,Mechanical,DPS,physical,,,155,central high lands,,,
+c,63,,,Beast,Tank,"ground, ice, electric",,physical,155,central high lands,,,
+u,64,,,Figure,Tank,air,,,155,central high lands,385,First Dicasterial Observatorium of Aetherial and Astrological Phenomena,is that a carnival ride or a telescope
+r,65,,,Figure,Tank,physical,,,155,central high lands,398,Daniffen Pass,mountain tunnel
+,,,,,,,,,,,,,
+c,66,,,Mechanical,Tank,"physical, magic",,ice,156,mor dhona,,,
+c,67,,,Mechanical,DPS,"slash, magic",,slash,156,mor dhona,,,
+c,68,,,Creature,Tank,"ice, electric",,ground,156,mor dhona,,,
+u,69,,,Beast,DPS,electric,,,156,mor dhona,941,Crystal Gate,Shard gate
+r,70,,,Figure,Status,"ice, electric",,,156,mor dhona,414,Rathefrost,moon bride memorial

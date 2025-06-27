@@ -1,151 +1,197 @@
+using System;
+using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using Dalamud.Interface.Windowing;
 using AetherialArena.Models;
+using AetherialArena.Services;
+using Dalamud.Interface.Textures.TextureWraps;
+using System.Collections.Generic;
 
 namespace AetherialArena.Windows
 {
     public class CodexWindow : Window
     {
-        private readonly Plugin plugin;
-        private int selectedSpriteId = -1;
-        private const string PlaceholderIconPath = "AetherialArena.assets.icon.placeholder_icon.png";
+        private readonly DataManager dataManager;
+        private readonly PlayerProfile playerProfile;
+        private readonly AssetManager assetManager;
+        private readonly IDalamudTextureWrap? backgroundTexture;
+        private readonly Dictionary<int, string> locationHints = new();
 
-        public CodexWindow(Plugin plugin) : base("Codex", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        private const int RowsPerPage = 5;
+        private int currentPage = 0;
+
+        public CodexWindow(Plugin plugin) : base("Codex###AetherialArenaCodexWindow")
         {
+            this.dataManager = plugin.DataManager;
+            this.playerProfile = plugin.PlayerProfile;
+            this.assetManager = plugin.AssetManager;
+            this.backgroundTexture = this.assetManager.GetIcon("aacodex.png");
+
+            this.Size = new Vector2(640, 535);
             this.SizeConstraints = new WindowSizeConstraints
             {
-                MinimumSize = new Vector2(375, 330),
-                MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
+                MinimumSize = new Vector2(400, 300),
+                MaximumSize = new Vector2(1280, 1024)
             };
-            this.plugin = plugin;
+
+            LoadHints();
+            this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
         }
 
         public override void Draw()
         {
-            if (selectedSpriteId == -1)
+            if (this.backgroundTexture != null)
             {
-                DrawSpriteTable();
+                var windowPos = ImGui.GetWindowPos();
+                var windowSize = ImGui.GetWindowSize();
+                ImGui.GetWindowDrawList().AddImage(this.backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
             }
-            else
-            {
-                DrawDetailView();
-            }
+
+            var contentRegion = ImGui.GetContentRegionAvail();
+            var containerSize = new Vector2(400, 280);
+            var containerPos = (contentRegion - containerSize) / 2;
+            ImGui.SetCursorPos(containerPos);
+
+            ImGui.BeginChild("ContentContainer", containerSize, false, ImGuiWindowFlags.NoScrollbar);
+            DrawSpriteTable();
+            DrawPaginationControls();
+            ImGui.EndChild();
         }
 
         private void DrawSpriteTable()
         {
-            if (ImGui.BeginTable("codexTable", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.ScrollY))
+            ImGui.BeginChild("TableContainer", new Vector2(0, 240), false, ImGuiWindowFlags.None);
+            if (ImGui.BeginTable("codexTable", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.ScrollY))
             {
-                ImGui.TableSetupColumn("ID");
-                ImGui.TableSetupColumn("Icon");
-                ImGui.TableSetupColumn("Name");
-                ImGui.TableSetupColumn("Rarity");
-                ImGui.TableSetupColumn("Status");
-                ImGui.TableHeadersRow();
+                ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 30);
+                ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 45);
+                ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Rarity", ImGuiTableColumnFlags.WidthFixed, 60);
+                ImGui.TableSetupColumn("Status", ImGuiTableColumnFlags.WidthStretch);
 
-                var placeholderIcon = plugin.AssetManager.GetEmbed(PlaceholderIconPath);
-
-                foreach (var sprite in plugin.DataManager.AllSprites)
+                var pagedSprites = dataManager.Sprites.Skip(currentPage * RowsPerPage).Take(RowsPerPage).ToList();
+                foreach (var sprite in pagedSprites)
                 {
                     ImGui.TableNextRow();
-                    ImGui.TableNextColumn();
-
-                    if (ImGui.Selectable($"##{sprite.ID}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, 40)))
-                    {
-                        selectedSpriteId = sprite.ID;
-                    }
-                    ImGui.SameLine();
-
+                    ImGui.TableSetColumnIndex(0);
                     ImGui.Text(sprite.ID.ToString());
-                    ImGui.TableNextColumn();
 
-                    // Render the loaded placeholder icon
-                    if (placeholderIcon != null)
-                    {
-                        ImGui.Image(placeholderIcon.ImGuiHandle, new Vector2(40, 40));
-                    }
-                    else
-                    {
-                        ImGui.Dummy(new Vector2(40, 40)); // Fallback
-                    }
+                    ImGui.TableSetColumnIndex(1);
+                    var icon = assetManager.GetIcon(sprite.IconName);
+                    if (icon != null) { ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40)); } else { ImGui.Dummy(new Vector2(40, 40)); }
 
-                    ImGui.TableNextColumn();
-                    ImGui.Text(sprite.Name);
-                    ImGui.TableNextColumn();
-                    ImGui.Text(sprite.Rarity.ToString());
-                    ImGui.TableNextColumn();
+                    bool isKnown = playerProfile.AttunedSpriteIDs.Contains(sprite.ID) || playerProfile.DefeatCounts.ContainsKey(sprite.ID);
 
-                    var status = "Not Encountered";
-                    if (plugin.PlayerProfile.CapturedSprites.Contains(sprite.ID))
-                    {
-                        status = "Captured";
-                    }
-                    else if (plugin.PlayerProfile.EncounteredSprites.Contains(sprite.ID))
-                    {
-                        status = "Encountered";
-                    }
-                    ImGui.Text(status);
+                    ImGui.TableSetColumnIndex(2);
+                    ImGui.Text(isKnown ? sprite.Name : "???");
+
+                    ImGui.TableSetColumnIndex(3);
+                    ImGui.Text(isKnown ? sprite.Rarity.ToString() : "???");
+
+                    ImGui.TableSetColumnIndex(4);
+                    ImGui.TextWrapped(GetStatus(sprite));
                 }
                 ImGui.EndTable();
             }
+            ImGui.EndChild();
         }
 
-        private void DrawDetailView()
+        private void DrawPaginationControls()
         {
-            var spriteData = plugin.DataManager.GetSpriteData(selectedSpriteId);
+            ImGui.Spacing();
+            var maxPage = Math.Max(0, (int)Math.Ceiling((double)dataManager.Sprites.Count / RowsPerPage) - 1);
+            bool atFirstPage = currentPage == 0;
+            bool atLastPage = currentPage == maxPage;
 
-            if (ImGui.Button("< Back to List"))
+            var controlsWidth = 260f;
+            ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - controlsWidth) * 0.5f);
+            ImGui.BeginGroup();
+
+            if (atFirstPage) ImGui.BeginDisabled();
+            if (ImGui.Button("<<##FirstPage")) { currentPage = 0; }
+            if (atFirstPage) ImGui.EndDisabled();
+            ImGui.SameLine();
+            if (atFirstPage) ImGui.BeginDisabled();
+            if (ImGui.Button("< Prev")) { currentPage--; }
+            if (atFirstPage) ImGui.EndDisabled();
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(50);
+            if (ImGui.InputInt("##Page", ref currentPage)) { currentPage = Math.Clamp(currentPage, 0, maxPage); }
+            ImGui.SameLine();
+            ImGui.Text($"of {maxPage + 1}");
+            ImGui.SameLine();
+            if (atLastPage) ImGui.BeginDisabled();
+            if (ImGui.Button("Next >")) { currentPage++; }
+            if (atLastPage) ImGui.EndDisabled();
+            ImGui.SameLine();
+            if (atLastPage) ImGui.BeginDisabled();
+            if (ImGui.Button(">>##LastPage")) { currentPage = maxPage; }
+            if (atLastPage) ImGui.EndDisabled();
+
+            ImGui.EndGroup();
+        }
+
+        private void LoadHints()
+        {
+            locationHints[4] = "a bunch of lunatics!";
+            locationHints[5] = "Lookout!";
+            locationHints[9] = "ant ant ant";
+            locationHints[10] = "gem exchange";
+            locationHints[14] = "light on a hill";
+            locationHints[15] = "long way down!";
+            locationHints[19] = "Infernal troupe";
+            locationHints[20] = "drill baby drill";
+            locationHints[24] = "yellow formation";
+            locationHints[25] = "thats a lotta bull";
+            locationHints[29] = "if you want some eggs...";
+            locationHints[30] = "that's not a big scary hole...";
+            locationHints[34] = "guiding light";
+            locationHints[35] = "of course theres one all the way out there";
+            locationHints[39] = "Cliffside skull";
+            locationHints[40] = "hovering colors";
+            locationHints[44] = "halitosis";
+            locationHints[45] = "saddest wings on a lizard ever";
+            locationHints[49] = "2 become 1";
+            locationHints[50] = "purple, no lavender, no lilac! is my color";
+            locationHints[54] = "Iron cutting sword";
+            locationHints[55] = "hot air balloon";
+            locationHints[59] = "mead lover";
+            locationHints[60] = "judge not lest ye be";
+            locationHints[64] = "is that a carnival ride or a telescope";
+            locationHints[65] = "mountain tunnel";
+            locationHints[69] = "Shard gate";
+            locationHints[70] = "moon bride memorial";
+        }
+
+        private string GetHint(int spriteId)
+        {
+            return locationHints.GetValueOrDefault(spriteId, string.Empty);
+        }
+
+        private string GetStatus(Sprite sprite)
+        {
+            if (playerProfile.AttunedSpriteIDs.Contains(sprite.ID))
+                return "Captured";
+
+            if (playerProfile.DefeatCounts.TryGetValue(sprite.ID, out int defeatCount))
             {
-                selectedSpriteId = -1;
-                return;
+                int defeatsNeeded = GetDefeatsNeeded(sprite.Rarity);
+                return $"{defeatCount} / {defeatsNeeded}";
             }
 
-            ImGui.Separator();
+            var hint = GetHint(sprite.ID);
+            return !string.IsNullOrEmpty(hint) ? hint : "Not Found";
+        }
 
-            if (spriteData == null)
+        private int GetDefeatsNeeded(RarityTier rarity)
+        {
+            return rarity switch
             {
-                ImGui.Text("Detailed sprite data not found.");
-                return;
-            }
-
-            ImGui.BeginChild("DetailViewChild");
-
-            ImGui.Text($"Name: {spriteData.Name} (ID: {spriteData.ID})");
-
-            // Render the loaded placeholder icon in the detail view
-            var placeholderIcon = plugin.AssetManager.GetEmbed(PlaceholderIconPath);
-            if (placeholderIcon != null)
-            {
-                ImGui.Image(placeholderIcon.ImGuiHandle, new Vector2(64, 64));
-            }
-            else
-            {
-                ImGui.Dummy(new Vector2(64, 64)); // Fallback
-            }
-
-            ImGui.Text($"Type: {spriteData.Type}");
-            ImGui.Text($"Sub-type: {spriteData.SubType}");
-            ImGui.Text($"Attack Type: {spriteData.AttackType}");
-
-            ImGui.Separator();
-            ImGui.Text("Stats:");
-            ImGui.Indent();
-            ImGui.Text($"HP: {spriteData.Stats.HP}");
-            ImGui.Text($"Attack: {spriteData.Stats.Attack}");
-            ImGui.Text($"Defense: {spriteData.Stats.Defense}");
-            ImGui.Text($"Speed: {spriteData.Stats.Speed}");
-            ImGui.Unindent();
-
-            ImGui.Separator();
-            ImGui.Text("Combat Properties:");
-            ImGui.Indent();
-            ImGui.Text($"Weaknesses: {string.Join(", ", spriteData.Weaknesses)}");
-            ImGui.Text($"Resistances: {string.Join(", ", spriteData.Resistances)}");
-            ImGui.Text($"Special Move: {spriteData.SpecialAttackName}");
-            ImGui.Unindent();
-
-            ImGui.EndChild();
+                RarityTier.Uncommon => 3,
+                RarityTier.Rare => 5,
+                _ => 1,
+            };
         }
     }
 }
