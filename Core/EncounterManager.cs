@@ -1,6 +1,9 @@
 using AetherialArena.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Dalamud.Game.ClientState.Conditions;
 
 namespace AetherialArena.Core
 {
@@ -14,46 +17,118 @@ namespace AetherialArena.Core
             plugin = p;
         }
 
-        public void SearchForEncounter(ushort? overrideTerritory = null)
+        public SearchResult SearchForEncounter(ushort? overrideTerritory = null, uint? overrideSubLocationId = null)
         {
+            if (Plugin.ClientState.LocalPlayer == null || Plugin.Condition[ConditionFlag.InCombat] || Plugin.Condition[ConditionFlag.Mounted])
+            {
+                return SearchResult.InvalidState;
+            }
+
             if (plugin.PlayerProfile.CurrentAether <= 0)
             {
-                Plugin.Log.Info("Not enough Aether to search.");
-                return;
+                return SearchResult.NoAether;
             }
 
             plugin.PlayerProfile.CurrentAether--;
             plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
 
             var currentTerritory = overrideTerritory ?? Plugin.ClientState.TerritoryType;
+            var subLocationId = overrideSubLocationId ?? GetCurrentSubLocationId();
+            var subLocationKey = subLocationId?.ToString();
+
+            Plugin.Log.Info($"Searching for encounter in Territory: {currentTerritory}, Sub-Location ID: {subLocationKey ?? "None"}");
+
             var encounterData = plugin.DataManager.Encounters.FirstOrDefault(e => e.TerritoryTypeID == currentTerritory);
-
-            if (encounterData == null || !encounterData.SpriteIDs.Any())
+            if (encounterData == null)
             {
-                Plugin.Log.Info($"No encounters found for territory {currentTerritory}.");
-                return;
+                Plugin.Log.Warning($"No encounter data found for territory {currentTerritory} in encountertables.json.");
+                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                return SearchResult.NoSpritesFound;
             }
 
-            var randomSpriteId = encounterData.SpriteIDs[random.Next(encounterData.SpriteIDs.Count)];
-            var opponentData = plugin.DataManager.Sprites.FirstOrDefault(s => s.ID == randomSpriteId);
-
-            if (opponentData == null)
+            List<int>? availableSpriteIds = null;
+            if (subLocationKey != null && encounterData.EncountersBySubLocation.TryGetValue(subLocationKey, out var subLocationSprites))
             {
-                Plugin.Log.Error($"Encounter table lists Sprite ID {randomSpriteId}, but it was not found.");
-                return;
+                Plugin.Log.Info($"Found specific encounter list for Sub-Location ID: {subLocationKey}");
+                availableSpriteIds = subLocationSprites;
+            }
+            else if (encounterData.EncountersBySubLocation.TryGetValue("Default", out var defaultSprites))
+            {
+                Plugin.Log.Info($"No specific sub-location list found. Using 'Default' list for territory {currentTerritory}.");
+                availableSpriteIds = defaultSprites;
             }
 
+            if (availableSpriteIds == null || !availableSpriteIds.Any())
+            {
+                Plugin.Log.Warning("Could not find a valid sprite list ('" + (subLocationKey ?? "Default") + "') for this location in encountertables.json.");
+                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                return SearchResult.NoSpritesFound;
+            }
+
+            var availableSprites = plugin.DataManager.Sprites.Where(s => availableSpriteIds.Contains(s.ID)).ToList();
+            if (!availableSprites.Any())
+            {
+                Plugin.Log.Warning("Encounter list was found, but no matching sprites were loaded from sprites.json.");
+                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                return SearchResult.NoSpritesFound;
+            }
+
+            var weightedList = new List<Sprite>();
+            foreach (var sprite in availableSprites)
+            {
+                int weight = GetRarityWeight(sprite.Rarity);
+                for (int i = 0; i < weight; i++)
+                {
+                    weightedList.Add(sprite);
+                }
+            }
+
+            if (!weightedList.Any())
+            {
+                Plugin.Log.Warning("Could not determine an encounter (weighted list was empty).");
+                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                return SearchResult.NoSpritesFound;
+            }
+
+            var opponentData = weightedList[random.Next(weightedList.Count)];
             var playerData = plugin.DataManager.Sprites.FirstOrDefault();
+
             if (playerData == null)
             {
                 Plugin.Log.Error("No player sprite available to start battle.");
-                return;
+                return SearchResult.NoSpritesFound;
             }
 
             plugin.BattleManager.StartBattle(new Sprite(playerData), new Sprite(opponentData));
 
             plugin.HubWindow.IsOpen = false;
             plugin.MainWindow.IsOpen = true;
+            return SearchResult.Success;
+        }
+
+        private int GetRarityWeight(RarityTier rarity)
+        {
+            return rarity switch
+            {
+                RarityTier.Uncommon => 5,
+                RarityTier.Rare => 1,
+                _ => 10,
+            };
+        }
+
+        private unsafe uint? GetCurrentSubLocationId()
+        {
+            try
+            {
+                var territoryInfo = TerritoryInfo.Instance();
+                if (territoryInfo == null) return null;
+                var subAreaId = territoryInfo->SubAreaPlaceNameId;
+                return subAreaId == 0 ? null : subAreaId;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

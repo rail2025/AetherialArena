@@ -29,7 +29,8 @@
         "Defense": -8,
         "Speed": 17,
         "SpecialAbility": "Damage Up 15%",
-        "BaseHeal": "Heals 75% of base attack (10) at MP cost"
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "SubLocationIDs": [ 42 ]
     },
     {
         "ID": 3,
@@ -84,7 +85,7 @@
         "Name": "Mechanical Tank",
         "Type": "Mechanical",
         "Rarity": 0,
-        "IconName": "placeholder_icon.png",
+        "IconName": "snake_base.png",
         "MaxHealth": 118,
         "Health": 118,
         "MaxMana": 20,
@@ -164,7 +165,7 @@
         "Name": "Creature Tank",
         "Type": "Creature",
         "Rarity": 0,
-        "IconName": "placeholder_icon.png",
+        "IconName": "bird_base.png",
         "MaxHealth": 116,
         "Health": 116,
         "MaxMana": 20,

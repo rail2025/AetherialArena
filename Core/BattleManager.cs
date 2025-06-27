@@ -138,7 +138,8 @@ namespace AetherialArena.Core
         {
             if (PlayerSprite == null || OpponentSprite == null) return;
 
-            if (PlayerSprite.Speed > PlayerSprite.Speed)
+            
+            if (PlayerSprite.Speed > OpponentSprite.Speed)
             {
                 CurrentTurn = BattleTurn.Player;
             }

@@ -10,6 +10,7 @@ using AetherialArena.Models;
 using AetherialArena.UI;
 using System.Diagnostics;
 using Dalamud.Plugin.Internal.Types.Manifest;
+using Dalamud.Game.ClientState.Conditions;
 
 namespace AetherialArena
 {
@@ -23,6 +24,7 @@ namespace AetherialArena
         [PluginService] internal static IClientState ClientState { get; private set; } = null!;
         [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
         [PluginService] internal static IFramework Framework { get; private set; } = null!;
+        [PluginService] internal static ICondition Condition { get; private set; } = null!;
 
         public readonly WindowSystem WindowSystem = new("AetherialArena");
         public readonly Configuration Configuration;
@@ -41,10 +43,14 @@ namespace AetherialArena
         public readonly MainWindow MainWindow;
         public readonly ConfigWindow ConfigWindow;
         public readonly DebugWindow DebugWindow;
-        public readonly CollectionWindow CollectionWindow;
+        public readonly CodexWindow CodexWindow;
 
         private readonly Stopwatch regenTimer = new();
         private readonly double regenIntervalMinutes = 10;
+
+        private bool searchActionQueued = false;
+        private ushort? queuedTerritoryOverride;
+        private uint? queuedSubLocationOverride;
 
         public Plugin()
         {
@@ -52,7 +58,9 @@ namespace AetherialArena
             this.Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             this.Configuration.Initialize(PluginInterface);
 
-            this.AssetManager = new AssetManager();
+            // Correctly initialize AssetManager with required services
+            this.AssetManager = new AssetManager(TextureProvider, PluginInterface);
+
             this.DataManager = new DataManager();
             this.SaveManager = new SaveManager();
             this.PlayerProfile = this.SaveManager.LoadProfile();
@@ -66,7 +74,7 @@ namespace AetherialArena
             this.MainWindow = new MainWindow(this, this.BattleUIComponent);
             this.ConfigWindow = new ConfigWindow(this);
             this.DebugWindow = new DebugWindow(this);
-            this.CollectionWindow = new CollectionWindow(this);
+            this.CodexWindow = new CodexWindow(this);
 
             this.WindowSystem.AddWindow(HubWindow);
             this.WindowSystem.AddWindow(TitleWindow);
@@ -74,11 +82,10 @@ namespace AetherialArena
             this.WindowSystem.AddWindow(MainWindow);
             this.WindowSystem.AddWindow(ConfigWindow);
             this.WindowSystem.AddWindow(DebugWindow);
-            this.WindowSystem.AddWindow(CollectionWindow);
+            this.WindowSystem.AddWindow(CodexWindow);
 
             CommandManager.AddHandler("/aarena", new CommandInfo(OnCommand) { HelpMessage = "Opens the Aetherial Arena main window." });
             CommandManager.AddHandler("/aadebug", new CommandInfo(OnDebugCommand) { HelpMessage = "Opens the Aetherial Arena debug window." });
-            CommandManager.AddHandler("/acollection", new CommandInfo(OnCollectionCommand) { HelpMessage = "Opens your sprite collection." });
 
             PluginInterface.UiBuilder.Draw += DrawUI;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUi;
@@ -88,19 +95,21 @@ namespace AetherialArena
             regenTimer.Start();
         }
 
+        public void QueueEncounterSearch(ushort? territoryOverride = null, uint? subLocationOverride = null)
+        {
+            this.searchActionQueued = true;
+            this.queuedTerritoryOverride = territoryOverride;
+            this.queuedSubLocationOverride = subLocationOverride;
+        }
+
         public void Dispose()
         {
             this.SaveManager.SaveProfile(this.PlayerProfile);
             this.AssetManager.Dispose();
-
             Framework.Update -= OnFrameworkUpdate;
-
             WindowSystem.RemoveAllWindows();
-
             CommandManager.RemoveHandler("/aarena");
             CommandManager.RemoveHandler("/aadebug");
-            CommandManager.RemoveHandler("/acollection");
-
             PluginInterface.UiBuilder.Draw -= DrawUI;
             PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUi;
             PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUi;
@@ -108,7 +117,32 @@ namespace AetherialArena
 
         private void OnFrameworkUpdate(IFramework framework)
         {
-            if (regenTimer.Elapsed.TotalMinutes >= regenIntervalMinutes)
+            if (this.searchActionQueued)
+            {
+                this.searchActionQueued = false;
+                var result = this.EncounterManager.SearchForEncounter(this.queuedTerritoryOverride, this.queuedSubLocationOverride);
+
+                switch (result)
+                {
+                    case SearchResult.Success:
+                        if (this.HubWindow.IsOpen) this.HubWindow.IsOpen = false;
+                        break;
+                    case SearchResult.NoAether:
+                        this.HubWindow.SetStatusMessage("Your aetherial pool is depleted.");
+                        break;
+                    case SearchResult.InvalidState:
+                        this.HubWindow.SetStatusMessage("You cannot search while mounted or in combat.");
+                        break;
+                    case SearchResult.NoSpritesFound:
+                        this.HubWindow.SetStatusMessage("You don't sense any sprites in this area...");
+                        break;
+                }
+
+                this.queuedTerritoryOverride = null;
+                this.queuedSubLocationOverride = null;
+            }
+
+            if (regenTimer.Elapsed.TotalMinutes >= this.regenIntervalMinutes)
             {
                 if (PlayerProfile.CurrentAether < PlayerProfile.MaxAether)
                 {
@@ -122,7 +156,6 @@ namespace AetherialArena
 
         private void OnCommand(string command, string args) => TitleWindow.Toggle();
         private void OnDebugCommand(string command, string args) => DebugWindow.Toggle();
-        private void OnCollectionCommand(string command, string args) => CollectionWindow.Toggle();
         private void DrawUI() => WindowSystem.Draw();
         private void OnOpenConfigUi() => ConfigWindow.Toggle();
         private void OnOpenMainUi() => TitleWindow.Toggle();

@@ -14,6 +14,9 @@
       <Visible>false</Visible>
     </Content>
     <Content Include="Assets\Data\abilities.json" />
+    <Content Include="Assets\Data\spritedatanolocation.json" />
+    <EmbeddedResource Include="Assets\Icons\placeholder_icon.png" />
+      <Reference Include="Lumina.Excel" HintPath="$(DalamudLibPath)Lumina.Excel.dll" Private="false" />
     <EmbeddedResource Include="icon.png" />
     <EmbeddedResource Include="Assets\Data\encountertables.json" />
     <EmbeddedResource Include="Assets\Data\sprites.json" />
@@ -35,4 +38,12 @@
     <EmbeddedResource Include="Assets\Sounds\menuselect.wav" />
     <EmbeddedResource Include="Assets\Sounds\victory.wav" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Data\codex.xlsx" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="echo The path is: $(DalamudLibPath)" />
+  </Target>
 </Project>

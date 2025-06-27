@@ -47,28 +47,26 @@ namespace AetherialArena.Windows
                 ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
             }
 
-            // --- Corrected Two-Column Layout in Lower Corners ---
-
             var windowHeight = ImGui.GetWindowHeight();
             var windowWidth = ImGui.GetWindowWidth();
             var padding = 15f;
             var itemSpacing = 8f;
 
-            // Calculate height of the left column content
             var buttonHeight = ImGui.CalcTextSize("A").Y + ImGui.GetStyle().FramePadding.Y * 2;
             var leftColumnContentHeight = (buttonHeight * 3) + (itemSpacing * 2);
             var leftColumnY = windowHeight - leftColumnContentHeight - padding;
 
-            // Set cursor for the left column block
             ImGui.SetCursorPos(new Vector2(padding, leftColumnY));
 
-            ImGui.BeginGroup(); // Group left column elements
+            ImGui.BeginGroup();
 
             var buttonSize = new Vector2(windowWidth * 0.4f, 0);
 
             if (DrawButtonWithOutline("EnterArena", "Enter the Arena", buttonSize))
             {
-                plugin.EncounterManager.SearchForEncounter();
+               
+                this.IsOpen = false;
+                plugin.HubWindow.IsOpen = true;
             }
 
             ImGui.Spacing();
@@ -87,15 +85,13 @@ namespace AetherialArena.Windows
 
             ImGui.EndGroup();
 
-            // Calculate height of the right column content
             var checkboxHeight = ImGui.GetFrameHeight();
             var rightColumnContentHeight = buttonHeight + (checkboxHeight * 2) + (itemSpacing * 2);
             var rightColumnY = windowHeight - rightColumnContentHeight - padding;
 
-            // Set cursor for the right column block
             ImGui.SetCursorPos(new Vector2(windowWidth - buttonSize.X - padding, rightColumnY));
 
-            ImGui.BeginGroup(); // Group right column elements
+            ImGui.BeginGroup();
 
             if (DrawButtonWithOutline("Settings", "Settings", buttonSize))
             {
@@ -136,7 +132,7 @@ namespace AetherialArena.Windows
             var textSize = ImGui.CalcTextSize(text);
             var textPos = buttonPos + new Vector2(buttonSize.X - textSize.X, buttonSize.Y - textSize.Y) * 0.5f;
 
-            DrawTextWithOutline(text, textPos, 0xFFFFFFFF, 0xFF000000); // White text, Black outline
+            DrawTextWithOutline(text, textPos, 0xFFFFFFFF, 0xFF000000);
 
             return clicked;
         }
@@ -152,7 +148,6 @@ namespace AetherialArena.Windows
             labelPos.Y = startPos.Y + (ImGui.GetFrameHeight() - ImGui.CalcTextSize(text).Y) / 2;
             DrawTextWithOutline(text, labelPos, 0xFFFFFFFF, 0xFF000000);
 
-            // Manually advance cursor to the next line
             ImGui.SetCursorScreenPos(new Vector2(startPos.X, startPos.Y + ImGui.GetFrameHeight()));
         }
     }

@@ -8,7 +8,17 @@
         "SpriteIDs": [ 2 ]
     },
     {
-        "TerritoryTypeID": 132,
-        "SpriteIDs": [ 3 ]
+        "TerritoryTypeID": 140,
+        "EncountersBySubLocation": {
+            "Default": [ 2 ]
+        }
+    },
+    {
+        "TerritoryTypeID": 134,
+        "EncountersBySubLocation": {
+            "Default": [ 4, 5 ],
+            "190": [ 6, 7 ],
+            "26": [ 11, 8 ]
+        }
     }
 ]

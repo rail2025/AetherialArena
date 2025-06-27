@@ -1,0 +1,1646 @@
+[
+    {
+        "ID": 1,
+        "Name": "Mechanical DPS",
+        "Rarity": 0,
+        "IconName": "golem_base.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 38,
+        "Mana": 38,
+        "Attack": 14,
+        "Defense": -7,
+        "Speed": 15,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "DPS",
+        "AttackType": [
+            "Piercing"
+        ],
+        "Resistances": [
+            "Ground"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 2,
+        "Name": "Creature DPS",
+        "Rarity": 0,
+        "IconName": "treeocto_base.png",
+        "MaxHealth": 88,
+        "Health": 88,
+        "MaxMana": 40,
+        "Mana": 40,
+        "Attack": 13,
+        "Defense": -8,
+        "Speed": 17,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "SubLocationIDs": [
+            42
+        ],
+        "MainType": "Creature",
+        "SubType": "DPS",
+        "AttackType": [
+            "Air"
+        ],
+        "Resistances": [
+            "Air",
+            "Fire"
+        ],
+        "Weaknesses": [
+            "Electric"
+        ]
+    },
+    {
+        "ID": 3,
+        "Name": "Figure Status",
+        "Rarity": 0,
+        "IconName": "cactusman_base.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Ground"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Ground"
+        ]
+    },
+    {
+        "ID": 4,
+        "Name": "Mechanical Status",
+        "Rarity": 1,
+        "IconName": "golem_base.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 7,
+        "Defense": -4,
+        "Speed": 3,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Status",
+        "AttackType": [
+            "Fire",
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 5,
+        "Name": "Creature Tank",
+        "Rarity": 2,
+        "IconName": "fire_base.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Tank",
+        "AttackType": [
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 6,
+        "Name": "Mechanical Tank",
+        "Rarity": 0,
+        "IconName": "snake_base.png",
+        "MaxHealth": 118,
+        "Health": 118,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -4,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Tank",
+        "AttackType": [
+            "Air",
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Blunt"
+        ]
+    },
+    {
+        "ID": 7,
+        "Name": "Mechanical Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 7,
+        "Defense": -4,
+        "Speed": 3,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Status",
+        "AttackType": [
+            "Electric",
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 8,
+        "Name": "Mechanical Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 54,
+        "Mana": 54,
+        "Attack": 9,
+        "Defense": -4,
+        "Speed": 1,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Status",
+        "AttackType": [
+            "Magic"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 9,
+        "Name": "Mechanical DPS",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 34,
+        "Mana": 34,
+        "Attack": 14,
+        "Defense": -7,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "DPS",
+        "AttackType": [
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 10,
+        "Name": "Beast Tank",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 122,
+        "Health": 122,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 11,
+        "Name": "Creature Tank",
+        "Rarity": 0,
+        "IconName": "bird_base.png",
+        "MaxHealth": 116,
+        "Health": 116,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 8,
+        "Defense": 7,
+        "Speed": -4,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Tank",
+        "AttackType": [
+            "Piercing",
+            "Magic",
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 12,
+        "Name": "Beast DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 88,
+        "Health": 88,
+        "MaxMana": 34,
+        "Mana": 34,
+        "Attack": 13,
+        "Defense": -8,
+        "Speed": 13,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "DPS",
+        "AttackType": [
+            "Air",
+            "Physical",
+            "Piercing"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 13,
+        "Name": "Figure Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 7,
+        "Defense": -4,
+        "Speed": 3,
+        "SpecialAbility": "Stun",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Fire",
+            "Ice"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 14,
+        "Name": "Beast Tank",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 118,
+        "Health": 118,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -4,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Blunt",
+            "Electric"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Electric"
+        ]
+    },
+    {
+        "ID": 15,
+        "Name": "Figure Tank",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -5,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Tank",
+        "AttackType": [
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Magic"
+        ]
+    },
+    {
+        "ID": 16,
+        "Name": "Mechanical Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Status",
+        "AttackType": [
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 17,
+        "Name": "Mechanical Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Tank",
+        "AttackType": [
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 18,
+        "Name": "Creature Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Tank",
+        "AttackType": [
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 19,
+        "Name": "Figure Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 56,
+        "Mana": 56,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Fire"
+        ],
+        "Resistances": [
+            "Magic"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 20,
+        "Name": "Figure Tank",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 118,
+        "Health": 118,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 7,
+        "Speed": -4,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Tank",
+        "AttackType": [
+            "Electric"
+        ],
+        "Resistances": [
+            "Ice"
+        ],
+        "Weaknesses": [
+            "Physical",
+            "Fire"
+        ]
+    },
+    {
+        "ID": 21,
+        "Name": "Figure Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 88,
+        "Health": 88,
+        "MaxMana": 56,
+        "Mana": 56,
+        "Attack": 7,
+        "Defense": -4,
+        "Speed": 3,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Ice",
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Physical"
+        ]
+    },
+    {
+        "ID": 22,
+        "Name": "Creature DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 35,
+        "Mana": 35,
+        "Attack": 14,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "DPS",
+        "AttackType": [
+            "Electric"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Ground"
+        ]
+    },
+    {
+        "ID": 23,
+        "Name": "Beast Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 53,
+        "Mana": 53,
+        "Attack": 6,
+        "Defense": -5,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Status",
+        "AttackType": [
+            "Air",
+            "Magic",
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 24,
+        "Name": "Creature Tank",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 118,
+        "Health": 118,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 7,
+        "Speed": -3,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ground",
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 25,
+        "Name": "Creature DPS",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 34,
+        "Mana": 34,
+        "Attack": 14,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "DPS",
+        "AttackType": [
+            "Magic"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 26,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ice"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 27,
+        "Name": "Creature Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 92,
+        "Health": 92,
+        "MaxMana": 54,
+        "Mana": 54,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Status",
+        "AttackType": [
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 28,
+        "Name": "Beast DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 92,
+        "Health": 92,
+        "MaxMana": 32,
+        "Mana": 32,
+        "Attack": 14,
+        "Defense": -7,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "DPS",
+        "AttackType": [
+            "Slash"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 29,
+        "Name": "Creature Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 56,
+        "Mana": 56,
+        "Attack": 7,
+        "Defense": -5,
+        "Speed": 0,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Status",
+        "AttackType": [
+            "Ground"
+        ],
+        "Resistances": [
+            "Piercing",
+            "Ground"
+        ],
+        "Weaknesses": [
+            "Blunt",
+            "Fire"
+        ]
+    },
+    {
+        "ID": 30,
+        "Name": "Figure DPS",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 88,
+        "Health": 88,
+        "MaxMana": 36,
+        "Mana": 36,
+        "Attack": 13,
+        "Defense": -8,
+        "Speed": 11,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "DPS",
+        "AttackType": [
+            "Physical",
+            "Blunt"
+        ],
+        "Resistances": [
+            "Fire"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 31,
+        "Name": "Figure DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 36,
+        "Mana": 36,
+        "Attack": 12,
+        "Defense": -9,
+        "Speed": 14,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "DPS",
+        "AttackType": [
+            "Piercing"
+        ],
+        "Resistances": [
+            "Blunt",
+            "Fire"
+        ],
+        "Weaknesses": [
+            "Air",
+            "Physical"
+        ]
+    },
+    {
+        "ID": 32,
+        "Name": "Creature DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 33,
+        "Mana": 33,
+        "Attack": 15,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "DPS",
+        "AttackType": [
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 33,
+        "Name": "Creature Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 53,
+        "Mana": 53,
+        "Attack": 6,
+        "Defense": -5,
+        "Speed": 0,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Status",
+        "AttackType": [
+            "Ground",
+            "Ice",
+            "Slash"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 34,
+        "Name": "Figure Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 54,
+        "Mana": 54,
+        "Attack": 9,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Stun",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 35,
+        "Name": "Figure DPS",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 33,
+        "Mana": 33,
+        "Attack": 15,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "DPS",
+        "AttackType": [
+            "Ground"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 36,
+        "Name": "Creature Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 116,
+        "Health": 116,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 8,
+        "Defense": 7,
+        "Speed": -4,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ground",
+            "Physical",
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 37,
+        "Name": "Beast Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 92,
+        "Health": 92,
+        "MaxMana": 54,
+        "Mana": 54,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Status",
+        "AttackType": [
+            "Piercing"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 38,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 115,
+        "Health": 115,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 7,
+        "Defense": 6,
+        "Speed": -3,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Slash",
+            "Electric",
+            "Blunt"
+        ],
+        "Resistances": [
+            "Physical",
+            "Ground"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 39,
+        "Name": "Beast DPS",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 35,
+        "Mana": 35,
+        "Attack": 13,
+        "Defense": -7,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "DPS",
+        "AttackType": [
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 40,
+        "Name": "Mechanical Tank",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 122,
+        "Health": 122,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Tank",
+        "AttackType": [
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 41,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 42,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ground"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 43,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 122,
+        "Health": 122,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 44,
+        "Name": "Figure Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 9,
+        "Defense": -5,
+        "Speed": 1,
+        "SpecialAbility": "Stun",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 45,
+        "Name": "Beast Tank",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 122,
+        "Health": 122,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 8,
+        "Defense": 8,
+        "Speed": -5,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ice"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 46,
+        "Name": "Mechanical Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ice"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 47,
+        "Name": "Creature DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 34,
+        "Mana": 34,
+        "Attack": 12,
+        "Defense": -8,
+        "Speed": 15,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "DPS",
+        "AttackType": [
+            "Air",
+            "Fire",
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Magic"
+        ]
+    },
+    {
+        "ID": 48,
+        "Name": "Mechanical DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 88,
+        "Health": 88,
+        "MaxMana": 36,
+        "Mana": 36,
+        "Attack": 13,
+        "Defense": -8,
+        "Speed": 11,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "DPS",
+        "AttackType": [
+            "Blunt"
+        ],
+        "Resistances": [
+            "Ground"
+        ],
+        "Weaknesses": [
+            "Blunt"
+        ]
+    },
+    {
+        "ID": 49,
+        "Name": "Creature Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 90,
+        "Health": 90,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 9,
+        "Defense": -5,
+        "Speed": 1,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Status",
+        "AttackType": [
+            "Piercing"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 50,
+        "Name": "Mechanical Status",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 54,
+        "Mana": 54,
+        "Attack": 9,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Status",
+        "AttackType": [
+            "Magic"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 51,
+        "Name": "Creature Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Status",
+        "AttackType": [
+            "Blunt"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 52,
+        "Name": "Mechanical DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 33,
+        "Mana": 33,
+        "Attack": 13,
+        "Defense": -8,
+        "Speed": 13,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "DPS",
+        "AttackType": [
+            "Electric",
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 53,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 117,
+        "Health": 117,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 7,
+        "Speed": -3,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ground",
+            "Magic"
+        ],
+        "Resistances": [
+            "Physical"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 54,
+        "Name": "Creature Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 8,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Status",
+        "AttackType": [
+            "Ground"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 55,
+        "Name": "Figure DPS",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 33,
+        "Mana": 33,
+        "Attack": 15,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "DPS",
+        "AttackType": [
+            "Magic"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 56,
+        "Name": "Figure Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ground"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 57,
+        "Name": "Figure Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 57,
+        "Mana": 57,
+        "Attack": 7,
+        "Defense": -5,
+        "Speed": 2,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Ice"
+        ],
+        "Resistances": [
+            "Electric",
+            "Ground"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 58,
+        "Name": "Beast DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 34,
+        "Mana": 34,
+        "Attack": 12,
+        "Defense": -8,
+        "Speed": 15,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "DPS",
+        "AttackType": [
+            "Physical",
+            "Ground",
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Magic"
+        ]
+    },
+    {
+        "ID": 59,
+        "Name": "Figure Status",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 54,
+        "Mana": 54,
+        "Attack": 9,
+        "Defense": -4,
+        "Speed": 0,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Fire"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 60,
+        "Name": "Mechanical Status",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 6,
+        "Defense": -5,
+        "Speed": -2,
+        "SpecialAbility": "Haste",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Status",
+        "AttackType": [
+            "Ice",
+            "Ground",
+            "Electric"
+        ],
+        "Resistances": [
+            "Ground"
+        ],
+        "Weaknesses": []
+    },
+    {
+        "ID": 61,
+        "Name": "Figure Status",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 55,
+        "Mana": 55,
+        "Attack": 7,
+        "Defense": -4,
+        "Speed": 3,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Air",
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 62,
+        "Name": "Mechanical DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 33,
+        "Mana": 33,
+        "Attack": 15,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "DPS",
+        "AttackType": [
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 63,
+        "Name": "Beast Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 115,
+        "Health": 115,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 7,
+        "Defense": 6,
+        "Speed": -3,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ground",
+            "Ice",
+            "Electric"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Physical"
+        ]
+    },
+    {
+        "ID": 64,
+        "Name": "Figure Tank",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 122,
+        "Health": 122,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Tank",
+        "AttackType": [
+            "Air"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 65,
+        "Name": "Figure Tank",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 121,
+        "Health": 121,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 10,
+        "Defense": 8,
+        "Speed": -6,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Tank",
+        "AttackType": [
+            "Physical"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 66,
+        "Name": "Mechanical Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 117,
+        "Health": 117,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 7,
+        "Speed": -3,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "Tank",
+        "AttackType": [
+            "Physical",
+            "Magic"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Ice"
+        ]
+    },
+    {
+        "ID": 67,
+        "Name": "Mechanical DPS",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 87,
+        "Health": 87,
+        "MaxMana": 35,
+        "Mana": 35,
+        "Attack": 12,
+        "Defense": -8,
+        "Speed": 14,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Mechanical",
+        "SubType": "DPS",
+        "AttackType": [
+            "Slash",
+            "Magic"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Slash"
+        ]
+    },
+    {
+        "ID": 68,
+        "Name": "Creature Tank",
+        "Rarity": 0,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 118,
+        "Health": 118,
+        "MaxMana": 20,
+        "Mana": 20,
+        "Attack": 9,
+        "Defense": 7,
+        "Speed": -4,
+        "SpecialAbility": "Shield 25%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Creature",
+        "SubType": "Tank",
+        "AttackType": [
+            "Ice",
+            "Electric"
+        ],
+        "Resistances": [],
+        "Weaknesses": [
+            "Ground"
+        ]
+    },
+    {
+        "ID": 69,
+        "Name": "Beast DPS",
+        "Rarity": 1,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 91,
+        "Health": 91,
+        "MaxMana": 33,
+        "Mana": 33,
+        "Attack": 15,
+        "Defense": -8,
+        "Speed": 19,
+        "SpecialAbility": "Damage Up 15%",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Beast",
+        "SubType": "DPS",
+        "AttackType": [
+            "Electric"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    },
+    {
+        "ID": 70,
+        "Name": "Figure Status",
+        "Rarity": 2,
+        "IconName": "placeholder_icon.png",
+        "MaxHealth": 89,
+        "Health": 89,
+        "MaxMana": 57,
+        "Mana": 57,
+        "Attack": 7,
+        "Defense": -5,
+        "Speed": 2,
+        "SpecialAbility": "Regen",
+        "BaseHeal": "Heals 75% of base attack (10) at MP cost",
+        "MainType": "Figure",
+        "SubType": "Status",
+        "AttackType": [
+            "Ice",
+            "Electric"
+        ],
+        "Resistances": [],
+        "Weaknesses": []
+    }
+]

@@ -11,7 +11,9 @@ namespace AetherialArena.Windows
     public class DebugWindow : Window, IDisposable
     {
         private readonly Plugin plugin;
-        private int territoryIdAsInt = 129;
+        private int territoryIdAsInt = 134;
+        private int subLocationIdAsInt = 190;
+        private bool useFakeSubLocation = true; // Add a checkbox toggle
         private int specificSpriteId = 1;
 
         public DebugWindow(Plugin plugin) : base("Debug Tools###AetherialArenaDebugWindow")
@@ -31,15 +33,23 @@ namespace AetherialArena.Windows
             ImGui.Text("Encounter Testing");
             ImGui.Separator();
 
-            if (ImGui.InputInt("Territory ID", ref territoryIdAsInt))
+            ImGui.InputInt("Territory ID", ref territoryIdAsInt);
+
+            // --- NEW: Checkbox to enable/disable the sub-location override ---
+            ImGui.Checkbox("Use Fake Sub-Location ID", ref useFakeSubLocation);
+
+            // Only show the input box if the checkbox is ticked
+            if (useFakeSubLocation)
             {
-                if (territoryIdAsInt < 0) territoryIdAsInt = 0;
-                if (territoryIdAsInt > ushort.MaxValue) territoryIdAsInt = ushort.MaxValue;
+                ImGui.InputInt("Sub-Location ID", ref subLocationIdAsInt);
             }
 
             if (ImGui.Button("Set Fake Location & Search"))
             {
-                plugin.EncounterManager.SearchForEncounter((ushort)territoryIdAsInt);
+                // Determine the sub-location override based on the checkbox
+                uint? subIdOverride = useFakeSubLocation ? (uint)subLocationIdAsInt : null;
+
+                plugin.EncounterManager.SearchForEncounter((ushort)territoryIdAsInt, subIdOverride);
             }
 
             ImGui.Spacing();
@@ -53,6 +63,7 @@ namespace AetherialArena.Windows
                 if (playerData != null && opponentData != null)
                 {
                     plugin.BattleManager.StartBattle(new Sprite(playerData), new Sprite(opponentData));
+                    plugin.MainWindow.IsOpen = true;
                 }
                 else
                 {
@@ -77,7 +88,6 @@ namespace AetherialArena.Windows
                 plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
             }
 
-            // --- NEW: CLEAR COLLECTION BUTTON ---
             if (ImGui.Button("Clear Collection Data"))
             {
                 plugin.PlayerProfile.AttunedSpriteIDs.Clear();

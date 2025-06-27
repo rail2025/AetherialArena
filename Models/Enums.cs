@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace AetherialArena.Models
 {
@@ -7,8 +8,8 @@ namespace AetherialArena.Models
     {
         Figure,
         Beast,
-        Creature,  // Changed from Wildlife
-        Mechanical // Changed from Machina
+        Creature,  
+        Mechanical 
     }
 
     public enum RarityTier
@@ -18,10 +19,26 @@ namespace AetherialArena.Models
         Rare
     }
 
+
+    public enum SearchResult
+    {
+        Success,
+        NoAether,
+        InvalidState, // For being mounted, in combat, etc.
+        NoSpritesFound
+    }
+
     // A class to hold the data from encountertables.json
+
     public class EncounterData
     {
         public ushort TerritoryTypeID { get; set; }
-        public List<int> SpriteIDs { get; set; } = new();
+
+        // This will correctly deserialize BOTH "SpriteIDs" and merge them into the main dictionary.
+        [JsonPropertyName("SpriteIDs")]
+        public List<int> DefaultSpriteIDs { set { EncountersBySubLocation["Default"] = value; } }
+
+        [JsonPropertyName("EncountersBySubLocation")]
+        public Dictionary<string, List<int>> EncountersBySubLocation { get; set; } = new();
     }
 }
