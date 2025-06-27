@@ -2,7 +2,7 @@
 Aetherial Arena is a mini game Dalamud plugin for FFXIV
 ![title](https://github.com/user-attachments/assets/59d42ee1-defb-427e-a000-314e702cb300)
 
-![collection window](https://github.com/user-attachments/assets/ff2e947d-15d8-490c-9d90-09266c3d691e)
+![day 4 done](https://github.com/user-attachments/assets/c453e34c-bd2f-475d-aedc-7804901392d7)
 
 
 ## Installation
