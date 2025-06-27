@@ -1,24 +1,252 @@
 [
     {
-        "TerritoryTypeID": 129,
-        "SpriteIDs": [ 1 ]
-    },
-    {
-        "TerritoryTypeID": 130,
-        "SpriteIDs": [ 2 ]
-    },
-    {
-        "TerritoryTypeID": 140,
-        "EncountersBySubLocation": {
-            "Default": [ 2 ]
-        }
+        "TerritoryTypeID": 128,
+        "Default": [
+            1,
+            2,
+            3
+        ]
     },
     {
         "TerritoryTypeID": 134,
+        "Default": [
+            23
+        ],
         "EncountersBySubLocation": {
-            "Default": [ 4, 5 ],
-            "190": [ 6, 7 ],
-            "26": [ 11, 8 ]
+            "194": [
+                24
+            ],
+            "187": [
+                25
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 135,
+        "Default": [
+            26,
+            27,
+            28
+        ],
+        "EncountersBySubLocation": {
+            "338": [
+                29
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 137,
+        "Default": [
+            31,
+            32
+        ],
+        "EncountersBySubLocation": {
+            "209": [
+                30
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 138,
+        "Default": [
+            33,
+            36
+        ],
+        "EncountersBySubLocation": {
+            "220": [
+                34
+            ],
+            "946": [
+                35
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 139,
+        "Default": [
+            37,
+            38
+        ],
+        "EncountersBySubLocation": {
+            "233": [
+                39
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 140,
+        "Default": [
+            11,
+            12,
+            13
+        ],
+        "EncountersBySubLocation": {
+            "262": [
+                14
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 141,
+        "Default": [
+            8
+        ],
+        "EncountersBySubLocation": {
+            "293": [
+                9
+            ],
+            "295": [
+                10
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 145,
+        "Default": [
+            16,
+            17,
+            18
+        ],
+        "EncountersBySubLocation": {
+            "307": [
+                15
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 146,
+        "Default": [
+            21,
+            22
+        ],
+        "EncountersBySubLocation": {
+            "315": [
+                19
+            ],
+            "324": [
+                20
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 147,
+        "Default": [
+            6,
+            7
+        ],
+        "EncountersBySubLocation": {
+            "328": [
+                4
+            ],
+            "326": [
+                5
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 148,
+        "Default": [
+            46
+        ],
+        "EncountersBySubLocation": {
+            "104": [
+                44
+            ],
+            "92": [
+                45
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 152,
+        "Default": [
+            47,
+            48
+        ],
+        "EncountersBySubLocation": {
+            "112": [
+                49
+            ],
+            "114": [
+                50
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 153,
+        "Default": [
+            51,
+            52,
+            53
+        ],
+        "EncountersBySubLocation": {
+            "133": [
+                54
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 154,
+        "Default": [
+            56,
+            57,
+            58
+        ],
+        "EncountersBySubLocation": {
+            "145": [
+                55
+            ],
+            "139": [
+                59
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 155,
+        "Default": [
+            61,
+            62,
+            63
+        ],
+        "EncountersBySubLocation": {
+            "400": [
+                60
+            ],
+            "385": [
+                64
+            ],
+            "398": [
+                65
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 156,
+        "Default": [
+            66,
+            67,
+            68
+        ],
+        "EncountersBySubLocation": {
+            "941": [
+                69
+            ],
+            "414": [
+                70
+            ]
+        }
+    },
+    {
+        "TerritoryTypeID": 180,
+        "Default": [
+            41,
+            42,
+            43
+        ],
+        "EncountersBySubLocation": {
+            "236": [
+                40
+            ]
         }
     }
 ]
