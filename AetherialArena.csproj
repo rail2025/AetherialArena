@@ -13,7 +13,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
-    <Content Include="Assets\Data\abilities.json" />
+    <EmbeddedResource Include="Assets\Backgrounds\background1.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\background2.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\background3.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\background4.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\background5.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\background6.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\background7.png" />
+    <EmbeddedResource Include="Assets\Data\ability.json" />
+    <EmbeddedResource Include="Assets\Icons\chick_base.png" />
+    <EmbeddedResource Include="Assets\Icons\beast_dps.png" />
+    <EmbeddedResource Include="Assets\Icons\beast_status.png" />
+    <EmbeddedResource Include="Assets\Icons\beast_tank.png" />
+    <EmbeddedResource Include="Assets\Icons\creature_dps.png" />
+    <EmbeddedResource Include="Assets\Icons\creature_status.png" />
+    <EmbeddedResource Include="Assets\Icons\creature_tank.png" />
+    <EmbeddedResource Include="Assets\Icons\figure_dps.png" />
+    <EmbeddedResource Include="Assets\Icons\figure_status.png" />
+    <EmbeddedResource Include="Assets\Icons\figure_tank.png" />
+    <EmbeddedResource Include="Assets\Icons\mechanical_dps.png" />
+    <EmbeddedResource Include="Assets\Icons\mechanical_status.png" />
+    <EmbeddedResource Include="Assets\Icons\mechanical_tank.png" />
+    <EmbeddedResource Include="Assets\Icons\vegetable_base.png" />
     <EmbeddedResource Include="Assets\Icons\placeholder_icon.png" />
     <EmbeddedResource Include="Assets\Icons\aacodex.png" />
     <EmbeddedResource Include="Assets\Data\spritedatanolocation.json" />
@@ -22,13 +43,6 @@
     <EmbeddedResource Include="Assets\Data\encountertables.json" />
     <EmbeddedResource Include="Assets\Data\sprites.json" />
     <EmbeddedResource Include="Assets\Icons\badger_base.png" />
-    <EmbeddedResource Include="Assets\Icons\bird_base.png" />
-    <EmbeddedResource Include="Assets\Icons\cactusman_base.png" />
-    <EmbeddedResource Include="Assets\Icons\fire_base.png" />
-    <EmbeddedResource Include="Assets\Icons\golem_base.png" />
-    <EmbeddedResource Include="Assets\Icons\snake_base.png" />
-    <EmbeddedResource Include="Assets\Icons\treeocto_base.png" />
-    <EmbeddedResource Include="Assets\Icons\turtle_base.png" />
     <EmbeddedResource Include="Assets\Sounds\capture.wav" />
     <EmbeddedResource Include="Assets\Sounds\encounterfound.wav" />
     <EmbeddedResource Include="Assets\Sounds\encountersearch.wav" />
@@ -46,6 +60,11 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Data\PlaceName-arrzonescombined.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.6" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

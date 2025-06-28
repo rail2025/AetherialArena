@@ -4,6 +4,7 @@ using Dalamud.Interface.Windowing;
 using AetherialArena.Core;
 using AetherialArena.UI;
 using ImGuiNET;
+using AetherialArena.Services;
 
 namespace AetherialArena.Windows
 {
@@ -11,22 +12,32 @@ namespace AetherialArena.Windows
     {
         private readonly BattleManager battleManager;
         private readonly BattleUIComponent battleUIComponent;
+        private readonly AssetManager assetManager;
 
         public MainWindow(Plugin plugin, BattleUIComponent battleUIComponent) : base("Aetherial Arena Battle")
         {
             this.battleManager = plugin.BattleManager;
             this.battleUIComponent = battleUIComponent;
+            this.assetManager = plugin.AssetManager;
             this.SizeConstraints = new WindowSizeConstraints { MinimumSize = new Vector2(600, 400), MaximumSize = new Vector2(float.MaxValue, float.MaxValue) };
             this.IsOpen = false;
+            this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
         }
 
         public void Dispose() { }
 
         public override void Draw()
         {
+            var background = assetManager.GetIcon(battleManager.CurrentBackgroundName);
+            if (background != null)
+            {
+                var windowPos = ImGui.GetWindowPos();
+                var windowSize = ImGui.GetWindowSize();
+                ImGui.GetWindowDrawList().AddImage(background.ImGuiHandle, windowPos, windowPos + windowSize);
+            }
+
             battleManager.Update();
 
-            // This switch statement is re-introduced to handle the end-of-battle screens.
             switch (battleManager.State)
             {
                 case BattleManager.BattleState.InProgress:
@@ -41,7 +52,7 @@ namespace AetherialArena.Windows
             }
         }
 
-       
+
         private void DrawEndScreen(string message)
         {
             var windowSize = ImGui.GetWindowSize();

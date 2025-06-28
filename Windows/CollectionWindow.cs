@@ -60,7 +60,7 @@ namespace AetherialArena.Windows
                     ImGui.TableSetColumnIndex(1);
 
                     // --- 2. Icon ---
-                    var icon = assetManager.GetIcon(sprite.IconName);
+                    var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
                     if (icon != null)
                     {
                         // Show full color icon if attuned, otherwise grey it out

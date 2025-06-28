@@ -1,9 +1,9 @@
 [
     {
         "ID": 1,
-        "Name": "Mechanical DPS",
+        "Name": "Radimato",
         "Rarity": 0,
-        "IconName": "golem_base.png",
+        "IconName": "vegetable_base.png",
         "MaxHealth": 90,
         "Health": 90,
         "MaxMana": 38,
@@ -388,7 +388,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 10,
-        "Defense": 8,
+        "Defense": 5,
         "Speed": -6,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost",

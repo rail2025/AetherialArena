@@ -10,22 +10,23 @@ namespace AetherialArena.Models
         public RarityTier Rarity { get; set; }
         public SpriteType Type { get; set; }
         public string IconName { get; set; } = string.Empty;
+        public string RecolorKey { get; set; } = "default";
 
-        // Base Stats
+        public int SpecialAbilityID { get; set; }
+
+        // The old property is kept for loading the string from JSON, but ignored for other uses.
+        public string SpecialAbility { get; set; } = string.Empty;
+
         public int MaxHealth { get; set; }
         public int MaxMana { get; set; }
         public int Attack { get; set; }
         public int Defense { get; set; }
         public int Speed { get; set; }
-        public string SpecialAbility { get; set; } = string.Empty;
         public string BaseHeal { get; set; } = string.Empty;
-
-        // Detailed properties from spritedatanolocation.json
         public string SubType { get; set; } = string.Empty;
         public List<string> AttackType { get; set; } = new();
         public List<string> Weaknesses { get; set; } = new();
         public List<string> Resistances { get; set; } = new();
-
         public List<int> SubLocationIDs { get; set; } = new();
 
         [JsonIgnore]
@@ -42,17 +43,18 @@ namespace AetherialArena.Models
             this.Rarity = s.Rarity;
             this.Type = s.Type;
             this.IconName = s.IconName;
+            this.RecolorKey = s.RecolorKey;
             this.MaxHealth = s.MaxHealth;
             this.MaxMana = s.MaxMana;
             this.Attack = s.Attack;
             this.Defense = s.Defense;
             this.Speed = s.Speed;
+            this.SpecialAbilityID = s.SpecialAbilityID;
             this.SpecialAbility = s.SpecialAbility;
             this.BaseHeal = s.BaseHeal;
             this.SubLocationIDs = s.SubLocationIDs;
             this.Health = s.MaxHealth;
             this.Mana = s.MaxMana;
-
             this.SubType = s.SubType;
             this.AttackType = s.AttackType;
             this.Weaknesses = s.Weaknesses;

@@ -12,21 +12,30 @@ namespace AetherialArena.Windows
 {
     public class CodexWindow : Window
     {
+        private enum CodexState
+        {
+            List,
+            Details
+        }
+
+        private CodexState currentState = CodexState.List;
+        private Sprite? selectedSprite;
+
+
         private readonly DataManager dataManager;
         private readonly PlayerProfile playerProfile;
         private readonly AssetManager assetManager;
-        private readonly IDalamudTextureWrap? backgroundTexture;
-        private readonly Dictionary<int, string> locationHints = new();
 
         private const int RowsPerPage = 5;
         private int currentPage = 0;
+        private readonly Dictionary<int, string> locationHints = new();
+
 
         public CodexWindow(Plugin plugin) : base("Codex###AetherialArenaCodexWindow")
         {
             this.dataManager = plugin.DataManager;
             this.playerProfile = plugin.PlayerProfile;
             this.assetManager = plugin.AssetManager;
-            this.backgroundTexture = this.assetManager.GetIcon("aacodex.png");
 
             this.Size = new Vector2(640, 535);
             this.SizeConstraints = new WindowSizeConstraints
@@ -41,11 +50,12 @@ namespace AetherialArena.Windows
 
         public override void Draw()
         {
-            if (this.backgroundTexture != null)
+            var backgroundTexture = this.assetManager.GetIcon("aacodex.png");
+            if (backgroundTexture != null)
             {
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
-                ImGui.GetWindowDrawList().AddImage(this.backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
+                ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
             }
 
             var contentRegion = ImGui.GetContentRegionAvail();
@@ -54,10 +64,87 @@ namespace AetherialArena.Windows
             ImGui.SetCursorPos(containerPos);
 
             ImGui.BeginChild("ContentContainer", containerSize, false, ImGuiWindowFlags.NoScrollbar);
-            DrawSpriteTable();
-            DrawPaginationControls();
+
+            switch (currentState)
+            {
+                case CodexState.List:
+                    DrawListView();
+                    break;
+                case CodexState.Details:
+                    DrawDetailsView();
+                    break;
+            }
+
             ImGui.EndChild();
         }
+
+        private void DrawListView()
+        {
+            DrawSpriteTable();
+            DrawPaginationControls();
+        }
+
+        private void DrawDetailsView()
+        {
+            if (selectedSprite == null)
+            {
+                currentState = CodexState.List;
+                return;
+            }
+
+            var s = selectedSprite;
+
+            // Header
+            var nameSize = ImGui.CalcTextSize(s.Name);
+            ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - nameSize.X) / 2);
+            ImGui.TextColored(new Vector4(0.9f, 0.9f, 0.9f, 1.0f), s.Name);
+
+            var typeInfo = $"{s.Rarity} / {s.Type}" + (string.IsNullOrEmpty(s.SubType) ? "" : $" / {s.SubType}");
+            var typeInfoSize = ImGui.CalcTextSize(typeInfo);
+            ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - typeInfoSize.X) / 2);
+
+            // --- CORRECTED: Changed color to bright white for high contrast ---
+            ImGui.TextColored(new Vector4(1.0f, 1.0f, 1.0f, 1.0f), typeInfo);
+            ImGui.Separator();
+
+            // Stats
+            ImGui.Text("Stats");
+            ImGui.Indent();
+            ImGui.Columns(2, "StatsColumns", false);
+            ImGui.Text($"HP: {s.MaxHealth}");
+            ImGui.Text($"Attack: {s.Attack}");
+            ImGui.Text($"Speed: {s.Speed}");
+            ImGui.NextColumn();
+            ImGui.Text($"MP: {s.MaxMana}");
+            ImGui.Text($"Defense: {s.Defense}");
+            ImGui.Columns(1);
+            ImGui.Unindent();
+            ImGui.Separator();
+
+            // --- REVISED: Combat Details to include Special Ability ---
+            ImGui.Text("Combat Details");
+            ImGui.Indent();
+            if (!string.IsNullOrWhiteSpace(s.SpecialAbility) && s.SpecialAbility != "None")
+            {
+                ImGui.TextWrapped($"Special: {s.SpecialAbility}");
+            }
+            ImGui.TextWrapped($"Attack Type: {string.Join(", ", s.AttackType)}");
+            ImGui.TextWrapped($"Weaknesses: {string.Join(", ", s.Weaknesses)}");
+            ImGui.TextWrapped($"Resistances: {string.Join(", ", s.Resistances)}");
+            ImGui.Unindent();
+            ImGui.Separator();
+
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            // Back Button
+            if (ImGui.Button("Back to Codex", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+            {
+                selectedSprite = null;
+                currentState = CodexState.List;
+            }
+        }
+
 
         private void DrawSpriteTable()
         {
@@ -74,14 +161,27 @@ namespace AetherialArena.Windows
                 foreach (var sprite in pagedSprites)
                 {
                     ImGui.TableNextRow();
+                    bool isKnown = playerProfile.AttunedSpriteIDs.Contains(sprite.ID) || playerProfile.DefeatCounts.ContainsKey(sprite.ID);
+
+                    ImGui.TableSetColumnIndex(0);
+                    if (ImGui.Selectable($"##{sprite.ID}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap))
+                    {
+                        if (isKnown)
+                        {
+                            selectedSprite = sprite;
+                            currentState = CodexState.Details;
+                        }
+                    }
+
+                    // Draw cell content over the selectable area
                     ImGui.TableSetColumnIndex(0);
                     ImGui.Text(sprite.ID.ToString());
 
                     ImGui.TableSetColumnIndex(1);
-                    var icon = assetManager.GetIcon(sprite.IconName);
+                    IDalamudTextureWrap? icon;
+                    if (isKnown) { icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey); }
+                    else { icon = assetManager.GetIcon("placeholder_icon.png"); }
                     if (icon != null) { ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40)); } else { ImGui.Dummy(new Vector2(40, 40)); }
-
-                    bool isKnown = playerProfile.AttunedSpriteIDs.Contains(sprite.ID) || playerProfile.DefeatCounts.ContainsKey(sprite.ID);
 
                     ImGui.TableSetColumnIndex(2);
                     ImGui.Text(isKnown ? sprite.Name : "???");
@@ -97,6 +197,7 @@ namespace AetherialArena.Windows
             ImGui.EndChild();
         }
 
+        // (Rest of the file is unchanged)
         private void DrawPaginationControls()
         {
             ImGui.Spacing();

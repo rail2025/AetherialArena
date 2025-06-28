@@ -58,14 +58,14 @@ namespace AetherialArena
             this.PluginManifest = PluginInterface.Manifest;
             this.Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             this.Configuration.Initialize(PluginInterface);
+            this.AssetManager = new AssetManager(PluginInterface, TextureProvider);
 
-            this.AssetManager = new AssetManager(); // Corrected to use the parameterless constructor
             this.DataManager = new DataManager();
             this.SaveManager = new SaveManager();
             this.PlayerProfile = this.SaveManager.LoadProfile();
-            this.BattleManager = new BattleManager(this);
+            this.BattleManager = new BattleManager(this,Framework);
             this.EncounterManager = new EncounterManager(this);
-            this.BattleUIComponent = new BattleUIComponent(this.BattleManager, this.AssetManager);
+            this.BattleUIComponent = new BattleUIComponent(this.BattleManager, this.AssetManager, this.DataManager);
 
             this.HubWindow = new HubWindow(this);
             this.TitleWindow = new TitleWindow(this);

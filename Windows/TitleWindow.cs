@@ -11,7 +11,7 @@ namespace AetherialArena.Windows
     {
         private readonly Plugin plugin;
         private readonly AssetManager assetManager;
-        private readonly IDalamudTextureWrap? backgroundTexture;
+        
 
         private bool musicMuted = false;
         private bool sfxMuted = false;
@@ -20,28 +20,27 @@ namespace AetherialArena.Windows
         {
             this.plugin = plugin;
             this.assetManager = plugin.AssetManager;
-            this.backgroundTexture = this.assetManager.GetIcon("icon.png");
 
-            if (this.backgroundTexture != null)
-            {
-                this.Size = new Vector2(this.backgroundTexture.Width, this.backgroundTexture.Height);
-                this.SizeCondition = ImGuiCond.Always;
-            }
-            else
-            {
-                this.Size = new Vector2(400, 400); // Fallback size
-            }
+            // Set a fallback size, the Draw method will resize it later
+            this.Size = new Vector2(600, 425);
+            this.SizeCondition = ImGuiCond.FirstUseEver;
 
             this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
         }
+
 
         public void Dispose() { }
 
         public override void Draw()
         {
+            var backgroundTexture = this.assetManager.GetIcon("icon.png");
+
             ImGui.PushStyleColor(ImGuiCol.WindowBg, 0);
             if (backgroundTexture != null)
             {
+                // Once the texture is loaded, dynamically set the window size
+                ImGui.SetWindowSize(new Vector2(backgroundTexture.Width, backgroundTexture.Height));
+
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
                 ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
@@ -64,16 +63,15 @@ namespace AetherialArena.Windows
 
             if (DrawButtonWithOutline("EnterArena", "Enter the Arena", buttonSize))
             {
-               
                 this.IsOpen = false;
                 plugin.HubWindow.IsOpen = true;
             }
 
             ImGui.Spacing();
 
-            if (DrawButtonWithOutline("Collection", "View Collection", buttonSize))
+            if (DrawButtonWithOutline("Collection", "View Codex", buttonSize))
             {
-                plugin.CollectionWindow.Toggle();
+                plugin.CodexWindow.Toggle();
             }
 
             ImGui.Spacing();

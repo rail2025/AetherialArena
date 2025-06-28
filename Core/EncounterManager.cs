@@ -91,15 +91,11 @@ namespace AetherialArena.Core
             }
 
             var opponentData = weightedList[random.Next(weightedList.Count)];
-            var playerData = plugin.DataManager.Sprites.FirstOrDefault();
 
-            if (playerData == null)
-            {
-                Plugin.Log.Error("No player sprite available to start battle.");
-                return SearchResult.NoSpritesFound;
-            }
-
-            plugin.BattleManager.StartBattle(new Sprite(playerData), new Sprite(opponentData));
+            // --- MODIFIED BATTLE START LOGIC ---
+            // The old method of sending a single sprite is replaced.
+            // We now send the player's current loadout and the opponent's ID.
+            plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, opponentData.ID);
 
             plugin.HubWindow.IsOpen = false;
             plugin.MainWindow.IsOpen = true;

@@ -13,7 +13,7 @@ namespace AetherialArena.Services
     {
         public List<Sprite> Sprites { get; } = new();
         public List<EncounterData> Encounters { get; } = new();
-        public Dictionary<string, Sprite> SpriteData { get; } = new();
+        public List<Ability> Abilities { get; } = new();
         private readonly Dictionary<int, string> locationHints = new();
 
         public DataManager()
@@ -22,15 +22,9 @@ namespace AetherialArena.Services
             LoadHints();
         }
 
-        public Sprite? GetSpriteData(int id)
-        {
-            return SpriteData.GetValueOrDefault(id.ToString());
-        }
-
-        public string GetHint(int spriteId)
-        {
-            return locationHints.GetValueOrDefault(spriteId, string.Empty);
-        }
+        public Sprite? GetSpriteData(int id) => Sprites.FirstOrDefault(s => s.ID == id);
+        public string GetHint(int spriteId) => locationHints.GetValueOrDefault(spriteId, string.Empty);
+        public Ability? GetAbility(int id) => Abilities.FirstOrDefault(a => a.ID == id);
 
         private void LoadData()
         {
@@ -41,19 +35,54 @@ namespace AetherialArena.Services
             };
 
             var loadedSprites = LoadJson<List<Sprite>>("sprites.json", options);
-            if (loadedSprites != null) Sprites.AddRange(loadedSprites);
-
+            var detailedSpriteList = LoadJson<List<Sprite>>("spritedatanolocation.json", options);
+            var loadedAbilities = LoadJson<List<Ability>>("ability.json", options);
             var loadedEncounters = LoadJson<List<EncounterData>>("encountertables.json", options);
+
+            if (loadedSprites == null || loadedAbilities == null) return;
+
+            Abilities.AddRange(loadedAbilities);
             if (loadedEncounters != null) Encounters.AddRange(loadedEncounters);
 
-            var detailedSpriteList = LoadJson<List<Sprite>>("spritedatanolocation.json", options);
-            if (detailedSpriteList != null)
+            var detailedDataDict = detailedSpriteList?.ToDictionary(s => s.ID);
+            var abilitiesDict = Abilities.ToDictionary(a => a.Name, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var sprite in loadedSprites)
             {
-                foreach (var sprite in detailedSpriteList)
+                if (detailedDataDict != null && detailedDataDict.TryGetValue(sprite.ID, out var details))
                 {
-                    SpriteData[sprite.ID.ToString()] = sprite;
+                    sprite.SubType = details.SubType;
+                    sprite.AttackType = details.AttackType;
+                    sprite.Weaknesses = details.Weaknesses;
+                    sprite.Resistances = details.Resistances;
                 }
+
+                var abilityName = sprite.SpecialAbility switch
+                {
+                    "Damage Up 15%" => "Empower",
+                    "Shield 25%" => "Barrier",
+                    _ => sprite.SpecialAbility
+                };
+
+                if (abilitiesDict.TryGetValue(abilityName, out var mappedAbility))
+                {
+                    sprite.SpecialAbilityID = mappedAbility.ID;
+                }
+
+                sprite.RecolorKey = sprite.Rarity switch
+                {
+                    RarityTier.Uncommon => "green",
+                    RarityTier.Rare => "purple",
+                    _ => sprite.Type switch
+                    {
+                        SpriteType.Beast => "orange",
+                        SpriteType.Mechanical => "darkred",
+                        _ => "default"
+                    }
+                };
             }
+
+            Sprites.AddRange(loadedSprites);
         }
 
         private void LoadHints()
@@ -91,15 +120,12 @@ namespace AetherialArena.Services
         private T? LoadJson<T>(string fileName, JsonSerializerOptions options) where T : class, new()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = assembly.GetManifestResourceNames()
-                .FirstOrDefault(str => str.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
-
+            var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(str => str.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
             if (string.IsNullOrEmpty(resourceName))
             {
                 Plugin.Log.Error($"Could not find the embedded resource '{fileName}'.");
                 return new T();
             }
-
             try
             {
                 using var stream = assembly.GetManifestResourceStream(resourceName);

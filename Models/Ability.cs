@@ -1,20 +1,20 @@
-namespace AetherialArena.Models
+using System.Collections.Generic;
+using AetherialArena.Models;
+
+public class Ability
 {
-    /// <summary>
-    /// Defines a special action that a Sprite can perform in battle.
-    /// </summary>
-    public class Ability
-    {
-        // The unique identifier for this ability.
-        public int ID { get; set; }
+    public int ID { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int ManaCost { get; set; }
+    public TargetType Target { get; set; }
+    public List<AbilityEffect> Effects { get; set; } = new();
+}
 
-        // The name of the ability.
-        public string Name { get; set; } = string.Empty;
-
-        // The base power of the ability (e.g., damage dealt or health restored).
-        public int Power { get; set; }
-
-        // The amount of Mana required to use this ability.
-        public int ManaCost { get; set; }
-    }
+public class AbilityEffect
+{
+    public EffectType EffectType { get; set; }
+    public Stat StatAffected { get; set; } = Stat.None;
+    public float Potency { get; set; }
+    public int Duration { get; set; }
 }
