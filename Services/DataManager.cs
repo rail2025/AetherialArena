@@ -42,7 +42,24 @@ namespace AetherialArena.Services
             if (loadedSprites == null || loadedAbilities == null) return;
 
             Abilities.AddRange(loadedAbilities);
-            if (loadedEncounters != null) Encounters.AddRange(loadedEncounters);
+
+            if (loadedEncounters != null)
+            {
+                // Post-process the loaded encounter data to merge Default into the main dictionary
+                foreach (var encounter in loadedEncounters)
+                {
+                    if (encounter.EncountersBySubLocation == null)
+                    {
+                        encounter.EncountersBySubLocation = new Dictionary<string, List<int>>();
+                    }
+                    if (encounter.Default != null && encounter.Default.Any())
+                    {
+                        encounter.EncountersBySubLocation["Default"] = encounter.Default;
+                    }
+                }
+                Encounters.AddRange(loadedEncounters);
+            }
+
 
             var detailedDataDict = detailedSpriteList?.ToDictionary(s => s.ID);
             var abilitiesDict = Abilities.ToDictionary(a => a.Name, StringComparer.OrdinalIgnoreCase);

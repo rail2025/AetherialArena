@@ -39,7 +39,7 @@ namespace AetherialArena.Core
             Plugin.Log.Info($"Searching for encounter in Territory: {currentTerritory}, Sub-Location ID: {subLocationKey ?? "None"}");
 
             var encounterData = plugin.DataManager.Encounters.FirstOrDefault(e => e.TerritoryTypeID == currentTerritory);
-            if (encounterData == null)
+            if (encounterData == null || encounterData.EncountersBySubLocation == null)
             {
                 Plugin.Log.Warning($"No encounter data found for territory {currentTerritory} in encountertables.json.");
                 plugin.PlayerProfile.CurrentAether++; // Refund Aether

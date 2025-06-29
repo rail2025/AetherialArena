@@ -3,6 +3,26 @@ using System.Text.Json.Serialization;
 
 namespace AetherialArena.Models
 {
+    public enum CombatLogColor
+    {
+        Normal,
+        Damage,
+        Heal,
+        Status
+    }
+
+    public class CombatLogEntry
+    {
+        public string Message { get; set; }
+        public CombatLogColor Color { get; set; }
+
+        public CombatLogEntry(string message, CombatLogColor color = CombatLogColor.Normal)
+        {
+            Message = message;
+            Color = color;
+        }
+    }
+
     public enum SpriteType
     {
         Figure,
@@ -30,12 +50,13 @@ namespace AetherialArena.Models
     {
         public ushort TerritoryTypeID { get; set; }
 
-        [JsonPropertyName("SpriteIDs")]
-        public List<int> DefaultSpriteIDs { set { EncountersBySubLocation["Default"] = value; } }
+        [JsonPropertyName("Default")]
+        public List<int>? Default { get; set; }
 
         [JsonPropertyName("EncountersBySubLocation")]
-        public Dictionary<string, List<int>> EncountersBySubLocation { get; set; } = new();
+        public Dictionary<string, List<int>>? EncountersBySubLocation { get; set; }
     }
+
 
     public enum TargetType
     {

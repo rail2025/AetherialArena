@@ -2,8 +2,10 @@ using AetherialArena.Core;
 using AetherialArena.Models;
 using AetherialArena.Services;
 using ImGuiNET;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace AetherialArena.UI
 {
@@ -13,12 +15,103 @@ namespace AetherialArena.UI
         private readonly AssetManager assetManager;
         private readonly DataManager dataManager;
 
+        private readonly Dictionary<CombatLogColor, uint> colorMap = new()
+        {
+            { CombatLogColor.Normal, 0xFFFFFFFF },
+            { CombatLogColor.Damage, 0xFF7979FF },
+            { CombatLogColor.Heal,   0xFF79FF79 },
+            { CombatLogColor.Status, 0xFF79FFFF }
+        };
+
         public BattleUIComponent(BattleManager battleManager, AssetManager assetManager, DataManager dataManager)
         {
             this.battleManager = battleManager;
             this.assetManager = assetManager;
             this.dataManager = dataManager;
         }
+
+        private void DrawTextWithOutline(string text, Vector2 pos, uint textColor, uint outlineColor)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            var outlineOffset = new Vector2(1, 1);
+
+            drawList.AddText(pos - outlineOffset, outlineColor, text);
+            drawList.AddText(pos + new Vector2(outlineOffset.X, -outlineOffset.Y), outlineColor, text);
+            drawList.AddText(pos + new Vector2(-outlineOffset.X, outlineOffset.Y), outlineColor, text);
+            drawList.AddText(pos + outlineOffset, outlineColor, text);
+
+            drawList.AddText(pos, textColor, text);
+        }
+
+        private void DrawWrappedOutlinedText(string text, float wrapWidth, uint color)
+        {
+            var words = text.Split(' ');
+            if (words.Length == 0) return;
+
+            var line = new StringBuilder();
+            var firstWordOfLine = true;
+
+            foreach (var word in words)
+            {
+                var tempLine = new StringBuilder(line.ToString());
+                if (!firstWordOfLine)
+                {
+                    tempLine.Append(' ');
+                }
+                tempLine.Append(word);
+
+                var lineWidth = ImGui.CalcTextSize(tempLine.ToString()).X;
+
+                if (lineWidth > wrapWidth && !firstWordOfLine)
+                {
+                    var currentLineText = line.ToString();
+                    var lineSize = ImGui.CalcTextSize(currentLineText);
+                    DrawTextWithOutline(currentLineText, ImGui.GetCursorScreenPos(), color, 0xFF000000);
+                    ImGui.Dummy(lineSize);
+                    line.Clear();
+                    line.Append(word);
+                    firstWordOfLine = true;
+                }
+                else
+                {
+                    if (!firstWordOfLine)
+                    {
+                        line.Append(' ');
+                    }
+                    line.Append(word);
+                    firstWordOfLine = false;
+                }
+            }
+
+            if (line.Length > 0)
+            {
+                var remainingText = line.ToString();
+                var lineSize = ImGui.CalcTextSize(remainingText);
+                DrawTextWithOutline(remainingText, ImGui.GetCursorScreenPos(), color, 0xFF000000);
+                ImGui.Dummy(lineSize);
+            }
+        }
+
+        private void DrawOutlinedText(string text)
+        {
+            var textSize = ImGui.CalcTextSize(text);
+            DrawTextWithOutline(text, ImGui.GetCursorScreenPos(), 0xFFFFFFFF, 0xFF000000);
+            ImGui.Dummy(textSize);
+        }
+
+        private bool DrawButtonWithOutline(string id, string text, Vector2 size, uint textColor = 0xFFFFFFFF)
+        {
+            var clicked = ImGui.Button($"##{id}", size);
+            var buttonPos = ImGui.GetItemRectMin();
+            var buttonSize = ImGui.GetItemRectSize();
+            var textSize = ImGui.CalcTextSize(text);
+            var textPos = buttonPos + (buttonSize - textSize) * 0.5f;
+
+            DrawTextWithOutline(text, textPos, textColor, 0xFF000000);
+
+            return clicked;
+        }
+
 
         public void Draw()
         {
@@ -52,7 +145,8 @@ namespace AetherialArena.UI
 
         private void DrawSpritePanel(Sprite sprite)
         {
-            ImGui.Text(sprite.Name);
+            DrawOutlinedText(sprite.Name);
+
             ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.2f, 0.8f, 0.2f, 1.0f));
             ImGui.ProgressBar((float)sprite.Health / sprite.MaxHealth, new Vector2(-1, 0), $"HP: {sprite.Health}/{sprite.MaxHealth}");
             ImGui.PopStyleColor();
@@ -76,15 +170,20 @@ namespace AetherialArena.UI
             ImGui.Dummy(new Vector2(0, 10));
             if (!battleManager.IsPlayerTurn) ImGui.BeginDisabled();
 
-            if (ImGui.Button("Attack", new Vector2(-1, 0))) { battleManager.PlayerAttack(); }
+            var buttonSize = new Vector2(-1, 0);
+            if (DrawButtonWithOutline("Attack", "Attack", buttonSize)) { battleManager.PlayerAttack(); }
+
             bool canHeal = activePlayer.Mana >= 10;
+            uint healColor = canHeal ? 0xFFFFFFFF : 0xFF8080FF;
             if (!canHeal) ImGui.BeginDisabled();
-            if (ImGui.Button("Heal", new Vector2(-1, 0))) { battleManager.PlayerHeal(); }
+            if (DrawButtonWithOutline("Heal", "Heal", buttonSize, healColor)) { battleManager.PlayerHeal(); }
             if (!canHeal) ImGui.EndDisabled();
+
             var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
             bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
+            uint specialColor = canUseSpecial ? 0xFFFFFFFF : 0xFF8080FF;
             if (!canUseSpecial) ImGui.BeginDisabled();
-            if (ImGui.Button("Special", new Vector2(-1, 0))) { battleManager.PlayerUseSpecial(); }
+            if (DrawButtonWithOutline("Special", "Special", buttonSize, specialColor)) { battleManager.PlayerUseSpecial(); }
             if (!canUseSpecial) ImGui.EndDisabled();
 
             if (!battleManager.IsPlayerTurn) ImGui.EndDisabled();
@@ -93,13 +192,13 @@ namespace AetherialArena.UI
         private void DrawReservesPanel()
         {
             ImGui.Separator();
-            ImGui.Text("Reserves:");
+            DrawOutlinedText("Reserves:");
             var activePlayer = battleManager.ActivePlayerSprite;
             if (activePlayer == null) return;
             var reserveSprites = battleManager.PlayerParty.Where(s => s.ID != activePlayer.ID).ToList();
             if (!reserveSprites.Any())
             {
-                ImGui.Text("None");
+                DrawOutlinedText("None");
                 return;
             }
             for (int i = 0; i < reserveSprites.Count; i++)
@@ -118,25 +217,34 @@ namespace AetherialArena.UI
             ImGui.Dummy(new Vector2(0, 50));
             var activePlayer = battleManager.ActivePlayerSprite;
             if (activePlayer == null) return;
-            if (battleManager.IsPlayerTurn) { ImGui.Text($"{activePlayer.Name}'s Turn."); } else { ImGui.Text("Waiting..."); }
+            var statusText = battleManager.IsPlayerTurn ? $"{activePlayer.Name}'s Turn." : "Waiting...";
+            DrawOutlinedText(statusText);
         }
 
         private void DrawCombatLog()
         {
-            ImGui.Text("Combat Log");
+            DrawOutlinedText("Combat Log");
             float logHeight = ImGui.GetTextLineHeightWithSpacing() * 6;
 
+            var childBg = ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg];
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(childBg.X, childBg.Y, childBg.Z, 0.5f));
+
             ImGui.BeginChild("CombatLogScrollingRegion", new Vector2(0, logHeight), true, ImGuiWindowFlags.HorizontalScrollbar);
-            bool isScrolledToBottom = ImGui.GetScrollY() >= ImGui.GetScrollMaxY();
-            foreach (var message in battleManager.CombatLog)
+
+            var wrapWidth = ImGui.GetContentRegionAvail().X;
+            foreach (var logEntry in battleManager.CombatLog)
             {
-                ImGui.TextWrapped(message);
+                DrawWrappedOutlinedText(logEntry.Message, wrapWidth, colorMap[logEntry.Color]);
             }
-            if (isScrolledToBottom)
+
+            if (battleManager.ShouldScrollLog)
             {
-                ImGui.SetScrollY(ImGui.GetScrollMaxY());
+                ImGui.SetScrollHereY(1.0f);
+                battleManager.ConsumeScrollLogTrigger();
             }
+
             ImGui.EndChild();
+            ImGui.PopStyleColor();
         }
     }
 }

@@ -2,28 +2,28 @@
     {
         "ID": 1,
         "Name": "Empower",
-        "Description": "Increases Attack by 15% for 3 turns.",
+        "Description": "Increases Attack by 25% for 4 turns.",
         "ManaCost": 15,
         "Target": "Self",
         "Effects": [
             {
                 "EffectType": "StatBuff",
                 "StatAffected": "Attack",
-                "Potency": 1.15,
-                "Duration": 3
+                "Potency": 1.25,
+                "Duration": 4
             }
         ]
     },
     {
         "ID": 2,
         "Name": "Regen",
-        "Description": "Heals for 30 HP over 3 turns.",
+        "Description": "Heals for 60 HP over 3 turns.",
         "ManaCost": 20,
         "Target": "Self",
         "Effects": [
             {
                 "EffectType": "Heal",
-                "Potency": 10,
+                "Potency": 20,
                 "Duration": 3
             }
         ]
@@ -46,7 +46,7 @@
     {
         "ID": 4,
         "Name": "Haste",
-        "Description": "Increases Speed by 25% for 3 turns.",
+        "Description": "Increases Speed by 25% for 4 turns.",
         "ManaCost": 10,
         "Target": "Self",
         "Effects": [
@@ -54,21 +54,21 @@
                 "EffectType": "StatBuff",
                 "StatAffected": "Speed",
                 "Potency": 1.25,
-                "Duration": 3
+                "Duration": 4
             }
         ]
     },
     {
         "ID": 5,
         "Name": "Stun",
-        "Description": "Chance to cause the opponent to lose their next 2 turns.",
+        "Description": "Chance to cause the opponent to lose their next 4 turns.",
         "ManaCost": 18,
         "Target": "Enemy",
         "Effects": [
             {
                 "EffectType": "Stun",
                 "Potency": 0.75,
-                "Duration": 2
+                "Duration": 4
             }
         ]
     }
