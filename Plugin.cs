@@ -11,6 +11,7 @@ using AetherialArena.UI;
 using System.Diagnostics;
 using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Game.ClientState.Conditions;
+using AetherialArena.Audio;
 
 namespace AetherialArena
 {
@@ -34,6 +35,7 @@ namespace AetherialArena
         public readonly EncounterManager EncounterManager;
         public readonly AssetManager AssetManager;
         public readonly PlayerProfile PlayerProfile;
+        public readonly AudioManager AudioManager;
         public readonly BattleUIComponent BattleUIComponent;
         public readonly IPluginManifest PluginManifest;
 
@@ -60,12 +62,16 @@ namespace AetherialArena
             this.Configuration.Initialize(PluginInterface);
             this.AssetManager = new AssetManager(PluginInterface, TextureProvider);
 
+            this.AudioManager = new AudioManager(this);
+
+            this.AssetManager = new AssetManager(PluginInterface, TextureProvider);
+
             this.DataManager = new DataManager();
             this.SaveManager = new SaveManager();
             this.PlayerProfile = this.SaveManager.LoadProfile();
             this.BattleManager = new BattleManager(this,Framework);
             this.EncounterManager = new EncounterManager(this);
-            this.BattleUIComponent = new BattleUIComponent(this.BattleManager, this.AssetManager, this.DataManager);
+            this.BattleUIComponent = new BattleUIComponent(this);
 
             this.HubWindow = new HubWindow(this);
             this.TitleWindow = new TitleWindow(this);
@@ -107,6 +113,7 @@ namespace AetherialArena
         {
             this.SaveManager.SaveProfile(this.PlayerProfile);
             this.AssetManager.Dispose();
+            this.AudioManager.Dispose();
             Framework.Update -= OnFrameworkUpdate;
             WindowSystem.RemoveAllWindows();
             CommandManager.RemoveHandler("/aarena");

@@ -5,6 +5,7 @@ using AetherialArena.Core;
 using AetherialArena.UI;
 using ImGuiNET;
 using AetherialArena.Services;
+using System.Threading.Tasks; // Added for audio
 
 namespace AetherialArena.Windows
 {
@@ -13,9 +14,11 @@ namespace AetherialArena.Windows
         private readonly BattleManager battleManager;
         private readonly BattleUIComponent battleUIComponent;
         private readonly AssetManager assetManager;
+        private readonly Plugin plugin; // Added for audio
 
         public MainWindow(Plugin plugin, BattleUIComponent battleUIComponent) : base("Aetherial Arena Battle")
         {
+            this.plugin = plugin; // Added for audio
             this.battleManager = plugin.BattleManager;
             this.battleUIComponent = battleUIComponent;
             this.assetManager = plugin.AssetManager;
@@ -25,6 +28,18 @@ namespace AetherialArena.Windows
         }
 
         public void Dispose() { }
+
+        // Added for audio
+        public override void OnOpen()
+        {
+            plugin.AudioManager.PlayMusic("fightmusic.mp3", true, 0.5f);
+        }
+
+        // Added for audio
+        public override void OnClose()
+        {
+            // The music transition is handled by button clicks now to ensure proper flow
+        }
 
         public override void Draw()
         {
@@ -68,6 +83,12 @@ namespace AetherialArena.Windows
 
             if (ImGui.Button(buttonText))
             {
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+                // Stop battle music and play title music
+                Task.Run(async () => {
+                    await plugin.AudioManager.StopMusic(0.25f);
+                    plugin.AudioManager.PlayMusic("titlemusic.mp3", true, 1.0f);
+                });
                 battleManager.EndBattle();
             }
         }

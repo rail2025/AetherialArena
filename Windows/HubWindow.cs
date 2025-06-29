@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using AetherialArena.Models;
 using AetherialArena.Services;
 using Dalamud.Interface.Windowing;
@@ -88,7 +89,13 @@ namespace AetherialArena.Windows
             }
             if (ImGui.Button("Search for Sprite", buttonSize))
             {
-                plugin.QueueEncounterSearch();
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+                Task.Run(async () => {
+                    await plugin.AudioManager.StopMusic(1.0f);
+                    plugin.AudioManager.PlaySfx("encountersearch.wav"); 
+                    await Task.Delay(1500); // Wait for the sfx to play
+                    plugin.QueueEncounterSearch();
+                });
             }
 
             ImGui.Spacing();

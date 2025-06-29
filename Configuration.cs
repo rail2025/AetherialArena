@@ -1,6 +1,7 @@
 using Dalamud.Configuration;
 using Dalamud.Plugin;
 using System;
+using System.Text.Json.Serialization;
 
 namespace AetherialArena
 {
@@ -9,11 +10,16 @@ namespace AetherialArena
     {
         public int Version { get; set; } = 0;
 
-        // Properties from the sample file that ConfigWindow expects
         public bool IsConfigWindowMovable { get; set; } = true;
         public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
 
-        [NonSerialized]
+        // New Audio Settings
+        public bool IsBgmMuted { get; set; } = false;
+        public bool IsSfxMuted { get; set; } = false;
+        public float MusicVolume { get; set; } = 0.5f;
+        public float SfxVolume { get; set; } = 0.8f;
+
+        [JsonIgnore]
         private IDalamudPluginInterface? pluginInterface;
 
         public void Initialize(IDalamudPluginInterface pInterface)

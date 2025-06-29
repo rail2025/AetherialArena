@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/12.0.2">
   <PropertyGroup>
-    <Version>0.4.0.0</Version>
+    <Version>0.5.0.0</Version>
     <Description>A collectable battling mini game</Description>
     <PackageProjectUrl>https://github.com/rail2025/AetherialArena</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -13,6 +13,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Music\titlemusic.mp3" />
+    <EmbeddedResource Include="Assets\Sfx\capture.mp3" />
+    <EmbeddedResource Include="Assets\Sfx\heal.mp3" />
+    <EmbeddedResource Include="Assets\Sfx\victory.mp3" />
     <EmbeddedResource Include="Assets\Backgrounds\background1.png" />
     <EmbeddedResource Include="Assets\Backgrounds\background2.png" />
     <EmbeddedResource Include="Assets\Backgrounds\background3.png" />
@@ -43,15 +47,13 @@
     <EmbeddedResource Include="Assets\Data\encountertables.json" />
     <EmbeddedResource Include="Assets\Data\sprites.json" />
     <EmbeddedResource Include="Assets\Icons\badger_base.png" />
-    <EmbeddedResource Include="Assets\Sounds\capture.wav" />
-    <EmbeddedResource Include="Assets\Sounds\encounterfound.wav" />
-    <EmbeddedResource Include="Assets\Sounds\encountersearch.wav" />
-    <EmbeddedResource Include="Assets\Sounds\fightmusic.mp3" />
-    <EmbeddedResource Include="Assets\Sounds\heal.wav" />
-    <EmbeddedResource Include="Assets\Sounds\hit.wav" />
-    <EmbeddedResource Include="Assets\Sounds\ko.wav" />
-    <EmbeddedResource Include="Assets\Sounds\menuselect.wav" />
-    <EmbeddedResource Include="Assets\Sounds\victory.wav" />
+    <EmbeddedResource Include="Assets\Sfx\encounterfound.wav" />
+    <EmbeddedResource Include="Assets\Sfx\encountersearch.wav" />
+    <EmbeddedResource Include="Assets\Music\fightmusic.mp3" />
+    <EmbeddedResource Include="Assets\Sfx\heal.wav" />
+    <EmbeddedResource Include="Assets\Sfx\hit.wav" />
+    <EmbeddedResource Include="Assets\Sfx\ko.wav" />
+    <EmbeddedResource Include="Assets\Sfx\menuselect.wav" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.6" />
   </ItemGroup>

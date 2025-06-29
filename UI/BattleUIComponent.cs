@@ -11,6 +11,7 @@ namespace AetherialArena.UI
 {
     public class BattleUIComponent
     {
+        private readonly Plugin plugin;
         private readonly BattleManager battleManager;
         private readonly AssetManager assetManager;
         private readonly DataManager dataManager;
@@ -23,11 +24,12 @@ namespace AetherialArena.UI
             { CombatLogColor.Status, 0xFF79FFFF }
         };
 
-        public BattleUIComponent(BattleManager battleManager, AssetManager assetManager, DataManager dataManager)
+        public BattleUIComponent(Plugin plugin)
         {
-            this.battleManager = battleManager;
-            this.assetManager = assetManager;
-            this.dataManager = dataManager;
+            this.plugin = plugin;
+            this.battleManager = plugin.BattleManager;
+            this.assetManager = plugin.AssetManager;
+            this.dataManager = plugin.DataManager;
         }
 
         private void DrawTextWithOutline(string text, Vector2 pos, uint textColor, uint outlineColor)
@@ -102,6 +104,10 @@ namespace AetherialArena.UI
         private bool DrawButtonWithOutline(string id, string text, Vector2 size, uint textColor = 0xFFFFFFFF)
         {
             var clicked = ImGui.Button($"##{id}", size);
+            if (clicked)
+            {
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+            }
             var buttonPos = ImGui.GetItemRectMin();
             var buttonSize = ImGui.GetItemRectSize();
             var textSize = ImGui.CalcTextSize(text);
@@ -112,12 +118,35 @@ namespace AetherialArena.UI
             return clicked;
         }
 
+        
+        private bool DrawCheckboxWithOutline(string id, string text, ref bool isChecked)
+        {
+            var clicked = ImGui.Checkbox($"##{id}", ref isChecked);
+            if (clicked)
+            {
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+            }
+
+            ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
+
+            var textPos = ImGui.GetCursorScreenPos();
+            textPos.Y += (ImGui.GetFrameHeight() - ImGui.GetTextLineHeight()) / 2;
+            DrawTextWithOutline(text, textPos, 0xFFFFFFFF, 0xFF000000);
+
+            ImGui.SameLine(0, ImGui.CalcTextSize(text).X + ImGui.GetStyle().ItemSpacing.X);
+            // Add a dummy to take up vertical space
+            ImGui.Dummy(new Vector2(0, ImGui.GetFrameHeight()));
+
+            return clicked;
+        }
 
         public void Draw()
         {
             DrawMainBattleInterface();
             ImGui.Separator();
             DrawCombatLog();
+            ImGui.Separator();
+            DrawFooterControls();
         }
 
         private void DrawMainBattleInterface()
@@ -145,6 +174,8 @@ namespace AetherialArena.UI
 
         private void DrawSpritePanel(Sprite sprite)
         {
+            var isOpponent = battleManager.OpponentSprite == sprite;
+
             DrawOutlinedText(sprite.Name);
 
             ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.2f, 0.8f, 0.2f, 1.0f));
@@ -161,8 +192,32 @@ namespace AetherialArena.UI
             ImGui.PopStyleColor();
 
             var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey, true);
-            if (icon != null) ImGui.Image(icon.ImGuiHandle, new Vector2(100, 100));
-            else ImGui.Dummy(new Vector2(100, 100));
+            if (icon != null)
+            {
+                var iconSize = new Vector2(100, 100);
+
+                // Define UV coordinates for flipping
+                var uv0 = new Vector2(0, 0); // Default Top-Left
+                var uv1 = new Vector2(1, 1); // Default Bottom-Right
+
+                if (isOpponent)
+                {
+                    // To flip horizontally, swap the X coordinates
+                    uv0.X = 1;
+                    uv1.X = 0;
+
+                    // Align the icon to the right of its column
+                    var panelWidth = ImGui.GetColumnWidth();
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + panelWidth - iconSize.X - ImGui.GetStyle().CellPadding.X);
+                }
+
+                // Draw the image using the potentially modified UV coordinates
+                ImGui.Image(icon.ImGuiHandle, iconSize, uv0, uv1);
+            }
+            else
+            {
+                ImGui.Dummy(new Vector2(100, 100));
+            }
         }
 
         private void DrawActionButtons(Sprite activePlayer)
@@ -224,7 +279,7 @@ namespace AetherialArena.UI
         private void DrawCombatLog()
         {
             DrawOutlinedText("Combat Log");
-            float logHeight = ImGui.GetTextLineHeightWithSpacing() * 6;
+            float logHeight = ImGui.GetTextLineHeightWithSpacing() * 5;
 
             var childBg = ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg];
             ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(childBg.X, childBg.Y, childBg.Z, 0.5f));
@@ -245,6 +300,51 @@ namespace AetherialArena.UI
 
             ImGui.EndChild();
             ImGui.PopStyleColor();
+        }
+
+        private void DrawFooterControls()
+        {
+            var fleeText = "Flee combat and lose aether";
+            var fleeButtonSize = ImGui.CalcTextSize(fleeText) + ImGui.GetStyle().FramePadding * 2;
+
+            // Draw the Flee button and let it take its natural size
+            if (DrawButtonWithOutline("Flee", fleeText, new Vector2(fleeButtonSize.X, 0)))
+            {
+                battleManager.FleeBattle();
+            }
+
+            // --- Right-align the checkbox group ---
+            var musicText = "Mute Music";
+            var sfxText = "Mute SFX";
+
+            // Calculate the total width needed for the checkboxes on the right
+            var musicCheckWidth = ImGui.CalcTextSize(musicText).X + ImGui.GetFrameHeightWithSpacing() + ImGui.GetStyle().ItemInnerSpacing.X;
+            var sfxCheckWidth = ImGui.CalcTextSize(sfxText).X + ImGui.GetFrameHeightWithSpacing() + ImGui.GetStyle().ItemInnerSpacing.X;
+            var totalCheckboxWidth = musicCheckWidth + sfxCheckWidth + ImGui.GetStyle().ItemSpacing.X;
+
+            // Use SameLine to move to the same line as the flee button, then set the X position
+            // to align the start of the checkbox group to the right edge of the window.
+            ImGui.SameLine(ImGui.GetWindowContentRegionMax().X - totalCheckboxWidth);
+
+            ImGui.BeginGroup();
+
+            bool musicMuted = plugin.Configuration.IsBgmMuted;
+            if (DrawCheckboxWithOutline("MuteMusicBattle", musicText, ref musicMuted))
+            {
+                plugin.Configuration.IsBgmMuted = musicMuted;
+                plugin.Configuration.Save();
+                plugin.AudioManager.UpdateBgmState();
+            }
+
+            ImGui.SameLine();
+
+            bool sfxMuted = plugin.Configuration.IsSfxMuted;
+            if (DrawCheckboxWithOutline("MuteSfxBattle", sfxText, ref sfxMuted))
+            {
+                plugin.Configuration.IsSfxMuted = sfxMuted;
+                plugin.Configuration.Save();
+            }
+            ImGui.EndGroup();
         }
     }
 }

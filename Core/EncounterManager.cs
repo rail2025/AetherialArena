@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Dalamud.Game.ClientState.Conditions;
+using System.Threading.Tasks; // Added for audio
 
 namespace AetherialArena.Core
 {
@@ -92,9 +93,9 @@ namespace AetherialArena.Core
 
             var opponentData = weightedList[random.Next(weightedList.Count)];
 
-            // --- MODIFIED BATTLE START LOGIC ---
-            // The old method of sending a single sprite is replaced.
-            // We now send the player's current loadout and the opponent's ID.
+            // Added for audio
+            plugin.AudioManager.PlaySfx("encounterfound.wav");
+
             plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, opponentData.ID);
 
             plugin.HubWindow.IsOpen = false;

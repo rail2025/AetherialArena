@@ -3,6 +3,8 @@ using Dalamud.Plugin.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using AetherialArena.Audio;
 
 namespace AetherialArena.Core
 {
@@ -19,6 +21,7 @@ namespace AetherialArena.Core
 
         private readonly Plugin plugin;
         private readonly IFramework framework;
+        private readonly AudioManager audioManager;
         private readonly Random random = new();
         private double actionDelay = 0;
         private const int HEAL_MANA_COST = 10;
@@ -55,6 +58,7 @@ namespace AetherialArena.Core
         {
             this.plugin = p;
             this.framework = framework;
+            this.audioManager = p.AudioManager;
         }
 
         public void ConsumeScrollLogTrigger() => ShouldScrollLog = false;
@@ -97,6 +101,20 @@ namespace AetherialArena.Core
             State = BattleState.InProgress;
             ActingSprite = null;
             AddToLog($"A wild {OpponentSprite?.Name} appears!");
+        }
+
+        public void FleeBattle()
+        {
+            AddToLog("You fled from the battle and lost some aether.");
+            plugin.PlayerProfile.CurrentAether = Math.Max(0, plugin.PlayerProfile.CurrentAether - 1);
+            plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
+
+            Task.Run(async () => {
+                await audioManager.StopMusic(0.5f);
+                audioManager.PlayMusic("titlemusic.mp3", true, 1.0f);
+            });
+
+            EndBattle();
         }
 
         public void EndBattle()
@@ -186,7 +204,7 @@ namespace AetherialArena.Core
         }
 
         public void PlayerAttack() => ExecutePlayerAction(p => { if (OpponentSprite == null) return; var r = CalculateDamage(p, OpponentSprite); OpponentSprite.Health -= r.Damage; LogAttackResult(p, OpponentSprite, r); });
-        public void PlayerHeal() => ExecutePlayerAction(p => { if (p.Mana < HEAL_MANA_COST) return; p.Mana -= HEAL_MANA_COST; int h = (int)(p.Attack * 1.5f); p.Health = Math.Min(p.MaxHealth, p.Health + h); AddToLog($"{p.Name} heals for {h} HP.", CombatLogColor.Heal); });
+        public void PlayerHeal() => ExecutePlayerAction(p => { if (p.Mana < HEAL_MANA_COST) return; p.Mana -= HEAL_MANA_COST; int h = (int)(p.Attack * 1.5f); p.Health = Math.Min(p.MaxHealth, p.Health + h); AddToLog($"{p.Name} heals for {h} HP.", CombatLogColor.Heal); audioManager.PlaySfx("heal.wav"); });
         public void PlayerUseSpecial() => ExecutePlayerAction(p => { if (OpponentSprite == null) return; var a = plugin.DataManager.GetAbility(p.SpecialAbilityID); if (a == null || p.Mana < a.ManaCost) return; p.Mana -= a.ManaCost; AddToLog($"{p.Name} uses {a.Name}!", CombatLogColor.Status); ApplyAbility(p, OpponentSprite, a); });
 
         private void AITurn()
@@ -214,6 +232,7 @@ namespace AetherialArena.Core
                 int healAmount = (int)(aiSprite.Attack * 1.5f);
                 aiSprite.Health = Math.Min(aiSprite.MaxHealth, aiSprite.Health + healAmount);
                 AddToLog($"{aiSprite.Name} heals for {healAmount} HP.", CombatLogColor.Heal);
+                audioManager.PlaySfx("heal.wav");
             }
             else if (hpPercent <= 0.30f && canAffordSpecial && specialAbility != null)
             {
@@ -227,6 +246,7 @@ namespace AetherialArena.Core
                 int healAmount = (int)(aiSprite.Attack * 1.5f);
                 aiSprite.Health = Math.Min(aiSprite.MaxHealth, aiSprite.Health + healAmount);
                 AddToLog($"{aiSprite.Name} heals for {healAmount} HP.", CombatLogColor.Heal);
+                audioManager.PlaySfx("heal.wav");
             }
             else if (hpPercent <= 0.75f && canAffordSpecial && specialAbility != null)
             {
@@ -291,11 +311,11 @@ namespace AetherialArena.Core
             }
         }
 
-        private void ApplyInstantEffect(AbilityEffect e, Sprite t) { if (e.EffectType == EffectType.Damage) { t.Health -= (int)e.Potency; AddToLog($"{t.Name} takes {e.Potency} damage.", CombatLogColor.Damage); } else if (e.EffectType == EffectType.Heal) { t.Health = Math.Min(t.MaxHealth, t.Health + (int)e.Potency); AddToLog($"{t.Name} heals for {e.Potency} HP.", CombatLogColor.Heal); } }
+        private void ApplyInstantEffect(AbilityEffect e, Sprite t) { if (e.EffectType == EffectType.Damage) { t.Health -= (int)e.Potency; AddToLog($"{t.Name} takes {e.Potency} damage.", CombatLogColor.Damage); audioManager.PlaySfx("hit.wav"); } else if (e.EffectType == EffectType.Heal) { t.Health = Math.Min(t.MaxHealth, t.Health + (int)e.Potency); AddToLog($"{t.Name} heals for {e.Potency} HP.", CombatLogColor.Heal); audioManager.PlaySfx("heal.wav"); } }
         private float GetTypeAdvantageMultiplier(SpriteType a, SpriteType d) { if (a == SpriteType.Mechanical || d == SpriteType.Mechanical) return 1.0f; if (a == SpriteType.Figure && d == SpriteType.Beast || a == SpriteType.Beast && d == SpriteType.Creature || a == SpriteType.Creature && d == SpriteType.Figure) return 1.5f; if (a == SpriteType.Beast && d == SpriteType.Figure || a == SpriteType.Creature && d == SpriteType.Beast || a == SpriteType.Figure && d == SpriteType.Creature) return 0.75f; return 1.0f; }
         private float GetElementalMultiplier(Sprite a, Sprite d) { float m = 1.0f; if (!a.AttackType.Any()) return m; var w = new HashSet<string>(d.Weaknesses, StringComparer.OrdinalIgnoreCase); var r = new HashSet<string>(d.Resistances, StringComparer.OrdinalIgnoreCase); foreach (var t in a.AttackType) { if (w.Contains(t)) m *= 1.5f; if (r.Contains(t)) m *= 0.5f; } return m; }
         private DamageResult CalculateDamage(Sprite a, Sprite d) { float am = GetStatMultiplier(a, Stat.Attack); float dm = GetStatMultiplier(d, Stat.Defense); float tm = GetTypeAdvantageMultiplier(a.Type, d.Type); float em = GetElementalMultiplier(a, d); int ba = (int)(a.Attack * am); int ea = (int)(ba * tm * em); int fd = (int)(d.Defense * dm); return new DamageResult { Damage = Math.Max(1, ea - fd), IsSuperEffective = tm > 1.0f || em > 1.0f, IsIneffective = tm < 1.0f || em < 1.0f }; }
-        private void LogAttackResult(Sprite a, Sprite d, DamageResult r) { var t = a.AttackType.Any() ? string.Join(" & ", a.AttackType) : "physical"; AddToLog($"{a.Name} attacks with {t} damage."); if (r.IsSuperEffective && !r.IsIneffective) AddToLog("It's super effective!", CombatLogColor.Status); if (r.IsIneffective && !r.IsSuperEffective) AddToLog("It's not very effective...", CombatLogColor.Status); AddToLog($"{d.Name} takes {r.Damage} damage.", CombatLogColor.Damage); }
+        private void LogAttackResult(Sprite a, Sprite d, DamageResult r) { var t = a.AttackType.Any() ? string.Join(" & ", a.AttackType) : "physical"; AddToLog($"{a.Name} attacks with {t} damage."); if (r.IsSuperEffective && !r.IsIneffective) AddToLog("It's super effective!", CombatLogColor.Status); if (r.IsIneffective && !r.IsSuperEffective) AddToLog("It's not very effective...", CombatLogColor.Status); AddToLog($"{d.Name} takes {r.Damage} damage.", CombatLogColor.Damage); audioManager.PlaySfx("hit.wav"); }
         private void AddToLog(string m, CombatLogColor color = CombatLogColor.Normal) { CombatLog.Add(new CombatLogEntry(m, color)); if (CombatLog.Count > 50) CombatLog.RemoveAt(0); ShouldScrollLog = true; }
 
         private void TickDownEffects(Sprite s)
@@ -308,6 +328,7 @@ namespace AetherialArena.Core
                 int healAmount = (int)activeEffect.Effect.Potency;
                 s.Health = Math.Min(s.MaxHealth, s.Health + healAmount);
                 AddToLog($"{s.Name} is healed for {healAmount} HP by {activeEffect.SourceAbilityName}.", CombatLogColor.Heal);
+                audioManager.PlaySfx("heal.wav");
             }
 
             for (int i = effectsForSprite.Count - 1; i >= 0; i--)
@@ -343,8 +364,8 @@ namespace AetherialArena.Core
         }
 
         private bool IsStunned(Sprite s) => activeEffects.ContainsKey(s) && activeEffects[s].Any(e => e.Effect.EffectType == EffectType.Stun);
-        private void CheckForWinner() { if (OpponentSprite != null && OpponentSprite.Health <= 0) { OpponentSprite.Health = 0; State = BattleState.PlayerVictory; AddToLog($"{OpponentSprite.Name} was defeated!"); HandleVictory(); } else if (!PlayerParty.Any(s => s.Health > 0)) { State = BattleState.OpponentVictory; AddToLog("Your party was defeated."); } }
-        private void HandleVictory() { if (OpponentSprite == null || plugin.PlayerProfile.AttunedSpriteIDs.Contains(OpponentSprite.ID)) return; int n = OpponentSprite.Rarity switch { RarityTier.Uncommon => 3, RarityTier.Rare => 5, _ => 1, }; plugin.PlayerProfile.DefeatCounts.TryGetValue(OpponentSprite.ID, out var c); c++; if (c >= n) { AddToLog($"You have captured {OpponentSprite.Name}!"); plugin.PlayerProfile.AttunedSpriteIDs.Add(OpponentSprite.ID); plugin.PlayerProfile.DefeatCounts.Remove(OpponentSprite.ID); int ma = Math.Min(20, 10 + (plugin.PlayerProfile.AttunedSpriteIDs.Count / 5)); if (ma > plugin.PlayerProfile.MaxAether) { plugin.PlayerProfile.MaxAether = ma; plugin.PlayerProfile.CurrentAether++; } } else { AddToLog($"Defeat progress: {c}/{n}"); plugin.PlayerProfile.DefeatCounts[OpponentSprite.ID] = c; } plugin.SaveManager.SaveProfile(plugin.PlayerProfile); }
+        private void CheckForWinner() { if (State != BattleState.InProgress) return; if (OpponentSprite != null && OpponentSprite.Health <= 0) { OpponentSprite.Health = 0; State = BattleState.PlayerVictory; AddToLog($"{OpponentSprite.Name} was defeated!"); audioManager.PlaySfxAndInterruptMusic("victory.mp3"); HandleVictory(); } else if (!PlayerParty.Any(s => s.Health > 0)) { State = BattleState.OpponentVictory; AddToLog("Your party was defeated."); audioManager.PlaySfxAndInterruptMusic("ko.wav"); } }
+        private void HandleVictory() { if (OpponentSprite == null || plugin.PlayerProfile.AttunedSpriteIDs.Contains(OpponentSprite.ID)) return; int n = OpponentSprite.Rarity switch { RarityTier.Uncommon => 3, RarityTier.Rare => 5, _ => 1, }; plugin.PlayerProfile.DefeatCounts.TryGetValue(OpponentSprite.ID, out var c); c++; if (c >= n) { AddToLog($"You have captured {OpponentSprite.Name}!"); audioManager.PlaySfxAndInterruptMusic("capture.mp3"); plugin.PlayerProfile.AttunedSpriteIDs.Add(OpponentSprite.ID); plugin.PlayerProfile.DefeatCounts.Remove(OpponentSprite.ID); int ma = Math.Min(20, 10 + (plugin.PlayerProfile.AttunedSpriteIDs.Count / 5)); if (ma > plugin.PlayerProfile.MaxAether) { plugin.PlayerProfile.MaxAether = ma; plugin.PlayerProfile.CurrentAether++; } } else { AddToLog($"Defeat progress: {c}/{n}"); plugin.PlayerProfile.DefeatCounts[OpponentSprite.ID] = c; } plugin.SaveManager.SaveProfile(plugin.PlayerProfile); }
         private float GetStatMultiplier(Sprite s, Stat st) { float m = 1.0f; if (activeEffects.TryGetValue(s, out var e)) { foreach (var ae in e.Where(x => x.Effect.StatAffected == st)) { m *= ae.Effect.Potency; } } return m; }
     }
 }

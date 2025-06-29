@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
+using System.Threading.Tasks;
 using AetherialArena.Services;
-using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -11,21 +11,30 @@ namespace AetherialArena.Windows
     {
         private readonly Plugin plugin;
         private readonly AssetManager assetManager;
-        
-
-        private bool musicMuted = false;
-        private bool sfxMuted = false;
 
         public TitleWindow(Plugin plugin) : base("Aetherial Arena###AetherialArenaTitleWindow")
         {
             this.plugin = plugin;
             this.assetManager = plugin.AssetManager;
 
-            // Set a fallback size, the Draw method will resize it later
             this.Size = new Vector2(600, 425);
             this.SizeCondition = ImGuiCond.FirstUseEver;
 
             this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
+        }
+
+        public override void OnOpen()
+        {
+            plugin.AudioManager.PlayMusic("titlemusic.mp3", true, 1.0f);
+        }
+
+        public override void OnClose()
+        {
+            // Stop music only if the main battle window isn't opening
+            if (!plugin.MainWindow.IsOpen)
+            {
+                Task.Run(() => plugin.AudioManager.StopMusic(1.0f));
+            }
         }
 
 
@@ -38,7 +47,6 @@ namespace AetherialArena.Windows
             ImGui.PushStyleColor(ImGuiCol.WindowBg, 0);
             if (backgroundTexture != null)
             {
-                // Once the texture is loaded, dynamically set the window size
                 ImGui.SetWindowSize(new Vector2(backgroundTexture.Width, backgroundTexture.Height));
 
                 var windowPos = ImGui.GetWindowPos();
@@ -98,11 +106,21 @@ namespace AetherialArena.Windows
 
             ImGui.Spacing();
 
-            DrawCheckboxWithOutline("MuteMusic", "Mute Music", ref musicMuted);
+            bool musicMuted = plugin.Configuration.IsBgmMuted;
+            if (DrawCheckboxWithOutline("MuteMusic", "Mute Music", ref musicMuted))
+            {
+                plugin.Configuration.IsBgmMuted = musicMuted;
+                plugin.Configuration.Save();
+            }
 
             ImGui.Spacing();
 
-            DrawCheckboxWithOutline("MuteSFX", "Mute SFX", ref sfxMuted);
+            bool sfxMuted = plugin.Configuration.IsSfxMuted;
+            if (DrawCheckboxWithOutline("MuteSFX", "Mute SFX", ref sfxMuted))
+            {
+                plugin.Configuration.IsSfxMuted = sfxMuted;
+                plugin.Configuration.Save();
+            }
 
             ImGui.EndGroup();
 
@@ -125,28 +143,39 @@ namespace AetherialArena.Windows
         private bool DrawButtonWithOutline(string id, string text, Vector2 size)
         {
             var clicked = ImGui.Button($"##{id}", size);
+            if (clicked)
+            {
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+            }
             var buttonPos = ImGui.GetItemRectMin();
             var buttonSize = ImGui.GetItemRectSize();
             var textSize = ImGui.CalcTextSize(text);
-            var textPos = buttonPos + new Vector2(buttonSize.X - textSize.X, buttonSize.Y - textSize.Y) * 0.5f;
+            var textPos = buttonPos + (buttonSize - textSize) * 0.5f;
 
             DrawTextWithOutline(text, textPos, 0xFFFFFFFF, 0xFF000000);
 
             return clicked;
         }
 
-        private void DrawCheckboxWithOutline(string id, string text, ref bool value)
+        private bool DrawCheckboxWithOutline(string id, string text, ref bool isChecked)
         {
             var startPos = ImGui.GetCursorScreenPos();
 
-            ImGui.Checkbox($"##{id}", ref value);
+            bool clicked = ImGui.Checkbox($"##{id}", ref isChecked);
+            if (clicked)
+            {
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+            }
+
             ImGui.SameLine();
 
             var labelPos = ImGui.GetCursorScreenPos();
             labelPos.Y = startPos.Y + (ImGui.GetFrameHeight() - ImGui.CalcTextSize(text).Y) / 2;
             DrawTextWithOutline(text, labelPos, 0xFFFFFFFF, 0xFF000000);
 
-            ImGui.SetCursorScreenPos(new Vector2(startPos.X, startPos.Y + ImGui.GetFrameHeight()));
+            ImGui.Dummy(new Vector2(0, ImGui.GetFrameHeight()));
+
+            return clicked;
         }
     }
 }
