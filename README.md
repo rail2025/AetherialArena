@@ -1,4 +1,7 @@
 # AetherialArena
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/rail2025/aetherialarena/total) <br>
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/rail2025/aetherialarena/latest/total)
+
 Aetherial Arena is a mini game Dalamud plugin for FFXIV
 ![title](https://github.com/user-attachments/assets/59d42ee1-defb-427e-a000-314e702cb300)
 
