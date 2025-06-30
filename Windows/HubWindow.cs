@@ -33,11 +33,22 @@ namespace AetherialArena.Windows
             this.dataManager = plugin.DataManager;
 
             this.Size = new Vector2(300, 400);
-            this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+            this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
         }
 
+        public override void OnClose()
+        {
+            Task.Run(() => plugin.AudioManager.StopMusic(0.5f));
+        }
         public override void PreDraw()
         {
+            Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
+            Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+
+            if (plugin.Configuration.LockAllWindows)
+            {
+                Flags |= ImGuiWindowFlags.NoMove;
+            }
             // Reset state if the window is closed and re-opened
             if (!IsOpen)
             {
@@ -51,12 +62,67 @@ namespace AetherialArena.Windows
             this.statusMessage = message;
         }
 
+        private void DrawTextWithOutline(string text, Vector2 pos, uint textColor, uint outlineColor)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            var outlineOffset = new Vector2(1, 1);
+
+            // Draw outline
+            drawList.AddText(pos - outlineOffset, outlineColor, text);
+            drawList.AddText(pos + new Vector2(outlineOffset.X, -outlineOffset.Y), outlineColor, text);
+            drawList.AddText(pos + new Vector2(-outlineOffset.X, outlineOffset.Y), outlineColor, text);
+            drawList.AddText(pos + outlineOffset, outlineColor, text);
+
+            // Draw main text
+            drawList.AddText(pos, textColor, text);
+        }
+
+        private bool DrawButtonWithOutline(string id, string text, Vector2 size)
+        {
+            var clicked = ImGui.Button($"##{id}", size);
+            if (clicked)
+            {
+                plugin.AudioManager.PlaySfx("menuselect.wav");
+            }
+            var buttonPos = ImGui.GetItemRectMin();
+            var buttonSize = ImGui.GetItemRectSize();
+            var textSize = ImGui.CalcTextSize(text);
+            var textPos = buttonPos + (buttonSize - textSize) * 0.5f;
+
+            DrawTextWithOutline(text, textPos, 0xFFFFFFFF, 0xFF000000);
+
+            return clicked;
+        }
+
+        private void DrawOutlinedText(string text)
+        {
+            var cursorPos = ImGui.GetCursorScreenPos();
+            DrawTextWithOutline(text, cursorPos, 0xFFFFFFFF, 0xFF000000);
+            ImGui.Dummy(ImGui.CalcTextSize(text)); // Advance cursor
+        }
+
         public override void Draw()
         {
-            ImGui.Text($"Player Level: {plugin.PlayerProfile.AttunedSpriteIDs.Count}");
-            ImGui.SameLine();
-            ImGui.SetCursorPosX(ImGui.GetWindowWidth() - 100);
-            ImGui.Text($"Aether: {plugin.PlayerProfile.CurrentAether} / {plugin.PlayerProfile.MaxAether}");
+            var backgroundTexture = this.assetManager.GetIcon("hubbackground.png");
+            if (backgroundTexture != null)
+            {
+                var windowPos = ImGui.GetWindowPos();
+                var windowSize = ImGui.GetWindowSize();
+                ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
+            }
+
+            var playerLevelText = $"Player Level: {plugin.PlayerProfile.AttunedSpriteIDs.Count}";
+            var aetherText = $"Aether Stamina: {plugin.PlayerProfile.CurrentAether} / {plugin.PlayerProfile.MaxAether}";
+
+            // Draw outlined text manually to handle positioning
+            var levelTextSize = ImGui.CalcTextSize(playerLevelText);
+            DrawTextWithOutline(playerLevelText, ImGui.GetCursorScreenPos(), 0xFFFFFFFF, 0xFF000000);
+
+            var aetherTextSize = ImGui.CalcTextSize(aetherText);
+            var aetherTextPos = new Vector2(ImGui.GetWindowPos().X + ImGui.GetWindowWidth() - aetherTextSize.X - ImGui.GetStyle().WindowPadding.X, ImGui.GetCursorScreenPos().Y);
+            DrawTextWithOutline(aetherText, aetherTextPos, 0xFFFFFFFF, 0xFF000000);
+            ImGui.Dummy(levelTextSize); // Advance cursor past the drawn text
+
             ImGui.Separator();
             ImGui.Spacing();
 
@@ -78,30 +144,31 @@ namespace AetherialArena.Windows
         {
             DrawLoadoutDisplay();
 
-            ImGui.Separator();
+            // Push buttons down to start at the halfway point
+            ImGui.SetCursorPosY(ImGui.GetWindowHeight() * 0.5f);
+
             ImGui.Spacing();
 
             var buttonSize = new Vector2(ImGui.GetContentRegionAvail().X, 0);
 
-            if (ImGui.Button("Change Loadout", buttonSize))
+            if (DrawButtonWithOutline("ChangeLoadoutButton", "Change Loadout", buttonSize))
             {
                 currentState = HubState.ManagingLoadout;
             }
-            if (ImGui.Button("Search for Sprite", buttonSize))
+            if (DrawButtonWithOutline("SearchForSpriteButton", "Search for Sprite", buttonSize))
             {
-                plugin.AudioManager.PlaySfx("menuselect.wav");
                 Task.Run(async () => {
                     await plugin.AudioManager.StopMusic(1.0f);
-                    plugin.AudioManager.PlaySfx("encountersearch.wav"); 
+                    plugin.AudioManager.PlaySfx("encountersearch.wav");
                     await Task.Delay(1500); // Wait for the sfx to play
                     plugin.QueueEncounterSearch();
                 });
             }
 
             ImGui.Spacing();
-            if (ImGui.Button("Codex", buttonSize)) plugin.CodexWindow.Toggle();
-            if (ImGui.Button("Collection", buttonSize)) plugin.CollectionWindow.Toggle();
-            if (ImGui.Button("Settings", buttonSize)) plugin.ConfigWindow.Toggle();
+            if (DrawButtonWithOutline("CodexButton", "Codex", buttonSize)) plugin.CodexWindow.Toggle();
+            if (DrawButtonWithOutline("CollectionButton", "Collection", buttonSize)) plugin.CollectionWindow.Toggle();
+            if (DrawButtonWithOutline("SettingsButton", "Settings", buttonSize)) plugin.ConfigWindow.Toggle();
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
@@ -109,15 +176,24 @@ namespace AetherialArena.Windows
             if (!string.IsNullOrEmpty(statusMessage))
             {
                 var textSize = ImGui.CalcTextSize(statusMessage);
-                ImGui.SetCursorPosX((ImGui.GetWindowWidth() - textSize.X) / 2);
-                ImGui.Text(statusMessage);
+                var textPos = new Vector2(ImGui.GetCursorScreenPos().X + (ImGui.GetContentRegionAvail().X - textSize.X) / 2, ImGui.GetCursorScreenPos().Y);
+                DrawTextWithOutline(statusMessage, textPos, 0xFFFFFFFF, 0xFF000000);
+                ImGui.Dummy(textSize);
             }
         }
 
         private void DrawLoadoutDisplay()
         {
-            ImGui.Text("Current Loadout:");
+            DrawOutlinedText("Current Loadout:");
+
+            // Add vertical spacing to lower the sprites
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 30);
+
             ImGui.Indent();
+
+            // Icons are 20% bigger (64 * 1.2 = 76.8, rounded to 77)
+            var iconSize = new Vector2(77, 77);
+
             for (int i = 0; i < plugin.PlayerProfile.Loadout.Count; i++)
             {
                 var spriteId = plugin.PlayerProfile.Loadout[i];
@@ -125,8 +201,8 @@ namespace AetherialArena.Windows
                 if (sprite != null)
                 {
                     var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
-                    if (icon != null) ImGui.Image(icon.ImGuiHandle, new Vector2(64, 64));
-                    else ImGui.Dummy(new Vector2(64, 64));
+                    if (icon != null) ImGui.Image(icon.ImGuiHandle, iconSize);
+                    else ImGui.Dummy(iconSize);
 
                     if (i < plugin.PlayerProfile.Loadout.Count - 1) ImGui.SameLine();
                 }
@@ -136,9 +212,10 @@ namespace AetherialArena.Windows
 
         private void DrawLoadoutManagementView()
         {
-            ImGui.Text("Manage Your Loadout");
+            DrawOutlinedText("Manage Your Loadout");
             ImGui.Separator();
-
+            // Add vertical spacing to lower the sprites
+            ImGui.SetCursorPosY(ImGui.GetWindowHeight() * 0.5f);
             for (int i = 0; i < 3; i++)
             {
                 var spriteId = plugin.PlayerProfile.Loadout[i];
@@ -150,10 +227,11 @@ namespace AetherialArena.Windows
                     else ImGui.Dummy(new Vector2(40, 40));
 
                     ImGui.SameLine();
-                    ImGui.Text(sprite.Name);
+                    DrawOutlinedText(sprite.Name);
+
                     ImGui.SameLine();
                     ImGui.SetCursorPosX(ImGui.GetWindowWidth() - 80);
-                    if (ImGui.Button($"Change##{i}"))
+                    if (DrawButtonWithOutline($"ChangeButton##{i}", "Change", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
                     {
                         slotToEdit = i;
                         currentState = HubState.ChoosingSprite;
@@ -162,7 +240,7 @@ namespace AetherialArena.Windows
                 ImGui.Separator();
             }
 
-            if (ImGui.Button("Back", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+            if (DrawButtonWithOutline("BackButton", "Back", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 currentState = HubState.Default;
             }
@@ -170,7 +248,7 @@ namespace AetherialArena.Windows
 
         private void DrawSpriteChooserView()
         {
-            ImGui.Text($"Choose a Sprite for Slot {slotToEdit + 1}");
+            DrawOutlinedText($"Choose a Sprite for Slot {slotToEdit + 1}");
             ImGui.Separator();
 
             ImGui.BeginChild("SpriteChooser", new Vector2(0, ImGui.GetContentRegionAvail().Y - 40), true);
@@ -194,7 +272,7 @@ namespace AetherialArena.Windows
             ImGui.EndChild();
 
             ImGui.Separator();
-            if (ImGui.Button("Back", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+            if (DrawButtonWithOutline("BackChooserButton", "Back", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 currentState = HubState.ManagingLoadout;
             }

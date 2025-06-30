@@ -7,46 +7,81 @@ namespace AetherialArena.Windows
 {
     public class ConfigWindow : Window, IDisposable
     {
+        private readonly Plugin plugin;
         private readonly Configuration configuration;
 
-        public ConfigWindow(Plugin plugin) : base("Aetherial Arena - Settings###AetherialArenaConfigWindow")
+        public ConfigWindow(Plugin plugin) : base("Aetherial Arena - Settings")
         {
-            this.Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
-                         ImGuiWindowFlags.NoScrollWithMouse;
+            this.Size = new Vector2(300, 200);
+            this.SizeCondition = ImGuiCond.FirstUseEver;
 
-            this.Size = new Vector2(232, 90);
-            this.SizeCondition = ImGuiCond.Always;
-
+            this.plugin = plugin;
             this.configuration = plugin.Configuration;
         }
 
         public void Dispose() { }
 
-        public override void PreDraw()
-        {
-            if (configuration.IsConfigWindowMovable)
-            {
-                Flags &= ~ImGuiWindowFlags.NoMove;
-            }
-            else
-            {
-                Flags |= ImGuiWindowFlags.NoMove;
-            }
-        }
-
         public override void Draw()
         {
-            var configValue = configuration.SomePropertyToBeSavedAndWithADefault;
-            if (ImGui.Checkbox("Random Config Bool", ref configValue))
+            // Window Settings
+            var lockAllWindows = configuration.LockAllWindows;
+            if (ImGui.Checkbox("Lock Game Windows in Place", ref lockAllWindows))
             {
-                configuration.SomePropertyToBeSavedAndWithADefault = configValue;
+                configuration.LockAllWindows = lockAllWindows;
                 configuration.Save();
             }
 
-            var movable = configuration.IsConfigWindowMovable;
-            if (ImGui.Checkbox("Movable Config Window", ref movable))
+            var showTitleBars = configuration.ShowDalamudTitleBars;
+            if (ImGui.Checkbox("Show Dalamud Title Bars", ref showTitleBars))
             {
-                configuration.IsConfigWindowMovable = movable;
+                configuration.ShowDalamudTitleBars = showTitleBars;
+                configuration.Save();
+            }
+
+            ImGui.Separator();
+            ImGui.Text("Audio");
+
+            // Mute Checkboxes
+            var isBgmMuted = configuration.IsBgmMuted;
+            if (ImGui.Checkbox("Mute Music", ref isBgmMuted))
+            {
+                configuration.IsBgmMuted = isBgmMuted;
+                plugin.AudioManager.UpdateBgmState();
+                configuration.Save();
+            }
+
+            ImGui.SameLine();
+
+            var isSfxMuted = configuration.IsSfxMuted;
+            if (ImGui.Checkbox("Mute SFX", ref isSfxMuted))
+            {
+                configuration.IsSfxMuted = isSfxMuted;
+                configuration.Save();
+            }
+
+            // Volume Sliders
+            var musicVolume = configuration.MusicVolume;
+            if (ImGui.SliderFloat("Music Volume", ref musicVolume, 0.0f, 1.0f))
+            {
+                configuration.MusicVolume = musicVolume;
+                plugin.AudioManager.SetBgmVolume(musicVolume);
+                // No need to save on drag, can save on release if preferred
+            }
+            if (ImGui.IsItemDeactivatedAfterEdit())
+            {
+                configuration.Save();
+            }
+
+            var sfxVolume = configuration.SfxVolume;
+            if (ImGui.SliderFloat("SFX Volume", ref sfxVolume, 0.0f, 1.0f))
+            {
+                configuration.SfxVolume = sfxVolume;
+                // SFX volume is applied on play, but you could play a test sound here
+            }
+            if (ImGui.IsItemDeactivatedAfterEdit())
+            {
+                // Play a test sound to confirm volume
+                plugin.AudioManager.PlaySfx("menuselect.wav");
                 configuration.Save();
             }
         }

@@ -75,7 +75,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 10,
-        "Defense": 8,
+        "Defense": 4,
         "Speed": -6,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -155,7 +155,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 9,
-        "Defense": 8,
+        "Defense": 4,
         "Speed": -6,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -171,7 +171,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 8,
-        "Defense": 7,
+        "Defense": 3,
         "Speed": -4,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -219,7 +219,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 9,
-        "Defense": 8,
+        "Defense": 4,
         "Speed": -4,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -267,7 +267,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 10,
-        "Defense": 5,
+        "Defense": 4,
         "Speed": -6,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -283,7 +283,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 10,
-        "Defense": 8,
+        "Defense": 4,
         "Speed": -6,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -315,7 +315,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 9,
-        "Defense": 7,
+        "Defense": 3,
         "Speed": -4,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -379,7 +379,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 9,
-        "Defense": 7,
+        "Defense": 3,
         "Speed": -3,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -411,7 +411,7 @@
         "MaxMana": 20,
         "Mana": 20,
         "Attack": 10,
-        "Defense": 8,
+        "Defense": 4,
         "Speed": -6,
         "SpecialAbility": "Shield 25%",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -573,7 +573,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 8,
-            "Defense": 7,
+            "Defense": 3,
             "Speed": -4,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -605,7 +605,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 7,
-            "Defense": 6,
+            "Defense": 3,
             "Speed": -3,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -637,7 +637,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 9,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -653,7 +653,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 10,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -669,7 +669,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 10,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -685,7 +685,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 9,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -717,7 +717,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 8,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -5,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -845,7 +845,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 9,
-            "Defense": 7,
+            "Defense": 3,
             "Speed": -3,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -893,7 +893,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 10,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -1005,7 +1005,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 7,
-            "Defense": 6,
+            "Defense": 3,
             "Speed": -3,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -1021,7 +1021,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 9,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -1037,7 +1037,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 10,
-            "Defense": 8,
+            "Defense": 4,
             "Speed": -6,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -1053,7 +1053,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 9,
-            "Defense": 7,
+            "Defense": 3,
             "Speed": -3,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"
@@ -1085,7 +1085,7 @@
             "MaxMana": 20,
             "Mana": 20,
             "Attack": 9,
-            "Defense": 7,
+            "Defense": 3,
             "Speed": -4,
             "SpecialAbility": "Shield 25%",
             "BaseHeal": "Heals 75% of base attack (10) at MP cost"

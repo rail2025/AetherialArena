@@ -10,10 +10,10 @@ namespace AetherialArena
     {
         public int Version { get; set; } = 0;
 
-        public bool IsConfigWindowMovable { get; set; } = true;
-        public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
+        public bool LockAllWindows { get; set; } = true;
+        public bool ShowDalamudTitleBars { get; set; } = false;
 
-        // New Audio Settings
+        // Audio Settings
         public bool IsBgmMuted { get; set; } = false;
         public bool IsSfxMuted { get; set; } = false;
         public float MusicVolume { get; set; } = 0.5f;

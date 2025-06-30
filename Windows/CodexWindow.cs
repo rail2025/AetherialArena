@@ -25,6 +25,7 @@ namespace AetherialArena.Windows
         private readonly DataManager dataManager;
         private readonly PlayerProfile playerProfile;
         private readonly AssetManager assetManager;
+        private readonly Plugin plugin;
 
         private const int RowsPerPage = 5;
         private int currentPage = 0;
@@ -33,6 +34,7 @@ namespace AetherialArena.Windows
 
         public CodexWindow(Plugin plugin) : base("Codex###AetherialArenaCodexWindow")
         {
+            this.plugin = plugin;
             this.dataManager = plugin.DataManager;
             this.playerProfile = plugin.PlayerProfile;
             this.assetManager = plugin.AssetManager;
@@ -46,6 +48,17 @@ namespace AetherialArena.Windows
 
             LoadHints();
             this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+        }
+
+        public override void PreDraw()
+        {
+            Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
+            Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+
+            if (plugin.Configuration.LockAllWindows)
+            {
+                Flags |= ImGuiWindowFlags.NoMove;
+            }
         }
 
         public override void Draw()

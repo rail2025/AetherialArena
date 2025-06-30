@@ -1,7 +1,9 @@
 using AetherialArena.Core;
 using AetherialArena.Models;
 using AetherialArena.Services;
+using Dalamud.Plugin.Services;
 using ImGuiNET;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -15,6 +17,22 @@ namespace AetherialArena.UI
         private readonly BattleManager battleManager;
         private readonly AssetManager assetManager;
         private readonly DataManager dataManager;
+        private readonly IFramework framework;
+
+        // Animation state fields
+        private float animationTimer = 0;
+        private const float ANIMATION_DURATION = 0.6f;
+        private const float HIT_DELAY = 0.2f;
+        private Vector2 playerSpriteOffset = Vector2.Zero;
+        private Vector2 opponentSpriteOffset = Vector2.Zero;
+
+        private readonly List<(string iconName, Sprite target)> damageIconsToShow = new();
+        private float damageIconTimer = 0;
+        private const float DAMAGE_ICON_DURATION = 0.8f;
+
+        private Sprite? currentAttacker;
+        private Sprite? currentTarget;
+        private bool isCurrentActionSelfBuff; // NEW: Store buff state for the animation's duration
 
         private readonly Dictionary<CombatLogColor, uint> colorMap = new()
         {
@@ -24,24 +42,106 @@ namespace AetherialArena.UI
             { CombatLogColor.Status, 0xFF79FFFF }
         };
 
-        public BattleUIComponent(Plugin plugin)
+        public BattleUIComponent(Plugin plugin, IFramework framework)
         {
             this.plugin = plugin;
+            this.framework = framework;
             this.battleManager = plugin.BattleManager;
             this.assetManager = plugin.AssetManager;
             this.dataManager = plugin.DataManager;
         }
 
+        public void Update()
+        {
+            var deltaTime = (float)framework.UpdateDelta.TotalSeconds;
+
+            // Start a new animation if one is queued from the manager and no other is running
+            if (battleManager.AttackingSprite != null && animationTimer <= 0)
+            {
+                animationTimer = ANIMATION_DURATION;
+                damageIconTimer = DAMAGE_ICON_DURATION;
+                currentAttacker = battleManager.AttackingSprite;
+                currentTarget = battleManager.TargetSprite;
+                isCurrentActionSelfBuff = battleManager.IsSelfBuff; // Capture the buff state
+
+                damageIconsToShow.Clear();
+                if ((!battleManager.IsHealAction || isCurrentActionSelfBuff) && currentTarget != null)
+                {
+                    foreach (var attackType in battleManager.LastAttackTypes)
+                    {
+                        damageIconsToShow.Add(($"{attackType.ToLowerInvariant()}_icon.png", currentTarget));
+                    }
+                }
+
+                battleManager.ClearLastAction();
+            }
+
+            // Decrement timers and reset state when finished
+            if (animationTimer > 0)
+            {
+                animationTimer -= deltaTime;
+            }
+            else
+            {
+                currentAttacker = null;
+                currentTarget = null;
+                isCurrentActionSelfBuff = false;
+            }
+
+            if (damageIconTimer > 0) damageIconTimer -= deltaTime;
+
+            playerSpriteOffset = Vector2.Zero;
+            opponentSpriteOffset = Vector2.Zero;
+
+            // --- MODIFIED: Skip movement animations for self-buffs ---
+            if (animationTimer > 0 && currentAttacker != null && !isCurrentActionSelfBuff)
+            {
+                bool isPlayerPartyAttacker = battleManager.PlayerParty.Contains(currentAttacker);
+
+                float dashDistance = 40.0f;
+                float flinchDistance = 20.0f;
+
+                float attackProgress = 1 - (animationTimer / ANIMATION_DURATION);
+                float attackOffset = (float)Math.Sin(attackProgress * Math.PI) * dashDistance;
+
+                float hitOffset = 0;
+                float elapsedTime = ANIMATION_DURATION - animationTimer;
+
+                if (elapsedTime > HIT_DELAY)
+                {
+                    float flinchDuration = ANIMATION_DURATION - HIT_DELAY;
+                    float flinchProgress = (elapsedTime - HIT_DELAY) / flinchDuration;
+                    hitOffset = (float)Math.Sin(flinchProgress * Math.PI) * flinchDistance;
+                }
+
+                if (isPlayerPartyAttacker)
+                {
+                    playerSpriteOffset.X += attackOffset;
+                    if (currentTarget == battleManager.OpponentSprite)
+                    {
+                        opponentSpriteOffset.X += hitOffset;
+                    }
+                }
+                else
+                {
+                    opponentSpriteOffset.X -= attackOffset;
+                    if (currentTarget == battleManager.ActivePlayerSprite)
+                    {
+                        playerSpriteOffset.X -= hitOffset;
+                    }
+                }
+            }
+        }
+
+
         private void DrawTextWithOutline(string text, Vector2 pos, uint textColor, uint outlineColor)
         {
             var drawList = ImGui.GetWindowDrawList();
             var outlineOffset = new Vector2(1, 1);
-
             drawList.AddText(pos - outlineOffset, outlineColor, text);
             drawList.AddText(pos + new Vector2(outlineOffset.X, -outlineOffset.Y), outlineColor, text);
             drawList.AddText(pos + new Vector2(-outlineOffset.X, outlineOffset.Y), outlineColor, text);
             drawList.AddText(pos + outlineOffset, outlineColor, text);
-
             drawList.AddText(pos, textColor, text);
         }
 
@@ -49,21 +149,14 @@ namespace AetherialArena.UI
         {
             var words = text.Split(' ');
             if (words.Length == 0) return;
-
             var line = new StringBuilder();
             var firstWordOfLine = true;
-
             foreach (var word in words)
             {
                 var tempLine = new StringBuilder(line.ToString());
-                if (!firstWordOfLine)
-                {
-                    tempLine.Append(' ');
-                }
+                if (!firstWordOfLine) { tempLine.Append(' '); }
                 tempLine.Append(word);
-
                 var lineWidth = ImGui.CalcTextSize(tempLine.ToString()).X;
-
                 if (lineWidth > wrapWidth && !firstWordOfLine)
                 {
                     var currentLineText = line.ToString();
@@ -76,15 +169,11 @@ namespace AetherialArena.UI
                 }
                 else
                 {
-                    if (!firstWordOfLine)
-                    {
-                        line.Append(' ');
-                    }
+                    if (!firstWordOfLine) { line.Append(' '); }
                     line.Append(word);
                     firstWordOfLine = false;
                 }
             }
-
             if (line.Length > 0)
             {
                 var remainingText = line.ToString();
@@ -104,39 +193,25 @@ namespace AetherialArena.UI
         private bool DrawButtonWithOutline(string id, string text, Vector2 size, uint textColor = 0xFFFFFFFF)
         {
             var clicked = ImGui.Button($"##{id}", size);
-            if (clicked)
-            {
-                plugin.AudioManager.PlaySfx("menuselect.wav");
-            }
+            if (clicked) { plugin.AudioManager.PlaySfx("menuselect.wav"); }
             var buttonPos = ImGui.GetItemRectMin();
             var buttonSize = ImGui.GetItemRectSize();
             var textSize = ImGui.CalcTextSize(text);
             var textPos = buttonPos + (buttonSize - textSize) * 0.5f;
-
             DrawTextWithOutline(text, textPos, textColor, 0xFF000000);
-
             return clicked;
         }
 
-        
         private bool DrawCheckboxWithOutline(string id, string text, ref bool isChecked)
         {
             var clicked = ImGui.Checkbox($"##{id}", ref isChecked);
-            if (clicked)
-            {
-                plugin.AudioManager.PlaySfx("menuselect.wav");
-            }
-
+            if (clicked) { plugin.AudioManager.PlaySfx("menuselect.wav"); }
             ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
-
             var textPos = ImGui.GetCursorScreenPos();
             textPos.Y += (ImGui.GetFrameHeight() - ImGui.GetTextLineHeight()) / 2;
             DrawTextWithOutline(text, textPos, 0xFFFFFFFF, 0xFF000000);
-
             ImGui.SameLine(0, ImGui.CalcTextSize(text).X + ImGui.GetStyle().ItemSpacing.X);
-            // Add a dummy to take up vertical space
             ImGui.Dummy(new Vector2(0, ImGui.GetFrameHeight()));
-
             return clicked;
         }
 
@@ -154,7 +229,6 @@ namespace AetherialArena.UI
             var activePlayer = battleManager.ActivePlayerSprite;
             var opponent = battleManager.OpponentSprite;
             if (activePlayer == null || opponent == null) return;
-
             var columnWidth = ImGui.GetContentRegionAvail().X / 2.0f;
             if (ImGui.BeginTable("BattleLayout", 2, ImGuiTableFlags.BordersInnerV))
             {
@@ -175,72 +249,82 @@ namespace AetherialArena.UI
         private void DrawSpritePanel(Sprite sprite)
         {
             var isOpponent = battleManager.OpponentSprite == sprite;
-
             DrawOutlinedText(sprite.Name);
-
             ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.2f, 0.8f, 0.2f, 1.0f));
             ImGui.ProgressBar((float)sprite.Health / sprite.MaxHealth, new Vector2(-1, 0), $"HP: {sprite.Health}/{sprite.MaxHealth}");
             ImGui.PopStyleColor();
-
             ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.2f, 0.2f, 0.8f, 1.0f));
             ImGui.ProgressBar((float)sprite.Mana / sprite.MaxMana, new Vector2(-1, 0), $"MP: {sprite.Mana}/{sprite.MaxMana}");
             ImGui.PopStyleColor();
-
             ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.9f, 0.7f, 0.1f, 1.0f));
             float atb = (float)battleManager.GetActionGauge(sprite) / battleManager.GetMaxActionGauge();
             ImGui.ProgressBar(atb, new Vector2(-1, 0), "ATB");
             ImGui.PopStyleColor();
 
+            var iconSize = new Vector2(100, 100);
+            var baseDrawPos = ImGui.GetCursorScreenPos();
+            var animationOffset = isOpponent ? opponentSpriteOffset : playerSpriteOffset;
+
+            if (isOpponent)
+            {
+                var columnWidth = ImGui.GetColumnWidth();
+                baseDrawPos.X += (columnWidth - iconSize.X - ImGui.GetStyle().CellPadding.X);
+            }
+
+            var finalDrawPos = baseDrawPos + animationOffset;
+            ImGui.SetCursorScreenPos(finalDrawPos);
+
             var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey, true);
             if (icon != null)
             {
-                var iconSize = new Vector2(100, 100);
-
-                // Define UV coordinates for flipping
-                var uv0 = new Vector2(0, 0); // Default Top-Left
-                var uv1 = new Vector2(1, 1); // Default Bottom-Right
-
-                if (isOpponent)
-                {
-                    // To flip horizontally, swap the X coordinates
-                    uv0.X = 1;
-                    uv1.X = 0;
-
-                    // Align the icon to the right of its column
-                    var panelWidth = ImGui.GetColumnWidth();
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + panelWidth - iconSize.X - ImGui.GetStyle().CellPadding.X);
-                }
-
-                // Draw the image using the potentially modified UV coordinates
+                var uv0 = new Vector2(isOpponent ? 1 : 0, 0);
+                var uv1 = new Vector2(isOpponent ? 0 : 1, 1);
                 ImGui.Image(icon.ImGuiHandle, iconSize, uv0, uv1);
+
+                if (damageIconTimer > 0)
+                {
+                    foreach (var (iconName, target) in damageIconsToShow)
+                    {
+                        if (target == sprite)
+                        {
+                            var damageIcon = assetManager.GetIcon(iconName, true);
+                            if (damageIcon != null)
+                            {
+                                var drawList = ImGui.GetWindowDrawList();
+                                var overlaySize = new Vector2(48, 48);
+                                var overlayPos = finalDrawPos + (iconSize - overlaySize) / 2;
+                                drawList.AddImage(damageIcon.ImGuiHandle, overlayPos, overlayPos + overlaySize);
+                            }
+                        }
+                    }
+                }
             }
             else
             {
-                ImGui.Dummy(new Vector2(100, 100));
+                ImGui.Dummy(iconSize);
             }
+
+            ImGui.SetCursorScreenPos(baseDrawPos);
+            ImGui.Dummy(iconSize);
         }
 
         private void DrawActionButtons(Sprite activePlayer)
         {
             ImGui.Dummy(new Vector2(0, 10));
             if (!battleManager.IsPlayerTurn) ImGui.BeginDisabled();
-
             var buttonSize = new Vector2(-1, 0);
             if (DrawButtonWithOutline("Attack", "Attack", buttonSize)) { battleManager.PlayerAttack(); }
-
             bool canHeal = activePlayer.Mana >= 10;
             uint healColor = canHeal ? 0xFFFFFFFF : 0xFF8080FF;
             if (!canHeal) ImGui.BeginDisabled();
             if (DrawButtonWithOutline("Heal", "Heal", buttonSize, healColor)) { battleManager.PlayerHeal(); }
             if (!canHeal) ImGui.EndDisabled();
-
             var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
             bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
             uint specialColor = canUseSpecial ? 0xFFFFFFFF : 0xFF8080FF;
             if (!canUseSpecial) ImGui.BeginDisabled();
             if (DrawButtonWithOutline("Special", "Special", buttonSize, specialColor)) { battleManager.PlayerUseSpecial(); }
             if (!canUseSpecial) ImGui.EndDisabled();
-
             if (!battleManager.IsPlayerTurn) ImGui.EndDisabled();
         }
 
@@ -280,24 +364,19 @@ namespace AetherialArena.UI
         {
             DrawOutlinedText("Combat Log");
             float logHeight = ImGui.GetTextLineHeightWithSpacing() * 5;
-
             var childBg = ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg];
             ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(childBg.X, childBg.Y, childBg.Z, 0.5f));
-
             ImGui.BeginChild("CombatLogScrollingRegion", new Vector2(0, logHeight), true, ImGuiWindowFlags.HorizontalScrollbar);
-
             var wrapWidth = ImGui.GetContentRegionAvail().X;
             foreach (var logEntry in battleManager.CombatLog)
             {
                 DrawWrappedOutlinedText(logEntry.Message, wrapWidth, colorMap[logEntry.Color]);
             }
-
             if (battleManager.ShouldScrollLog)
             {
                 ImGui.SetScrollHereY(1.0f);
                 battleManager.ConsumeScrollLogTrigger();
             }
-
             ImGui.EndChild();
             ImGui.PopStyleColor();
         }
@@ -306,28 +385,17 @@ namespace AetherialArena.UI
         {
             var fleeText = "Flee combat and lose aether";
             var fleeButtonSize = ImGui.CalcTextSize(fleeText) + ImGui.GetStyle().FramePadding * 2;
-
-            // Draw the Flee button and let it take its natural size
             if (DrawButtonWithOutline("Flee", fleeText, new Vector2(fleeButtonSize.X, 0)))
             {
                 battleManager.FleeBattle();
             }
-
-            // --- Right-align the checkbox group ---
             var musicText = "Mute Music";
             var sfxText = "Mute SFX";
-
-            // Calculate the total width needed for the checkboxes on the right
             var musicCheckWidth = ImGui.CalcTextSize(musicText).X + ImGui.GetFrameHeightWithSpacing() + ImGui.GetStyle().ItemInnerSpacing.X;
             var sfxCheckWidth = ImGui.CalcTextSize(sfxText).X + ImGui.GetFrameHeightWithSpacing() + ImGui.GetStyle().ItemInnerSpacing.X;
             var totalCheckboxWidth = musicCheckWidth + sfxCheckWidth + ImGui.GetStyle().ItemSpacing.X;
-
-            // Use SameLine to move to the same line as the flee button, then set the X position
-            // to align the start of the checkbox group to the right edge of the window.
             ImGui.SameLine(ImGui.GetWindowContentRegionMax().X - totalCheckboxWidth);
-
             ImGui.BeginGroup();
-
             bool musicMuted = plugin.Configuration.IsBgmMuted;
             if (DrawCheckboxWithOutline("MuteMusicBattle", musicText, ref musicMuted))
             {
@@ -335,9 +403,7 @@ namespace AetherialArena.UI
                 plugin.Configuration.Save();
                 plugin.AudioManager.UpdateBgmState();
             }
-
             ImGui.SameLine();
-
             bool sfxMuted = plugin.Configuration.IsSfxMuted;
             if (DrawCheckboxWithOutline("MuteSfxBattle", sfxText, ref sfxMuted))
             {

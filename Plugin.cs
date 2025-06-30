@@ -26,6 +26,8 @@ namespace AetherialArena
         [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
         [PluginService] internal static IFramework Framework { get; private set; } = null!;
         [PluginService] internal static ICondition Condition { get; private set; } = null!;
+        [PluginService] internal static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
+
 
         public readonly WindowSystem WindowSystem = new("AetherialArena");
         public readonly Configuration Configuration;
@@ -47,6 +49,7 @@ namespace AetherialArena
         public readonly DebugWindow DebugWindow;
         public readonly CollectionWindow CollectionWindow;
         public readonly CodexWindow CodexWindow;
+
 
         private readonly Stopwatch regenTimer = new();
         private readonly double regenIntervalMinutes = 10;
@@ -71,7 +74,7 @@ namespace AetherialArena
             this.PlayerProfile = this.SaveManager.LoadProfile();
             this.BattleManager = new BattleManager(this,Framework);
             this.EncounterManager = new EncounterManager(this);
-            this.BattleUIComponent = new BattleUIComponent(this);
+            this.BattleUIComponent = new BattleUIComponent(this,Framework);
 
             this.HubWindow = new HubWindow(this);
             this.TitleWindow = new TitleWindow(this);
@@ -79,7 +82,7 @@ namespace AetherialArena
             this.MainWindow = new MainWindow(this, this.BattleUIComponent);
             this.ConfigWindow = new ConfigWindow(this);
             this.DebugWindow = new DebugWindow(this);
-            this.CollectionWindow = new CollectionWindow(this);
+            this.CollectionWindow = new CollectionWindow(this, GameInteropProvider);
             this.CodexWindow = new CodexWindow(this);
 
             this.WindowSystem.AddWindow(HubWindow);

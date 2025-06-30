@@ -27,6 +27,17 @@ namespace AetherialArena.Windows
             this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
         }
 
+        public override void PreDraw()
+        {
+            Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
+            Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+
+            if (plugin.Configuration.LockAllWindows)
+            {
+                Flags |= ImGuiWindowFlags.NoMove;
+            }
+        }
+
         public void Dispose() { }
 
         // Added for audio
@@ -38,7 +49,7 @@ namespace AetherialArena.Windows
         // Added for audio
         public override void OnClose()
         {
-            // The music transition is handled by button clicks now to ensure proper flow
+            Task.Run(() => plugin.AudioManager.StopMusic(0.5f));
         }
 
         public override void Draw()
@@ -50,7 +61,7 @@ namespace AetherialArena.Windows
                 var windowSize = ImGui.GetWindowSize();
                 ImGui.GetWindowDrawList().AddImage(background.ImGuiHandle, windowPos, windowPos + windowSize);
             }
-
+            battleUIComponent.Update();
             battleManager.Update();
 
             switch (battleManager.State)

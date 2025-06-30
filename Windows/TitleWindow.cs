@@ -16,11 +16,19 @@ namespace AetherialArena.Windows
         {
             this.plugin = plugin;
             this.assetManager = plugin.AssetManager;
-
             this.Size = new Vector2(600, 425);
             this.SizeCondition = ImGuiCond.FirstUseEver;
+        }
 
-            this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
+        public override void PreDraw()
+        {
+            Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
+            Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+
+            if (plugin.Configuration.LockAllWindows)
+            {
+                Flags |= ImGuiWindowFlags.NoMove;
+            }
         }
 
         public override void OnOpen()
@@ -111,6 +119,7 @@ namespace AetherialArena.Windows
             {
                 plugin.Configuration.IsBgmMuted = musicMuted;
                 plugin.Configuration.Save();
+                plugin.AudioManager.UpdateBgmState();
             }
 
             ImGui.Spacing();

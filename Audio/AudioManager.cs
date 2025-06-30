@@ -18,7 +18,9 @@ namespace AetherialArena.Audio
         private readonly WaveOutEvent bgmOutputDevice;
         private readonly WaveOutEvent sfxOutputDevice;
         private readonly MixingSampleProvider sfxMixer;
-        private FadeInOutSampleProvider? bgmFadeProvider;
+        private VolumeSampleProvider? bgmVolumeProvider;
+        private FadeInOutSampleProvider? bgmFadeProvider; // Store the fade provider directly
+        private readonly VolumeSampleProvider masterSfxVolumeProvider;
 
         private IWavePlayer? interruptingSfxDevice;
         private CancellationTokenSource fadeTokenSource = new();
@@ -40,9 +42,24 @@ namespace AetherialArena.Audio
 
             var mixerFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             sfxMixer = new MixingSampleProvider(mixerFormat) { ReadFully = true };
+            masterSfxVolumeProvider = new VolumeSampleProvider(sfxMixer) { Volume = configuration.SfxVolume };
+
             sfxOutputDevice = new WaveOutEvent();
-            sfxOutputDevice.Init(sfxMixer);
+            sfxOutputDevice.Init(masterSfxVolumeProvider);
             sfxOutputDevice.Play();
+        }
+
+        public void SetBgmVolume(float volume)
+        {
+            if (bgmVolumeProvider != null)
+            {
+                bgmVolumeProvider.Volume = volume;
+            }
+        }
+
+        public void SetSfxVolume(float volume)
+        {
+            masterSfxVolumeProvider.Volume = volume;
         }
 
         private byte[]? GetAudioData(string resourceName)
@@ -94,17 +111,14 @@ namespace AetherialArena.Audio
             if (soundToPlay.WaveFormat.SampleRate != sfxMixer.WaveFormat.SampleRate ||
                 soundToPlay.WaveFormat.Channels != sfxMixer.WaveFormat.Channels)
             {
-                Plugin.Log.Info($"Resampling SFX '{sfxName}' from {soundToPlay.WaveFormat} to {sfxMixer.WaveFormat}");
                 var resampler = new WdlResamplingSampleProvider(soundToPlay, sfxMixer.WaveFormat.SampleRate);
                 soundToPlay = resampler.WaveFormat.Channels != sfxMixer.WaveFormat.Channels
                     ? new MonoToStereoSampleProvider(resampler)
                     : resampler;
             }
 
-            var volumeProvider = new VolumeSampleProvider(soundToPlay) { Volume = configuration.SfxVolume };
-            sfxMixer.AddMixerInput(new SoundFxStream(volumeProvider, memoryStream, readerStream));
+            sfxMixer.AddMixerInput(new SoundFxStream(soundToPlay, memoryStream, readerStream));
         }
-
 
         public async void PlayMusic(string musicName, bool loop, float fadeInDuration = 0)
         {
@@ -126,11 +140,12 @@ namespace AetherialArena.Audio
                 readerStream = new LoopStream(readerStream);
             }
 
-            var sampleProvider = readerStream.ToSampleProvider();
-            bgmFadeProvider = new FadeInOutSampleProvider(sampleProvider, true);
-            var volumeProvider = new VolumeSampleProvider(bgmFadeProvider) { Volume = configuration.MusicVolume };
+            // Assign the fade provider to our class field
+            bgmFadeProvider = new FadeInOutSampleProvider(readerStream.ToSampleProvider(), true);
+            // Then wrap it in the volume provider
+            bgmVolumeProvider = new VolumeSampleProvider(bgmFadeProvider) { Volume = configuration.MusicVolume };
 
-            bgmOutputDevice.Init(volumeProvider);
+            bgmOutputDevice.Init(bgmVolumeProvider);
             bgmOutputDevice.Play();
 
             currentBgmPath = musicName;
@@ -152,6 +167,7 @@ namespace AetherialArena.Audio
 
             if (fadeOutDurationSeconds > 0 && bgmFadeProvider != null)
             {
+                // CORRECTED: Call BeginFadeOut on the stored bgmFadeProvider directly
                 bgmFadeProvider.BeginFadeOut(fadeOutDurationSeconds * 1000);
                 await Task.Delay((int)(fadeOutDurationSeconds * 1000), token).ContinueWith(_ => { });
             }
@@ -185,7 +201,7 @@ namespace AetherialArena.Audio
                     ? new Mp3FileReader(new MemoryStream(audioData))
                     : new WaveFileReader(new MemoryStream(audioData));
 
-                var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.SfxVolume };
+                var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = masterSfxVolumeProvider.Volume };
                 interruptingSfxDevice.Init(volumeProvider);
 
                 interruptingSfxDevice.PlaybackStopped += (s, a) => {
@@ -225,12 +241,10 @@ namespace AetherialArena.Audio
                 }
                 else if (bgmOutputDevice.PlaybackState == PlaybackState.Stopped && !string.IsNullOrEmpty(currentBgmPath))
                 {
-                    // If music was "playing" but muted (and thus stopped), restart it
                     PlayMusic(currentBgmPath, isBgmLooping);
                 }
             }
         }
-
 
         private void OnBgmPlaybackStopped(object? sender, StoppedEventArgs e)
         {

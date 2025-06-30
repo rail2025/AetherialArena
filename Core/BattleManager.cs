@@ -37,6 +37,11 @@ namespace AetherialArena.Core
         public string CurrentBackgroundName { get; private set; } = string.Empty;
         public bool ShouldScrollLog { get; private set; } = false;
 
+        public Sprite? AttackingSprite { get; private set; }
+        public Sprite? TargetSprite { get; private set; }
+        public List<string> LastAttackTypes { get; private set; } = new();
+        public bool IsHealAction { get; private set; } = false;
+        public bool IsSelfBuff { get; private set; } = false; // NEW: Flag for self-buff animations
 
         private class ActiveAbilityEffect
         {
@@ -71,6 +76,7 @@ namespace AetherialArena.Core
             PlayerParty.Clear();
             actionGauges.Clear();
             activeEffects.Clear();
+            ClearLastAction();
 
             foreach (var id in playerSpriteIDs)
             {
@@ -108,12 +114,10 @@ namespace AetherialArena.Core
             AddToLog("You fled from the battle and lost some aether.");
             plugin.PlayerProfile.CurrentAether = Math.Max(0, plugin.PlayerProfile.CurrentAether - 1);
             plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
-
             Task.Run(async () => {
                 await audioManager.StopMusic(0.5f);
                 audioManager.PlayMusic("titlemusic.mp3", true, 1.0f);
             });
-
             EndBattle();
         }
 
@@ -122,6 +126,7 @@ namespace AetherialArena.Core
             State = BattleState.None;
             PlayerParty.Clear();
             OpponentSprite = null;
+            ClearLastAction();
             plugin.MainWindow.IsOpen = false;
             plugin.HubWindow.IsOpen = true;
         }
@@ -136,34 +141,20 @@ namespace AetherialArena.Core
         public void Update()
         {
             if (State != BattleState.InProgress) return;
-
             if (actionDelay > 0)
             {
                 actionDelay -= framework.UpdateDelta.TotalSeconds;
                 return;
             }
-
-            if (ActingSprite != null)
-            {
-                return;
-            }
-
+            if (ActingSprite != null) return;
             var allCombatants = new List<Sprite>();
-            if (ActivePlayerSprite != null && ActivePlayerSprite.Health > 0)
-            {
-                allCombatants.Add(ActivePlayerSprite);
-            }
-            if (OpponentSprite != null && OpponentSprite.Health > 0)
-            {
-                allCombatants.Add(OpponentSprite);
-            }
+            if (ActivePlayerSprite != null && ActivePlayerSprite.Health > 0) allCombatants.Add(ActivePlayerSprite);
+            if (OpponentSprite != null && OpponentSprite.Health > 0) allCombatants.Add(OpponentSprite);
 
             foreach (var combatant in allCombatants)
             {
                 if (IsStunned(combatant)) continue;
-
                 if (!actionGauges.ContainsKey(combatant) || actionGauges[combatant] >= ACTION_GAUGE_MAX) continue;
-
                 float speedStat = combatant.Speed * GetStatMultiplier(combatant, Stat.Speed);
                 float fillRate = CalculateFillRate((int)speedStat);
                 actionGauges[combatant] = Math.Min(ACTION_GAUGE_MAX, actionGauges[combatant] + (int)(fillRate * framework.UpdateDelta.TotalSeconds));
@@ -177,12 +168,17 @@ namespace AetherialArena.Core
             if (readyCombatant != null)
             {
                 ActingSprite = readyCombatant;
-
-                if (!PlayerParty.Contains(ActingSprite))
-                {
-                    AITurn();
-                }
+                if (!PlayerParty.Contains(ActingSprite)) AITurn();
             }
+        }
+
+        public void ClearLastAction()
+        {
+            AttackingSprite = null;
+            TargetSprite = null;
+            LastAttackTypes.Clear();
+            IsHealAction = false;
+            IsSelfBuff = false; // Reset the self-buff flag
         }
 
         private void ExecutePlayerAction(Action<Sprite> action)
@@ -204,7 +200,7 @@ namespace AetherialArena.Core
         }
 
         public void PlayerAttack() => ExecutePlayerAction(p => { if (OpponentSprite == null) return; var r = CalculateDamage(p, OpponentSprite); OpponentSprite.Health -= r.Damage; LogAttackResult(p, OpponentSprite, r); });
-        public void PlayerHeal() => ExecutePlayerAction(p => { if (p.Mana < HEAL_MANA_COST) return; p.Mana -= HEAL_MANA_COST; int h = (int)(p.Attack * 1.5f); p.Health = Math.Min(p.MaxHealth, p.Health + h); AddToLog($"{p.Name} heals for {h} HP.", CombatLogColor.Heal); audioManager.PlaySfx("heal.wav"); });
+        public void PlayerHeal() => ExecutePlayerAction(p => { if (p.Mana < HEAL_MANA_COST) return; p.Mana -= HEAL_MANA_COST; int h = (int)(p.Attack * 1.5f); p.Health = Math.Min(p.MaxHealth, p.Health + h); AddToLog($"{p.Name} heals for {h} HP.", CombatLogColor.Heal); AttackingSprite = p; TargetSprite = p; IsHealAction = true; audioManager.PlaySfx("heal.wav"); });
         public void PlayerUseSpecial() => ExecutePlayerAction(p => { if (OpponentSprite == null) return; var a = plugin.DataManager.GetAbility(p.SpecialAbilityID); if (a == null || p.Mana < a.ManaCost) return; p.Mana -= a.ManaCost; AddToLog($"{p.Name} uses {a.Name}!", CombatLogColor.Status); ApplyAbility(p, OpponentSprite, a); });
 
         private void AITurn()
@@ -232,6 +228,7 @@ namespace AetherialArena.Core
                 int healAmount = (int)(aiSprite.Attack * 1.5f);
                 aiSprite.Health = Math.Min(aiSprite.MaxHealth, aiSprite.Health + healAmount);
                 AddToLog($"{aiSprite.Name} heals for {healAmount} HP.", CombatLogColor.Heal);
+                AttackingSprite = aiSprite; TargetSprite = aiSprite; IsHealAction = true;
                 audioManager.PlaySfx("heal.wav");
             }
             else if (hpPercent <= 0.30f && canAffordSpecial && specialAbility != null)
@@ -246,6 +243,7 @@ namespace AetherialArena.Core
                 int healAmount = (int)(aiSprite.Attack * 1.5f);
                 aiSprite.Health = Math.Min(aiSprite.MaxHealth, aiSprite.Health + healAmount);
                 AddToLog($"{aiSprite.Name} heals for {healAmount} HP.", CombatLogColor.Heal);
+                AttackingSprite = aiSprite; TargetSprite = aiSprite; IsHealAction = true;
                 audioManager.PlaySfx("heal.wav");
             }
             else if (hpPercent <= 0.75f && canAffordSpecial && specialAbility != null)
@@ -269,40 +267,33 @@ namespace AetherialArena.Core
 
         private void SetActionDelay() { actionDelay = 1.5; }
         private bool HandlePreTurnChecks(Sprite s) { if (IsStunned(s)) { AddToLog($"{s.Name} is stunned and cannot act!", CombatLogColor.Status); return true; } return false; }
-
         private void HandlePostTurnActions(Sprite actingSprite)
         {
             TickDownEffects(actingSprite);
-
             var otherCombatant = (actingSprite == ActivePlayerSprite) ? OpponentSprite : ActivePlayerSprite;
-            if (otherCombatant != null)
-            {
-                TickDownStunEffect(otherCombatant);
-            }
-
+            if (otherCombatant != null) TickDownStunEffect(otherCombatant);
             CheckForWinner();
         }
 
+        // --- MODIFIED: To correctly set target and self-buff flag ---
         private void ApplyAbility(Sprite src, Sprite tgt, Ability abi)
         {
+            AttackingSprite = src;
+            IsSelfBuff = abi.Target == TargetType.Self;
+            TargetSprite = IsSelfBuff ? src : tgt; // If it's a self buff, the target is the source
+            LastAttackTypes = new List<string> { "special" };
+
             foreach (var e in abi.Effects)
             {
                 var affectedTarget = abi.Target == TargetType.Self ? src : tgt;
                 if (e.EffectType == EffectType.Stun)
                 {
                     AddToLog($"{affectedTarget.Name} is stunned!", CombatLogColor.Status);
-                    if (actionGauges.ContainsKey(affectedTarget))
-                    {
-                        actionGauges[affectedTarget] = 0;
-                    }
+                    if (actionGauges.ContainsKey(affectedTarget)) actionGauges[affectedTarget] = 0;
                 }
-
                 if (e.Duration > 0)
                 {
-                    if (activeEffects.ContainsKey(affectedTarget))
-                    {
-                        activeEffects[affectedTarget].Add(new ActiveAbilityEffect(e, abi.Name));
-                    }
+                    if (activeEffects.ContainsKey(affectedTarget)) activeEffects[affectedTarget].Add(new ActiveAbilityEffect(e, abi.Name));
                 }
                 else
                 {
@@ -315,14 +306,13 @@ namespace AetherialArena.Core
         private float GetTypeAdvantageMultiplier(SpriteType a, SpriteType d) { if (a == SpriteType.Mechanical || d == SpriteType.Mechanical) return 1.0f; if (a == SpriteType.Figure && d == SpriteType.Beast || a == SpriteType.Beast && d == SpriteType.Creature || a == SpriteType.Creature && d == SpriteType.Figure) return 1.5f; if (a == SpriteType.Beast && d == SpriteType.Figure || a == SpriteType.Creature && d == SpriteType.Beast || a == SpriteType.Figure && d == SpriteType.Creature) return 0.75f; return 1.0f; }
         private float GetElementalMultiplier(Sprite a, Sprite d) { float m = 1.0f; if (!a.AttackType.Any()) return m; var w = new HashSet<string>(d.Weaknesses, StringComparer.OrdinalIgnoreCase); var r = new HashSet<string>(d.Resistances, StringComparer.OrdinalIgnoreCase); foreach (var t in a.AttackType) { if (w.Contains(t)) m *= 1.5f; if (r.Contains(t)) m *= 0.5f; } return m; }
         private DamageResult CalculateDamage(Sprite a, Sprite d) { float am = GetStatMultiplier(a, Stat.Attack); float dm = GetStatMultiplier(d, Stat.Defense); float tm = GetTypeAdvantageMultiplier(a.Type, d.Type); float em = GetElementalMultiplier(a, d); int ba = (int)(a.Attack * am); int ea = (int)(ba * tm * em); int fd = (int)(d.Defense * dm); return new DamageResult { Damage = Math.Max(1, ea - fd), IsSuperEffective = tm > 1.0f || em > 1.0f, IsIneffective = tm < 1.0f || em < 1.0f }; }
-        private void LogAttackResult(Sprite a, Sprite d, DamageResult r) { var t = a.AttackType.Any() ? string.Join(" & ", a.AttackType) : "physical"; AddToLog($"{a.Name} attacks with {t} damage."); if (r.IsSuperEffective && !r.IsIneffective) AddToLog("It's super effective!", CombatLogColor.Status); if (r.IsIneffective && !r.IsSuperEffective) AddToLog("It's not very effective...", CombatLogColor.Status); AddToLog($"{d.Name} takes {r.Damage} damage.", CombatLogColor.Damage); audioManager.PlaySfx("hit.wav"); }
+        private void LogAttackResult(Sprite a, Sprite d, DamageResult r) { AttackingSprite = a; TargetSprite = d; LastAttackTypes = a.AttackType.Any() ? new List<string>(a.AttackType) : new List<string> { "physical" }; IsHealAction = false; var t = a.AttackType.Any() ? string.Join(" & ", a.AttackType) : "physical"; AddToLog($"{a.Name} attacks with {t} damage."); if (r.IsSuperEffective && !r.IsIneffective) AddToLog("It's super effective!", CombatLogColor.Status); if (r.IsIneffective && !r.IsSuperEffective) AddToLog("It's not very effective...", CombatLogColor.Status); AddToLog($"{d.Name} takes {r.Damage} damage.", CombatLogColor.Damage); audioManager.PlaySfx("hit.wav"); }
         private void AddToLog(string m, CombatLogColor color = CombatLogColor.Normal) { CombatLog.Add(new CombatLogEntry(m, color)); if (CombatLog.Count > 50) CombatLog.RemoveAt(0); ShouldScrollLog = true; }
 
         private void TickDownEffects(Sprite s)
         {
             if (!activeEffects.ContainsKey(s)) return;
             var effectsForSprite = activeEffects[s];
-
             foreach (var activeEffect in effectsForSprite.Where(x => x.Effect.EffectType == EffectType.Heal && x.Effect.Duration > 0))
             {
                 int healAmount = (int)activeEffect.Effect.Potency;
@@ -330,12 +320,10 @@ namespace AetherialArena.Core
                 AddToLog($"{s.Name} is healed for {healAmount} HP by {activeEffect.SourceAbilityName}.", CombatLogColor.Heal);
                 audioManager.PlaySfx("heal.wav");
             }
-
             for (int i = effectsForSprite.Count - 1; i >= 0; i--)
             {
                 var effect = effectsForSprite[i];
                 if (effect.Effect.EffectType == EffectType.Stun) continue;
-
                 effect.TurnsRemaining--;
                 if (effect.TurnsRemaining <= 0)
                 {
@@ -353,7 +341,6 @@ namespace AetherialArena.Core
             {
                 var effect = effectsForSprite[i];
                 if (effect.Effect.EffectType != EffectType.Stun) continue;
-
                 effect.TurnsRemaining--;
                 if (effect.TurnsRemaining <= 0)
                 {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/12.0.2">
   <PropertyGroup>
-    <Version>0.5.0.0</Version>
+    <Version>0.6.0.0</Version>
     <Description>A collectable battling mini game</Description>
     <PackageProjectUrl>https://github.com/rail2025/AetherialArena</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -13,6 +13,17 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Icons\special_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\blunt_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\electric_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\slash_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\physical_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\piercing_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\fire_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\ground_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\ice_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\magic_icon.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\hubbackground.png" />
     <EmbeddedResource Include="Assets\Music\titlemusic.mp3" />
     <EmbeddedResource Include="Assets\Sfx\capture.mp3" />
     <EmbeddedResource Include="Assets\Sfx\heal.mp3" />
