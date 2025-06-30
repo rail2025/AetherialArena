@@ -95,12 +95,14 @@ namespace AetherialArena.Core
 
             // Added for audio
             plugin.AudioManager.PlaySfx("encounterfound.wav");
-
-            plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, opponentData.ID);
+            // MODIFIED: Pass the currentTerritory to the StartBattle method
+            plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, opponentData.ID, currentTerritory);
 
             plugin.HubWindow.IsOpen = false;
             plugin.MainWindow.IsOpen = true;
             return SearchResult.Success;
+
+            
         }
 
         private int GetRarityWeight(RarityTier rarity)

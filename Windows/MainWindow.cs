@@ -5,7 +5,7 @@ using AetherialArena.Core;
 using AetherialArena.UI;
 using ImGuiNET;
 using AetherialArena.Services;
-using System.Threading.Tasks; // Added for audio
+using System.Threading.Tasks;
 
 namespace AetherialArena.Windows
 {
@@ -14,11 +14,11 @@ namespace AetherialArena.Windows
         private readonly BattleManager battleManager;
         private readonly BattleUIComponent battleUIComponent;
         private readonly AssetManager assetManager;
-        private readonly Plugin plugin; // Added for audio
+        private readonly Plugin plugin;
 
         public MainWindow(Plugin plugin, BattleUIComponent battleUIComponent) : base("Aetherial Arena Battle")
         {
-            this.plugin = plugin; // Added for audio
+            this.plugin = plugin;
             this.battleManager = plugin.BattleManager;
             this.battleUIComponent = battleUIComponent;
             this.assetManager = plugin.AssetManager;
@@ -27,29 +27,15 @@ namespace AetherialArena.Windows
             this.Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
         }
 
-        public override void PreDraw()
-        {
-            Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
-            Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
-
-            if (plugin.Configuration.LockAllWindows)
-            {
-                Flags |= ImGuiWindowFlags.NoMove;
-            }
-        }
-
         public void Dispose() { }
 
-        // Added for audio
         public override void OnOpen()
         {
             plugin.AudioManager.PlayMusic("fightmusic.mp3", true, 0.5f);
         }
 
-        // Added for audio
         public override void OnClose()
         {
-            Task.Run(() => plugin.AudioManager.StopMusic(0.5f));
         }
 
         public override void Draw()
@@ -61,8 +47,9 @@ namespace AetherialArena.Windows
                 var windowSize = ImGui.GetWindowSize();
                 ImGui.GetWindowDrawList().AddImage(background.ImGuiHandle, windowPos, windowPos + windowSize);
             }
-            battleUIComponent.Update();
+
             battleManager.Update();
+            battleUIComponent.Update();
 
             switch (battleManager.State)
             {
@@ -78,6 +65,17 @@ namespace AetherialArena.Windows
             }
         }
 
+        // Helper method to draw outlined text, now local to this window
+        private void DrawTextWithOutline(string text, Vector2 pos, uint textColor, uint outlineColor)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            var outlineOffset = new Vector2(1, 1);
+            drawList.AddText(pos - outlineOffset, outlineColor, text);
+            drawList.AddText(pos + new Vector2(outlineOffset.X, -outlineOffset.Y), outlineColor, text);
+            drawList.AddText(pos + new Vector2(-outlineOffset.X, outlineOffset.Y), outlineColor, text);
+            drawList.AddText(pos + outlineOffset, outlineColor, text);
+            drawList.AddText(pos, textColor, text);
+        }
 
         private void DrawEndScreen(string message)
         {
@@ -87,6 +85,25 @@ namespace AetherialArena.Windows
             ImGui.SetCursorPosY(windowSize.Y / 3);
             ImGui.Text(message);
 
+            // --- MODIFIED: Draw the specific unlock message instead of the whole log ---
+            if (!string.IsNullOrEmpty(battleManager.UnlockMessage))
+            {
+                ImGui.Spacing();
+                ImGui.SetWindowFontScale(1.2f); // Make font larger
+
+                var unlockMessage = battleManager.UnlockMessage;
+                var messageSize = ImGui.CalcTextSize(unlockMessage);
+
+                // Center the text, accounting for the font scale
+                var cursorPosX = (windowSize.X - (messageSize.X * 1.2f)) / 2;
+                ImGui.SetCursorPosX(cursorPosX);
+
+                // Draw with yellow color and black outline
+                DrawTextWithOutline(unlockMessage, ImGui.GetCursorScreenPos(), 0xFF00FFFF, 0xFF000000);
+
+                ImGui.SetWindowFontScale(1.0f); // Reset font scale to normal
+            }
+
             var buttonText = "Return to Hub";
             var buttonTextSize = ImGui.CalcTextSize(buttonText) + ImGui.GetStyle().FramePadding * 2;
             ImGui.SetCursorPosX((windowSize.X - buttonTextSize.X) * 0.5f);
@@ -95,7 +112,6 @@ namespace AetherialArena.Windows
             if (ImGui.Button(buttonText))
             {
                 plugin.AudioManager.PlaySfx("menuselect.wav");
-                // Stop battle music and play title music
                 Task.Run(async () => {
                     await plugin.AudioManager.StopMusic(0.25f);
                     plugin.AudioManager.PlayMusic("titlemusic.mp3", true, 1.0f);

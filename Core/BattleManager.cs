@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AetherialArena.Audio;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 
 namespace AetherialArena.Core
 {
-    public class BattleManager
+    public unsafe class BattleManager
     {
         public struct DamageResult
         {
@@ -22,6 +23,7 @@ namespace AetherialArena.Core
         private readonly Plugin plugin;
         private readonly IFramework framework;
         private readonly AudioManager audioManager;
+        private readonly UIState* uiState;
         private readonly Random random = new();
         private double actionDelay = 0;
         private const int HEAL_MANA_COST = 10;
@@ -41,7 +43,8 @@ namespace AetherialArena.Core
         public Sprite? TargetSprite { get; private set; }
         public List<string> LastAttackTypes { get; private set; } = new();
         public bool IsHealAction { get; private set; } = false;
-        public bool IsSelfBuff { get; private set; } = false; // NEW: Flag for self-buff animations
+        public bool IsSelfBuff { get; private set; } = false;
+        public string? UnlockMessage { get; private set; } // NEW: Property for the unlock message
 
         private class ActiveAbilityEffect
         {
@@ -64,19 +67,21 @@ namespace AetherialArena.Core
             this.plugin = p;
             this.framework = framework;
             this.audioManager = p.AudioManager;
+            this.uiState = UIState.Instance();
         }
 
         public void ConsumeScrollLogTrigger() => ShouldScrollLog = false;
         public int GetActionGauge(Sprite sprite) => actionGauges.GetValueOrDefault(sprite, 0);
         public int GetMaxActionGauge() => ACTION_GAUGE_MAX;
 
-        public void StartBattle(List<int> playerSpriteIDs, int opponentSpriteID)
+        public void StartBattle(List<int> playerSpriteIDs, int opponentSpriteID, ushort territoryId)
         {
             CombatLog.Clear();
             PlayerParty.Clear();
             actionGauges.Clear();
             activeEffects.Clear();
             ClearLastAction();
+            UnlockMessage = null; // Clear message on new battle
 
             foreach (var id in playerSpriteIDs)
             {
@@ -114,10 +119,11 @@ namespace AetherialArena.Core
             AddToLog("You fled from the battle and lost some aether.");
             plugin.PlayerProfile.CurrentAether = Math.Max(0, plugin.PlayerProfile.CurrentAether - 1);
             plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
-            Task.Run(async () => {
-                await audioManager.StopMusic(0.5f);
+
+            audioManager.StopMusic(0.5f).ContinueWith(t => {
                 audioManager.PlayMusic("titlemusic.mp3", true, 1.0f);
             });
+
             EndBattle();
         }
 
@@ -127,6 +133,7 @@ namespace AetherialArena.Core
             PlayerParty.Clear();
             OpponentSprite = null;
             ClearLastAction();
+            UnlockMessage = null; // Clear message on battle end
             plugin.MainWindow.IsOpen = false;
             plugin.HubWindow.IsOpen = true;
         }
@@ -178,7 +185,7 @@ namespace AetherialArena.Core
             TargetSprite = null;
             LastAttackTypes.Clear();
             IsHealAction = false;
-            IsSelfBuff = false; // Reset the self-buff flag
+            IsSelfBuff = false;
         }
 
         private void ExecutePlayerAction(Action<Sprite> action)
@@ -275,12 +282,11 @@ namespace AetherialArena.Core
             CheckForWinner();
         }
 
-        // --- MODIFIED: To correctly set target and self-buff flag ---
         private void ApplyAbility(Sprite src, Sprite tgt, Ability abi)
         {
             AttackingSprite = src;
             IsSelfBuff = abi.Target == TargetType.Self;
-            TargetSprite = IsSelfBuff ? src : tgt; // If it's a self buff, the target is the source
+            TargetSprite = IsSelfBuff ? src : tgt;
             LastAttackTypes = new List<string> { "special" };
 
             foreach (var e in abi.Effects)
@@ -352,7 +358,56 @@ namespace AetherialArena.Core
 
         private bool IsStunned(Sprite s) => activeEffects.ContainsKey(s) && activeEffects[s].Any(e => e.Effect.EffectType == EffectType.Stun);
         private void CheckForWinner() { if (State != BattleState.InProgress) return; if (OpponentSprite != null && OpponentSprite.Health <= 0) { OpponentSprite.Health = 0; State = BattleState.PlayerVictory; AddToLog($"{OpponentSprite.Name} was defeated!"); audioManager.PlaySfxAndInterruptMusic("victory.mp3"); HandleVictory(); } else if (!PlayerParty.Any(s => s.Health > 0)) { State = BattleState.OpponentVictory; AddToLog("Your party was defeated."); audioManager.PlaySfxAndInterruptMusic("ko.wav"); } }
-        private void HandleVictory() { if (OpponentSprite == null || plugin.PlayerProfile.AttunedSpriteIDs.Contains(OpponentSprite.ID)) return; int n = OpponentSprite.Rarity switch { RarityTier.Uncommon => 3, RarityTier.Rare => 5, _ => 1, }; plugin.PlayerProfile.DefeatCounts.TryGetValue(OpponentSprite.ID, out var c); c++; if (c >= n) { AddToLog($"You have captured {OpponentSprite.Name}!"); audioManager.PlaySfxAndInterruptMusic("capture.mp3"); plugin.PlayerProfile.AttunedSpriteIDs.Add(OpponentSprite.ID); plugin.PlayerProfile.DefeatCounts.Remove(OpponentSprite.ID); int ma = Math.Min(20, 10 + (plugin.PlayerProfile.AttunedSpriteIDs.Count / 5)); if (ma > plugin.PlayerProfile.MaxAether) { plugin.PlayerProfile.MaxAether = ma; plugin.PlayerProfile.CurrentAether++; } } else { AddToLog($"Defeat progress: {c}/{n}"); plugin.PlayerProfile.DefeatCounts[OpponentSprite.ID] = c; } plugin.SaveManager.SaveProfile(plugin.PlayerProfile); }
+
+        private void HandleVictory()
+        {
+            if (OpponentSprite == null || uiState == null) return;
+            if (plugin.PlayerProfile.AttunedSpriteIDs.Contains(OpponentSprite.ID)) return;
+
+            if (plugin.DataManager.MinionUnlockMap.TryGetValue(OpponentSprite.ID, out var minionData))
+            {
+                if (!uiState->IsCompanionUnlocked(minionData.Id))
+                {
+                    // --- MODIFIED: Set the public message property instead of just logging ---
+                    UnlockMessage = $"You must unlock this sprite by acquiring the {minionData.Name} minion!";
+                    AddToLog(UnlockMessage); // Still log it for posterity
+                    return;
+                }
+            }
+
+            int defeatsNeeded = OpponentSprite.Rarity switch
+            {
+                RarityTier.Uncommon => 3,
+                RarityTier.Rare => 5,
+                _ => 1,
+            };
+
+            plugin.PlayerProfile.DefeatCounts.TryGetValue(OpponentSprite.ID, out var currentDefeats);
+            currentDefeats++;
+
+            if (currentDefeats >= defeatsNeeded)
+            {
+                AddToLog($"You have captured {OpponentSprite.Name}!");
+                audioManager.PlaySfxAndInterruptMusic("capture.mp3");
+                plugin.PlayerProfile.AttunedSpriteIDs.Add(OpponentSprite.ID);
+                plugin.PlayerProfile.DefeatCounts.Remove(OpponentSprite.ID);
+
+                int newMaxAether = Math.Min(20, 10 + (plugin.PlayerProfile.AttunedSpriteIDs.Count / 5));
+                if (newMaxAether > plugin.PlayerProfile.MaxAether)
+                {
+                    plugin.PlayerProfile.MaxAether = newMaxAether;
+                    plugin.PlayerProfile.CurrentAether++;
+                }
+            }
+            else
+            {
+                AddToLog($"Defeat progress: {currentDefeats}/{defeatsNeeded}");
+                plugin.PlayerProfile.DefeatCounts[OpponentSprite.ID] = currentDefeats;
+            }
+
+            plugin.SaveManager.SaveProfile(plugin.PlayerProfile);
+        }
+
         private float GetStatMultiplier(Sprite s, Stat st) { float m = 1.0f; if (activeEffects.TryGetValue(s, out var e)) { foreach (var ae in e.Where(x => x.Effect.StatAffected == st)) { m *= ae.Effect.Potency; } } return m; }
     }
 }

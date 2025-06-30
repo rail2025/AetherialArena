@@ -19,7 +19,6 @@ namespace AetherialArena.UI
         private readonly DataManager dataManager;
         private readonly IFramework framework;
 
-        // Animation state fields
         private float animationTimer = 0;
         private const float ANIMATION_DURATION = 0.6f;
         private const float HIT_DELAY = 0.2f;
@@ -32,7 +31,7 @@ namespace AetherialArena.UI
 
         private Sprite? currentAttacker;
         private Sprite? currentTarget;
-        private bool isCurrentActionSelfBuff; // NEW: Store buff state for the animation's duration
+        private bool isCurrentActionSelfBuff;
 
         private readonly Dictionary<CombatLogColor, uint> colorMap = new()
         {
@@ -55,15 +54,13 @@ namespace AetherialArena.UI
         {
             var deltaTime = (float)framework.UpdateDelta.TotalSeconds;
 
-            // Start a new animation if one is queued from the manager and no other is running
             if (battleManager.AttackingSprite != null && animationTimer <= 0)
             {
                 animationTimer = ANIMATION_DURATION;
                 damageIconTimer = DAMAGE_ICON_DURATION;
                 currentAttacker = battleManager.AttackingSprite;
                 currentTarget = battleManager.TargetSprite;
-                isCurrentActionSelfBuff = battleManager.IsSelfBuff; // Capture the buff state
-
+                isCurrentActionSelfBuff = battleManager.IsSelfBuff;
                 damageIconsToShow.Clear();
                 if ((!battleManager.IsHealAction || isCurrentActionSelfBuff) && currentTarget != null)
                 {
@@ -72,11 +69,9 @@ namespace AetherialArena.UI
                         damageIconsToShow.Add(($"{attackType.ToLowerInvariant()}_icon.png", currentTarget));
                     }
                 }
-
                 battleManager.ClearLastAction();
             }
 
-            // Decrement timers and reset state when finished
             if (animationTimer > 0)
             {
                 animationTimer -= deltaTime;
@@ -93,27 +88,21 @@ namespace AetherialArena.UI
             playerSpriteOffset = Vector2.Zero;
             opponentSpriteOffset = Vector2.Zero;
 
-            // --- MODIFIED: Skip movement animations for self-buffs ---
             if (animationTimer > 0 && currentAttacker != null && !isCurrentActionSelfBuff)
             {
                 bool isPlayerPartyAttacker = battleManager.PlayerParty.Contains(currentAttacker);
-
                 float dashDistance = 40.0f;
                 float flinchDistance = 20.0f;
-
                 float attackProgress = 1 - (animationTimer / ANIMATION_DURATION);
                 float attackOffset = (float)Math.Sin(attackProgress * Math.PI) * dashDistance;
-
                 float hitOffset = 0;
                 float elapsedTime = ANIMATION_DURATION - animationTimer;
-
                 if (elapsedTime > HIT_DELAY)
                 {
                     float flinchDuration = ANIMATION_DURATION - HIT_DELAY;
                     float flinchProgress = (elapsedTime - HIT_DELAY) / flinchDuration;
                     hitOffset = (float)Math.Sin(flinchProgress * Math.PI) * flinchDistance;
                 }
-
                 if (isPlayerPartyAttacker)
                 {
                     playerSpriteOffset.X += attackOffset;
@@ -132,7 +121,6 @@ namespace AetherialArena.UI
                 }
             }
         }
-
 
         private void DrawTextWithOutline(string text, Vector2 pos, uint textColor, uint outlineColor)
         {
@@ -219,7 +207,7 @@ namespace AetherialArena.UI
         {
             DrawMainBattleInterface();
             ImGui.Separator();
-            DrawCombatLog();
+            PublicDrawCombatLog(); // Renamed for clarity
             ImGui.Separator();
             DrawFooterControls();
         }
@@ -260,27 +248,22 @@ namespace AetherialArena.UI
             float atb = (float)battleManager.GetActionGauge(sprite) / battleManager.GetMaxActionGauge();
             ImGui.ProgressBar(atb, new Vector2(-1, 0), "ATB");
             ImGui.PopStyleColor();
-
             var iconSize = new Vector2(100, 100);
             var baseDrawPos = ImGui.GetCursorScreenPos();
             var animationOffset = isOpponent ? opponentSpriteOffset : playerSpriteOffset;
-
             if (isOpponent)
             {
                 var columnWidth = ImGui.GetColumnWidth();
                 baseDrawPos.X += (columnWidth - iconSize.X - ImGui.GetStyle().CellPadding.X);
             }
-
             var finalDrawPos = baseDrawPos + animationOffset;
             ImGui.SetCursorScreenPos(finalDrawPos);
-
             var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey, true);
             if (icon != null)
             {
                 var uv0 = new Vector2(isOpponent ? 1 : 0, 0);
                 var uv1 = new Vector2(isOpponent ? 0 : 1, 1);
                 ImGui.Image(icon.ImGuiHandle, iconSize, uv0, uv1);
-
                 if (damageIconTimer > 0)
                 {
                     foreach (var (iconName, target) in damageIconsToShow)
@@ -291,7 +274,7 @@ namespace AetherialArena.UI
                             if (damageIcon != null)
                             {
                                 var drawList = ImGui.GetWindowDrawList();
-                                var overlaySize = new Vector2(48, 48);
+                                var overlaySize = new Vector2(98, 98);
                                 var overlayPos = finalDrawPos + (iconSize - overlaySize) / 2;
                                 drawList.AddImage(damageIcon.ImGuiHandle, overlayPos, overlayPos + overlaySize);
                             }
@@ -303,30 +286,51 @@ namespace AetherialArena.UI
             {
                 ImGui.Dummy(iconSize);
             }
-
             ImGui.SetCursorScreenPos(baseDrawPos);
             ImGui.Dummy(iconSize);
         }
 
+        // --- REWRITTEN TO PREVENT CRASHES ---
         private void DrawActionButtons(Sprite activePlayer)
         {
             ImGui.Dummy(new Vector2(0, 10));
-            if (!battleManager.IsPlayerTurn) ImGui.BeginDisabled();
+
+            // A single BeginDisabled call now handles the entire block
+            if (!battleManager.IsPlayerTurn)
+            {
+                ImGui.BeginDisabled();
+            }
+
             var buttonSize = new Vector2(-1, 0);
+
+            // Attack Button (always available if it's the player's turn)
             if (DrawButtonWithOutline("Attack", "Attack", buttonSize)) { battleManager.PlayerAttack(); }
+
+            // Heal Button
             bool canHeal = activePlayer.Mana >= 10;
-            uint healColor = canHeal ? 0xFFFFFFFF : 0xFF8080FF;
-            if (!canHeal) ImGui.BeginDisabled();
-            if (DrawButtonWithOutline("Heal", "Heal", buttonSize, healColor)) { battleManager.PlayerHeal(); }
-            if (!canHeal) ImGui.EndDisabled();
+            if (!canHeal) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f); // Visually dim if disabled
+            if (DrawButtonWithOutline("Heal", "Heal", buttonSize))
+            {
+                if (canHeal) battleManager.PlayerHeal(); // Action only fires if usable
+            }
+            if (!canHeal) ImGui.PopStyleVar();
+
+            // Special Button
             var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
             bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
-            uint specialColor = canUseSpecial ? 0xFFFFFFFF : 0xFF8080FF;
-            if (!canUseSpecial) ImGui.BeginDisabled();
-            if (DrawButtonWithOutline("Special", "Special", buttonSize, specialColor)) { battleManager.PlayerUseSpecial(); }
-            if (!canUseSpecial) ImGui.EndDisabled();
-            if (!battleManager.IsPlayerTurn) ImGui.EndDisabled();
+            if (!canUseSpecial) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
+            if (DrawButtonWithOutline("Special", "Special", buttonSize))
+            {
+                if (canUseSpecial) battleManager.PlayerUseSpecial();
+            }
+            if (!canUseSpecial) ImGui.PopStyleVar();
+
+            if (!battleManager.IsPlayerTurn)
+            {
+                ImGui.EndDisabled();
+            }
         }
+
 
         private void DrawReservesPanel()
         {
@@ -360,7 +364,8 @@ namespace AetherialArena.UI
             DrawOutlinedText(statusText);
         }
 
-        private void DrawCombatLog()
+        // --- MODIFIED: Renamed to be public ---
+        public void PublicDrawCombatLog()
         {
             DrawOutlinedText("Combat Log");
             float logHeight = ImGui.GetTextLineHeightWithSpacing() * 5;

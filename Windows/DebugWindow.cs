@@ -49,7 +49,7 @@ namespace AetherialArena.Windows
                 if (opponentData != null)
                 {
                     plugin.MainWindow.IsOpen = true;
-                    plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, specificSpriteId);
+                    plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, specificSpriteId, territoryId);
                 }
             }
 
