@@ -42,6 +42,8 @@ namespace AetherialArena.Windows
         }
         public override void PreDraw()
         {
+            var baseSize = new Vector2(300, 400);
+            this.Size = baseSize * plugin.Configuration.CustomUiScale;
             Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
             Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
 
@@ -110,21 +112,41 @@ namespace AetherialArena.Windows
                 var windowSize = ImGui.GetWindowSize();
                 ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
             }
+            // --- Player Level (Left-Aligned) ---
+            ImGui.Text($"Player Level: {plugin.PlayerProfile.AttunedSpriteIDs.Count}");
 
-            var playerLevelText = $"Player Level: {plugin.PlayerProfile.AttunedSpriteIDs.Count}";
-            var aetherText = $"Aether Stamina: {plugin.PlayerProfile.CurrentAether} / {plugin.PlayerProfile.MaxAether}";
+            // --- Aether ProgressBar (Right-Aligned) ---
 
-            // Draw outlined text manually to handle positioning
-            var levelTextSize = ImGui.CalcTextSize(playerLevelText);
-            DrawTextWithOutline(playerLevelText, ImGui.GetCursorScreenPos(), 0xFFFFFFFF, 0xFF000000);
+            // Keep the next elements on the same line
+            ImGui.SameLine();
 
-            var aetherTextSize = ImGui.CalcTextSize(aetherText);
-            var aetherTextPos = new Vector2(ImGui.GetWindowPos().X + ImGui.GetWindowWidth() - aetherTextSize.X - ImGui.GetStyle().WindowPadding.X, ImGui.GetCursorScreenPos().Y);
-            DrawTextWithOutline(aetherText, aetherTextPos, 0xFFFFFFFF, 0xFF000000);
-            ImGui.Dummy(levelTextSize); // Advance cursor past the drawn text
+            var currentAether = plugin.PlayerProfile.CurrentAether;
+            var maxAether = plugin.PlayerProfile.MaxAether;
+            var fraction = maxAether > 0 ? (float)currentAether / maxAether : 0f;
+            var overlay = $"{currentAether}/{maxAether}";
+            var label = "Aether:";
+
+            // 1. Define widths for the right-aligned elements. Reduced bar width to prevent it being too long.
+            var barWidth = 120f;
+            var labelWidth = ImGui.CalcTextSize(label).X;
+            var spacing = ImGui.GetStyle().ItemSpacing.X;
+            var groupWidth = labelWidth + spacing + barWidth;
+
+            // 2. This is the crucial change: Calculate position based on the available space on the current line.
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - groupWidth);
+
+            // 3. Draw the right-aligned elements
+            ImGui.Text(label);
+            ImGui.SameLine();
+
+            ImGui.PushItemWidth(barWidth);
+            ImGui.PushStyleColor(ImGuiCol.PlotHistogram, new Vector4(0.6f, 0.4f, 1.0f, 1.0f));
+            ImGui.ProgressBar(fraction, new Vector2(0, 0), overlay);
+            ImGui.PopStyleColor();
+            ImGui.PopItemWidth();
 
             ImGui.Separator();
-            ImGui.Spacing();
+          
 
             switch (currentState)
             {

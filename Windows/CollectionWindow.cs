@@ -36,6 +36,14 @@ namespace AetherialArena.Windows
 
         public void Dispose() { }
 
+        public override void PreDraw()
+        {
+            var baseSize = new Vector2(640, 535);
+            this.Size = baseSize * plugin.Configuration.CustomUiScale;
+            this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+        }
+
+
         public override void Draw()
         {
             if (ImGui.BeginTable("CollectionTable", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.ScrollY))

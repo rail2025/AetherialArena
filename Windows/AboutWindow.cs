@@ -24,6 +24,14 @@ namespace AetherialArena.Windows
 
         public void Dispose() { }
 
+        public override void PreDraw()
+        {
+            var baseSize = new Vector2(640, 535);
+            this.Size = baseSize * plugin.Configuration.CustomUiScale;
+            this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
+        }
+
+
         public override void Draw()
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";

@@ -295,27 +295,27 @@ namespace AetherialArena.UI
         {
             ImGui.Dummy(new Vector2(0, 10));
 
-            // A single BeginDisabled call now handles the entire block
-            if (!battleManager.IsPlayerTurn)
+            bool shouldBeDisabled = !battleManager.IsPlayerTurn;
+
+
+            if (shouldBeDisabled)
             {
                 ImGui.BeginDisabled();
             }
 
             var buttonSize = new Vector2(-1, 0);
 
-            // Attack Button (always available if it's the player's turn)
             if (DrawButtonWithOutline("Attack", "Attack", buttonSize)) { battleManager.PlayerAttack(); }
 
-            // Heal Button
             bool canHeal = activePlayer.Mana >= 10;
-            if (!canHeal) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f); // Visually dim if disabled
+            if (!canHeal) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
             if (DrawButtonWithOutline("Heal", "Heal", buttonSize))
             {
-                if (canHeal) battleManager.PlayerHeal(); // Action only fires if usable
+                if (canHeal) battleManager.PlayerHeal();
             }
             if (!canHeal) ImGui.PopStyleVar();
 
-            // Special Button
+
             var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
             bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
             if (!canUseSpecial) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
@@ -325,7 +325,7 @@ namespace AetherialArena.UI
             }
             if (!canUseSpecial) ImGui.PopStyleVar();
 
-            if (!battleManager.IsPlayerTurn)
+            if (shouldBeDisabled)
             {
                 ImGui.EndDisabled();
             }

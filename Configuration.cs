@@ -19,6 +19,8 @@ namespace AetherialArena
         public float MusicVolume { get; set; } = 0.5f;
         public float SfxVolume { get; set; } = 0.8f;
 
+        public float CustomUiScale { get; set; } = 1.0f;
+
         [JsonIgnore]
         private IDalamudPluginInterface? pluginInterface;
 

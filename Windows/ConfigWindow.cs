@@ -12,7 +12,7 @@ namespace AetherialArena.Windows
 
         public ConfigWindow(Plugin plugin) : base("Aetherial Arena - Settings")
         {
-            this.Size = new Vector2(300, 200);
+            this.Size = new Vector2(300, 250); // Adjusted size for the new slider
             this.SizeCondition = ImGuiCond.FirstUseEver;
 
             this.plugin = plugin;
@@ -39,6 +39,21 @@ namespace AetherialArena.Windows
             }
 
             ImGui.Separator();
+            ImGui.Text("UI Scaling");
+
+            // --- Corrected UI Scale Slider ---
+            var tempScale = configuration.CustomUiScale; // 1. Use a temporary variable
+            if (ImGui.SliderFloat("Overall Scale", ref tempScale, 0.5f, 3.0f))
+            {
+                configuration.CustomUiScale = tempScale; // 2. Update config from the temp variable
+                configuration.Save();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Adjust the size of all Arena windows and elements.");
+            }
+
+            ImGui.Separator();
             ImGui.Text("Audio");
 
             // Mute Checkboxes
@@ -59,28 +74,25 @@ namespace AetherialArena.Windows
                 configuration.Save();
             }
 
-            // Volume Sliders
-            var musicVolume = configuration.MusicVolume;
+            // --- Corrected Volume Sliders ---
+            var musicVolume = configuration.MusicVolume; // Use temp variable
             if (ImGui.SliderFloat("Music Volume", ref musicVolume, 0.0f, 1.0f))
             {
                 configuration.MusicVolume = musicVolume;
                 plugin.AudioManager.SetBgmVolume(musicVolume);
-                // No need to save on drag, can save on release if preferred
             }
             if (ImGui.IsItemDeactivatedAfterEdit())
             {
                 configuration.Save();
             }
 
-            var sfxVolume = configuration.SfxVolume;
+            var sfxVolume = configuration.SfxVolume; // Use temp variable
             if (ImGui.SliderFloat("SFX Volume", ref sfxVolume, 0.0f, 1.0f))
             {
                 configuration.SfxVolume = sfxVolume;
-                // SFX volume is applied on play, but you could play a test sound here
             }
             if (ImGui.IsItemDeactivatedAfterEdit())
             {
-                // Play a test sound to confirm volume
                 plugin.AudioManager.PlaySfx("menuselect.wav");
                 configuration.Save();
             }

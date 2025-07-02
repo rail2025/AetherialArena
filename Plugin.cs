@@ -12,6 +12,7 @@ using System.Diagnostics;
 using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Game.ClientState.Conditions;
 using AetherialArena.Audio;
+using ImGuiNET;
 
 namespace AetherialArena
 {
@@ -161,7 +162,29 @@ namespace AetherialArena
 
         private void OnCommand(string command, string args) => TitleWindow.Toggle();
         private void OnDebugCommand(string command, string args) => DebugWindow.Toggle();
-        private void DrawUI() => WindowSystem.Draw();
+
+
+        private void DrawUI()
+        {
+            
+            // 1. Store the original global scale that Dalamud has set for this frame.
+            float originalScale = ImGui.GetIO().FontGlobalScale;
+
+            try
+            {
+                // 2. Set the scale for our plugin's windows by *multiplying* the original scale by our custom value. 
+                ImGui.GetIO().FontGlobalScale = originalScale * this.Configuration.CustomUiScale;
+
+                this.WindowSystem.Draw();
+            }
+            finally
+            {
+                // 3. Restore the original scale in a 'finally' block. The scale is reset even if an error occurs
+                //    while drawing, preventing it from breaking other plugins.
+                ImGui.GetIO().FontGlobalScale = originalScale;
+            }
+        }
+
         private void OnOpenConfigUi() => ConfigWindow.Toggle();
         private void OnOpenMainUi() => TitleWindow.Toggle();
     }

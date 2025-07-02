@@ -22,6 +22,8 @@ namespace AetherialArena.Windows
 
         public override void PreDraw()
         {
+            var baseSize = new Vector2(600, 425);
+            this.Size = baseSize * plugin.Configuration.CustomUiScale;
             Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
             Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
 
@@ -55,7 +57,7 @@ namespace AetherialArena.Windows
             ImGui.PushStyleColor(ImGuiCol.WindowBg, 0);
             if (backgroundTexture != null)
             {
-                ImGui.SetWindowSize(new Vector2(backgroundTexture.Width, backgroundTexture.Height));
+                //ImGui.SetWindowSize(new Vector2(backgroundTexture.Width, backgroundTexture.Height));
 
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();

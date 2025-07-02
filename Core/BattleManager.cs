@@ -44,7 +44,7 @@ namespace AetherialArena.Core
         public List<string> LastAttackTypes { get; private set; } = new();
         public bool IsHealAction { get; private set; } = false;
         public bool IsSelfBuff { get; private set; } = false;
-        public string? UnlockMessage { get; private set; } // NEW: Property for the unlock message
+        public string? UnlockMessage { get; private set; } 
 
         private class ActiveAbilityEffect
         {
@@ -229,6 +229,18 @@ namespace AetherialArena.Core
             bool canAffordHeal = aiSprite.Mana >= HEAL_MANA_COST;
             bool canAffordSpecial = specialAbility != null && aiSprite.Mana >= specialAbility.ManaCost;
 
+            //  Check if the special ability's effect is already active
+            bool isSpecialAlreadyActive = false;
+            if (canAffordSpecial && specialAbility != null)
+            {
+                // Determine the target (self for buffs, enemy for debuffs)
+                var target = specialAbility.Target == TargetType.Self ? aiSprite : playerSprite;
+                isSpecialAlreadyActive = IsEffectActive(target, specialAbility);
+            }
+            
+
+
+            // The AI will now only use its special if it's NOT already active.
             if (hpPercent <= 0.25f && canAffordHeal)
             {
                 aiSprite.Mana -= HEAL_MANA_COST;
@@ -238,7 +250,7 @@ namespace AetherialArena.Core
                 AttackingSprite = aiSprite; TargetSprite = aiSprite; IsHealAction = true;
                 audioManager.PlaySfx("heal.wav");
             }
-            else if (hpPercent <= 0.30f && canAffordSpecial && specialAbility != null)
+            else if (hpPercent <= 0.30f && canAffordSpecial && specialAbility != null && !isSpecialAlreadyActive)
             {
                 aiSprite.Mana -= specialAbility.ManaCost;
                 AddToLog($"{aiSprite.Name} uses {specialAbility.Name}!", CombatLogColor.Status);
@@ -253,7 +265,7 @@ namespace AetherialArena.Core
                 AttackingSprite = aiSprite; TargetSprite = aiSprite; IsHealAction = true;
                 audioManager.PlaySfx("heal.wav");
             }
-            else if (hpPercent <= 0.75f && canAffordSpecial && specialAbility != null)
+            else if (hpPercent <= 0.75f && canAffordSpecial && specialAbility != null && !isSpecialAlreadyActive)
             {
                 aiSprite.Mana -= specialAbility.ManaCost;
                 AddToLog($"{aiSprite.Name} uses {specialAbility.Name}!", CombatLogColor.Status);
@@ -261,6 +273,7 @@ namespace AetherialArena.Core
             }
             else
             {
+                // Default action is to attack. This is chosen if the special is redundant.
                 var result = CalculateDamage(aiSprite, playerSprite);
                 playerSprite.Health -= result.Damage;
                 LogAttackResult(aiSprite, playerSprite, result);
@@ -270,6 +283,16 @@ namespace AetherialArena.Core
             actionGauges[aiSprite] = 0;
             ActingSprite = null;
             SetActionDelay();
+        }
+
+        private bool IsEffectActive(Sprite target, Ability ability)
+        {
+            if (activeEffects.TryGetValue(target, out var effects))
+            {
+                // Check if any active effects on the target have the same name as the ability being considered.
+                return effects.Any(e => e.SourceAbilityName == ability.Name);
+            }
+            return false;
         }
 
         private void SetActionDelay() { actionDelay = 1.5; }

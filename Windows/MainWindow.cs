@@ -37,6 +37,15 @@ namespace AetherialArena.Windows
         public override void OnClose()
         {
         }
+        public override void PreDraw()
+        {
+            // Use the MinimumSize as the base
+            var baseSize = new Vector2(640, 540);
+            this.Size = baseSize * plugin.Configuration.CustomUiScale;
+
+            // Keep original flags to ensure it's non-resizable
+            this.Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar;
+        }
 
         public override void Draw()
         {
@@ -100,6 +109,8 @@ namespace AetherialArena.Windows
 
                 // Draw with yellow color and black outline
                 DrawTextWithOutline(unlockMessage, ImGui.GetCursorScreenPos(), 0xFF00FFFF, 0xFF000000);
+
+                //ImGui.Dummy(messageSize * 1.2f);
 
                 ImGui.SetWindowFontScale(1.0f); // Reset font scale to normal
             }
