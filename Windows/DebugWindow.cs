@@ -65,6 +65,25 @@ namespace AetherialArena.Windows
                 plugin.PlayerProfile.DefeatCounts.Clear();
                 plugin.PlayerProfile.AttunedSpriteIDs.AddRange(new[] { 1, 2, 3 });
             }
+
+            ImGui.Separator();
+            ImGui.Text("Battle Cheats");
+
+            bool inBattle = plugin.BattleManager.State == Core.BattleManager.BattleState.InProgress;
+            if (!inBattle)
+            {
+                ImGui.BeginDisabled();
+            }
+
+            if (ImGui.Button("Instantly Capture Current Opponent"))
+            {
+                plugin.BattleManager.ForceWinAndCapture();
+            }
+
+            if (!inBattle)
+            {
+                ImGui.EndDisabled();
+            }
         }
     }
 }

@@ -71,5 +71,120 @@
                 "Duration": 4
             }
         ]
+    },
+    {
+        "ID": 100,
+        "Name": "Mana Siphon",
+        "Description": "Drains 25 mana from the opponent.",
+        "ManaCost": 5,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "ManaDrain",
+                "Potency": 25,
+                "Duration": 0
+            }
+        ]
+    },
+    {
+        "ID": 101,
+        "Name": "Scorching Whip",
+        "Description": "Inflicts 10 damage per turn for 10 turns.",
+        "ManaCost": 20,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "DamageOverTime",
+                "Potency": 10,
+                "Duration": 10
+            }
+        ]
+    },
+    {
+        "ID": 102,
+        "Name": "Seismic Slam",
+        "Description": "Slams the opponent, stunning them for 1 turn.",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Stun",
+                "Potency": 1,
+                "Duration": 1
+            }
+        ]
+    },
+    {
+        "ID": 103,
+        "Name": "Gale Force",
+        "Description": "Greatly increases self speed for 5 turns.",
+        "ManaCost": 15,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "StatBuff",
+                "Potency": 1.5,
+                "Duration": 5,
+                "StatAffected": "Speed"
+            }
+        ]
+    },
+    {
+        "ID": 104,
+        "Name": "Glacial Edge",
+        "Description": "Slashes the opponent, reducing their defense.",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "StatDebuff",
+                "Potency": 0.75,
+                "Duration": 5,
+                "StatAffected": "Defense"
+            }
+        ]
+    },
+    {
+        "ID": 105,
+        "Name": "Tidal Lash",
+        "Description": "Whips the opponent, reducing their attack.",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "StatDebuff",
+                "Potency": 0.75,
+                "Duration": 5,
+                "StatAffected": "Attack"
+            }
+        ]
+    },
+    {
+        "ID": 106,
+        "Name": "Thunderlord's Judgment",
+        "Description": "Calls down a massive bolt of lightning.",
+        "ManaCost": 25,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Damage",
+                "Potency": 150,
+                "Duration": 0
+            }
+        ]
+    },
+    {
+        "ID": 107,
+        "Name": "Total Annihilation",
+        "Description": "Fires a devastating beam of energy.",
+        "ManaCost": 50,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Damage",
+                "Potency": 250,
+                "Duration": 0
+            }
+        ]
     }
 ]

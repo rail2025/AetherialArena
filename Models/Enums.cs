@@ -35,7 +35,8 @@ namespace AetherialArena.Models
     {
         Common,
         Uncommon,
-        Rare
+        Rare,
+        Boss
     }
 
     public enum SearchResult
@@ -70,7 +71,9 @@ namespace AetherialArena.Models
         Heal,
         StatBuff,
         StatDebuff,
-        Stun
+        Stun,
+        DamageOverTime,
+        ManaDrain
     }
 
     public enum Stat

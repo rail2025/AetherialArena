@@ -207,7 +207,7 @@ namespace AetherialArena.UI
         {
             DrawMainBattleInterface();
             ImGui.Separator();
-            PublicDrawCombatLog(); // Renamed for clarity
+            PublicDrawCombatLog();
             ImGui.Separator();
             DrawFooterControls();
         }
@@ -248,22 +248,43 @@ namespace AetherialArena.UI
             float atb = (float)battleManager.GetActionGauge(sprite) / battleManager.GetMaxActionGauge();
             ImGui.ProgressBar(atb, new Vector2(-1, 0), "ATB");
             ImGui.PopStyleColor();
+
+            // --- MODIFIED: Logic for icon size and positioning ---
             var iconSize = new Vector2(100, 100);
+            var spaceToReserve = iconSize; // By default, reserve standard space
+
+            if (sprite.Rarity == RarityTier.Boss)
+            {
+                iconSize = new Vector2(400, 400); // 4x larger icon
+            }
+
             var baseDrawPos = ImGui.GetCursorScreenPos();
             var animationOffset = isOpponent ? opponentSpriteOffset : playerSpriteOffset;
-            if (isOpponent)
+
+            // Manual positioning for overlap effect
+            if (sprite.Rarity == RarityTier.Boss)
+            {
+                var columnWidth = ImGui.GetColumnWidth();
+                baseDrawPos.X += (columnWidth - iconSize.X) / 2; // Center horizontally in the column
+                baseDrawPos.Y -= iconSize.Y / 3; // Move up to overlap bars
+            }
+            else if (isOpponent)
             {
                 var columnWidth = ImGui.GetColumnWidth();
                 baseDrawPos.X += (columnWidth - iconSize.X - ImGui.GetStyle().CellPadding.X);
             }
+
             var finalDrawPos = baseDrawPos + animationOffset;
-            ImGui.SetCursorScreenPos(finalDrawPos);
+
+            // Use absolute positioning to draw the image, which allows it to overlap
+            var drawList = ImGui.GetWindowDrawList();
             var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey, true);
             if (icon != null)
             {
                 var uv0 = new Vector2(isOpponent ? 1 : 0, 0);
                 var uv1 = new Vector2(isOpponent ? 0 : 1, 1);
-                ImGui.Image(icon.ImGuiHandle, iconSize, uv0, uv1);
+                drawList.AddImage(icon.ImGuiHandle, finalDrawPos, finalDrawPos + iconSize, uv0, uv1);
+
                 if (damageIconTimer > 0)
                 {
                     foreach (var (iconName, target) in damageIconsToShow)
@@ -273,7 +294,6 @@ namespace AetherialArena.UI
                             var damageIcon = assetManager.GetIcon(iconName, true);
                             if (damageIcon != null)
                             {
-                                var drawList = ImGui.GetWindowDrawList();
                                 var overlaySize = new Vector2(98, 98);
                                 var overlayPos = finalDrawPos + (iconSize - overlaySize) / 2;
                                 drawList.AddImage(damageIcon.ImGuiHandle, overlayPos, overlayPos + overlaySize);
@@ -282,21 +302,16 @@ namespace AetherialArena.UI
                     }
                 }
             }
-            else
-            {
-                ImGui.Dummy(iconSize);
-            }
-            ImGui.SetCursorScreenPos(baseDrawPos);
-            ImGui.Dummy(iconSize);
+
+            // Reserve space in the layout so other elements don't collapse into this area
+            ImGui.Dummy(spaceToReserve);
         }
 
-        // --- REWRITTEN TO PREVENT CRASHES ---
         private void DrawActionButtons(Sprite activePlayer)
         {
             ImGui.Dummy(new Vector2(0, 10));
 
             bool shouldBeDisabled = !battleManager.IsPlayerTurn;
-
 
             if (shouldBeDisabled)
             {
@@ -315,7 +330,6 @@ namespace AetherialArena.UI
             }
             if (!canHeal) ImGui.PopStyleVar();
 
-
             var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
             bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
             if (!canUseSpecial) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
@@ -330,7 +344,6 @@ namespace AetherialArena.UI
                 ImGui.EndDisabled();
             }
         }
-
 
         private void DrawReservesPanel()
         {
@@ -364,7 +377,6 @@ namespace AetherialArena.UI
             DrawOutlinedText(statusText);
         }
 
-        // --- MODIFIED: Renamed to be public ---
         public void PublicDrawCombatLog()
         {
             DrawOutlinedText("Combat Log");
@@ -392,6 +404,8 @@ namespace AetherialArena.UI
             var fleeButtonSize = ImGui.CalcTextSize(fleeText) + ImGui.GetStyle().FramePadding * 2;
             if (DrawButtonWithOutline("Flee", fleeText, new Vector2(fleeButtonSize.X, 0)))
             {
+                plugin.AudioManager.EndPlaylist();
+                plugin.AudioManager.PlayMusic("titlemusic.mp3", true);
                 battleManager.FleeBattle();
             }
             var musicText = "Mute Music";

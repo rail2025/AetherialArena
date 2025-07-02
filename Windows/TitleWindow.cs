@@ -35,15 +35,14 @@ namespace AetherialArena.Windows
 
         public override void OnOpen()
         {
-            plugin.AudioManager.PlayMusic("titlemusic.mp3", true, 1.0f);
+            plugin.AudioManager.PlayMusic("titlemusic.mp3", true);
         }
 
         public override void OnClose()
         {
-            // Stop music only if the main battle window isn't opening
             if (!plugin.MainWindow.IsOpen)
             {
-                Task.Run(() => plugin.AudioManager.StopMusic(1.0f));
+                plugin.AudioManager.StopMusic();
             }
         }
 
@@ -114,24 +113,40 @@ namespace AetherialArena.Windows
                 plugin.ConfigWindow.Toggle();
             }
 
+            if (plugin.PlayerProfile.AttunedSpriteIDs.Count >= 70)
+            {
+                if (ImGui.Button("Enter the Aetherial Arena", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+                {
+                    plugin.ArenaSelectionWindow.IsOpen = true;
+                }
+            }
+
             ImGui.Spacing();
 
+            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(2, 2)); // Add some padding to the checkboxes
+
             bool musicMuted = plugin.Configuration.IsBgmMuted;
-            if (DrawCheckboxWithOutline("MuteMusic", "Mute Music", ref musicMuted))
+            if (ImGui.Checkbox("Mute Music", ref musicMuted))
             {
                 plugin.Configuration.IsBgmMuted = musicMuted;
                 plugin.Configuration.Save();
                 plugin.AudioManager.UpdateBgmState();
+                plugin.AudioManager.PlaySfx("menuselect.wav");
             }
 
+            ImGui.SameLine(); // Place the next checkbox on the same line
             ImGui.Spacing();
+            ImGui.SameLine();
 
             bool sfxMuted = plugin.Configuration.IsSfxMuted;
-            if (DrawCheckboxWithOutline("MuteSFX", "Mute SFX", ref sfxMuted))
+            if (ImGui.Checkbox("Mute SFX", ref sfxMuted))
             {
                 plugin.Configuration.IsSfxMuted = sfxMuted;
                 plugin.Configuration.Save();
+                plugin.AudioManager.PlaySfx("menuselect.wav");
             }
+
+            ImGui.PopStyleVar();
 
             ImGui.EndGroup();
 

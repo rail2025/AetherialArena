@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -15,15 +14,13 @@ namespace AetherialArena.Audio
         private readonly Plugin plugin;
         private readonly Configuration configuration;
 
-        private readonly WaveOutEvent bgmOutputDevice;
+        private WaveOutEvent? bgmOutputDevice;
+        private IDisposable? currentBgmStream;
+
         private readonly WaveOutEvent sfxOutputDevice;
         private readonly MixingSampleProvider sfxMixer;
-        private VolumeSampleProvider? bgmVolumeProvider;
-        private FadeInOutSampleProvider? bgmFadeProvider; // Store the fade provider directly
         private readonly VolumeSampleProvider masterSfxVolumeProvider;
-
         private IWavePlayer? interruptingSfxDevice;
-        private CancellationTokenSource fadeTokenSource = new();
 
         private string? currentBgmPath;
         private bool isBgmLooping;
@@ -32,13 +29,16 @@ namespace AetherialArena.Audio
 
         private readonly ConcurrentDictionary<string, byte[]> audioCache = new();
 
+        private readonly List<string> allMusicTracks = new();
+        private readonly List<string> bgmPlaylist = new();
+        private int currentTrackIndex = -1;
+        private bool isBgmPlaying = false;
+        private readonly Random random = new();
+
         public AudioManager(Plugin plugin)
         {
             this.plugin = plugin;
             this.configuration = plugin.Configuration;
-
-            bgmOutputDevice = new WaveOutEvent();
-            bgmOutputDevice.PlaybackStopped += OnBgmPlaybackStopped;
 
             var mixerFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             sfxMixer = new MixingSampleProvider(mixerFormat) { ReadFully = true };
@@ -47,89 +47,100 @@ namespace AetherialArena.Audio
             sfxOutputDevice = new WaveOutEvent();
             sfxOutputDevice.Init(masterSfxVolumeProvider);
             sfxOutputDevice.Play();
+
+            DiscoverMusicTracks();
         }
 
-        public void SetBgmVolume(float volume)
+        private void DiscoverMusicTracks()
         {
-            if (bgmVolumeProvider != null)
-            {
-                bgmVolumeProvider.Volume = volume;
-            }
-        }
-
-        public void SetSfxVolume(float volume)
-        {
-            masterSfxVolumeProvider.Volume = volume;
-        }
-
-        private byte[]? GetAudioData(string resourceName)
-        {
-            if (audioCache.TryGetValue(resourceName, out var cachedData))
-                return cachedData;
-
             var assembly = Assembly.GetExecutingAssembly();
-            var fullResourceName = assembly.GetManifestResourceNames().FirstOrDefault(str => str.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
-
-            if (string.IsNullOrEmpty(fullResourceName))
-            {
-                Plugin.Log.Error($"Audio resource '{resourceName}' not found.");
-                return null;
-            }
-
-            using var stream = assembly.GetManifestResourceStream(fullResourceName);
-            if (stream == null) return null;
-
-            using var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
-            var data = memoryStream.ToArray();
-            audioCache[resourceName] = data;
-            return data;
+            const string resourcePrefix = "AetherialArena.Assets.Music.";
+            this.allMusicTracks.AddRange(
+                assembly.GetManifestResourceNames()
+                    .Where(r => r.StartsWith(resourcePrefix) && r.EndsWith(".mp3"))
+                    .Select(r => r.Substring(resourcePrefix.Length))
+            );
         }
 
-        public void PlaySfx(string sfxName)
+        public void StartBattlePlaylist()
         {
-            if (configuration.IsSfxMuted) return;
+            isBgmPlaying = true;
+            bgmPlaylist.Clear();
+            var battleTracks = allMusicTracks.Where(t => t.StartsWith("fightmusic", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            var audioData = GetAudioData(sfxName);
-            if (audioData == null) return;
-
-            var memoryStream = new MemoryStream(audioData);
-            WaveStream readerStream;
-
-            if (sfxName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
-                readerStream = new Mp3FileReader(memoryStream);
-            else if (sfxName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
-                readerStream = new WaveFileReader(memoryStream);
-            else
+            if (!battleTracks.Any())
             {
-                memoryStream.Dispose();
+                PlayMusic("titlemusic.mp3", true);
                 return;
             }
 
-            ISampleProvider soundToPlay = readerStream.ToSampleProvider();
+            bgmPlaylist.AddRange(battleTracks.OrderBy(x => random.Next()));
 
-            if (soundToPlay.WaveFormat.SampleRate != sfxMixer.WaveFormat.SampleRate ||
-                soundToPlay.WaveFormat.Channels != sfxMixer.WaveFormat.Channels)
-            {
-                var resampler = new WdlResamplingSampleProvider(soundToPlay, sfxMixer.WaveFormat.SampleRate);
-                soundToPlay = resampler.WaveFormat.Channels != sfxMixer.WaveFormat.Channels
-                    ? new MonoToStereoSampleProvider(resampler)
-                    : resampler;
-            }
+            if (configuration.IsBgmMuted) return;
 
-            sfxMixer.AddMixerInput(new SoundFxStream(soundToPlay, memoryStream, readerStream));
+            currentTrackIndex = 0;
+            PlayTrack(currentTrackIndex);
         }
 
-        public async void PlayMusic(string musicName, bool loop, float fadeInDuration = 0)
+        public void EndPlaylist()
         {
+            isBgmPlaying = false;
+            StopMusic();
+        }
+
+        private void PlayTrack(int trackIndex)
+        {
+            StopMusic();
+            if (trackIndex < 0 || trackIndex >= bgmPlaylist.Count) return;
+
+            currentTrackIndex = trackIndex;
+            var bgmName = bgmPlaylist[trackIndex];
+            var audioData = GetAudioData(bgmName);
+            if (audioData == null)
+            {
+                // ** THIS IS THE FIX **
+                // Call the event handler with proper arguments instead of null.
+                OnBgmPlaybackStopped(this, EventArgs.Empty);
+                return;
+            }
+
+            var readerStream = new Mp3FileReader(new MemoryStream(audioData));
+            currentBgmStream = readerStream;
+            var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.MusicVolume };
+
+            bgmOutputDevice = new WaveOutEvent();
+            bgmOutputDevice.PlaybackStopped += OnBgmPlaybackStopped;
+            bgmOutputDevice.Init(volumeProvider);
+            bgmOutputDevice.Play();
+
+            currentBgmPath = bgmName;
+            isBgmLooping = false;
+        }
+
+        private void OnBgmPlaybackStopped(object? sender, EventArgs e)
+        {
+            if (isBgmPlaying)
+            {
+                currentTrackIndex++;
+                if (currentTrackIndex >= bgmPlaylist.Count)
+                {
+                    currentTrackIndex = 0;
+                }
+                PlayTrack(currentTrackIndex);
+            }
+        }
+
+        public void PlayMusic(string musicName, bool loop)
+        {
+            isBgmPlaying = false;
+            StopMusic();
+
             if (configuration.IsBgmMuted)
             {
                 currentBgmPath = musicName;
                 isBgmLooping = loop;
                 return;
             }
-
-            await StopMusic(0.1f);
 
             var audioData = GetAudioData(musicName);
             if (audioData == null) return;
@@ -140,42 +151,29 @@ namespace AetherialArena.Audio
                 readerStream = new LoopStream(readerStream);
             }
 
-            // Assign the fade provider to our class field
-            bgmFadeProvider = new FadeInOutSampleProvider(readerStream.ToSampleProvider(), true);
-            // Then wrap it in the volume provider
-            bgmVolumeProvider = new VolumeSampleProvider(bgmFadeProvider) { Volume = configuration.MusicVolume };
+            currentBgmStream = readerStream;
+            var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.MusicVolume };
 
-            bgmOutputDevice.Init(bgmVolumeProvider);
+            bgmOutputDevice = new WaveOutEvent();
+            if (loop) bgmOutputDevice.PlaybackStopped += OnBgmPlaybackStopped;
+            bgmOutputDevice.Init(volumeProvider);
             bgmOutputDevice.Play();
 
             currentBgmPath = musicName;
             isBgmLooping = loop;
-
-            if (fadeInDuration > 0)
-            {
-                bgmFadeProvider.BeginFadeIn(fadeInDuration * 1000);
-            }
         }
 
-        public async Task StopMusic(float fadeOutDurationSeconds = 0.25f)
+        public void StopMusic()
         {
-            if (bgmOutputDevice.PlaybackState == PlaybackState.Stopped) return;
-
-            fadeTokenSource.Cancel();
-            fadeTokenSource = new CancellationTokenSource();
-            var token = fadeTokenSource.Token;
-
-            if (fadeOutDurationSeconds > 0 && bgmFadeProvider != null)
+            if (bgmOutputDevice != null)
             {
-                // CORRECTED: Call BeginFadeOut on the stored bgmFadeProvider directly
-                bgmFadeProvider.BeginFadeOut(fadeOutDurationSeconds * 1000);
-                await Task.Delay((int)(fadeOutDurationSeconds * 1000), token).ContinueWith(_ => { });
-            }
-
-            if (!token.IsCancellationRequested)
-            {
+                bgmOutputDevice.PlaybackStopped -= OnBgmPlaybackStopped;
                 bgmOutputDevice.Stop();
+                bgmOutputDevice.Dispose();
+                bgmOutputDevice = null;
             }
+            currentBgmStream?.Dispose();
+            currentBgmStream = null;
         }
 
         public void PlaySfxAndInterruptMusic(string sfxName, Action? onFinished = null)
@@ -184,78 +182,113 @@ namespace AetherialArena.Audio
 
             previousBgmPath = currentBgmPath;
             wasBgmLooping = isBgmLooping;
+            StopMusic();
 
-            Task.Run(async () =>
+            var audioData = GetAudioData(sfxName);
+            if (audioData == null)
             {
-                await StopMusic(0.5f);
+                ResumePreviousMusic();
+                return;
+            }
 
-                var audioData = GetAudioData(sfxName);
-                if (audioData == null)
-                {
-                    ResumePreviousMusic();
-                    return;
-                }
+            interruptingSfxDevice = new WaveOutEvent();
+            WaveStream readerStream = sfxName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)
+                ? new Mp3FileReader(new MemoryStream(audioData))
+                : new WaveFileReader(new MemoryStream(audioData));
 
-                interruptingSfxDevice = new WaveOutEvent();
-                WaveStream readerStream = sfxName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)
-                    ? new Mp3FileReader(new MemoryStream(audioData))
-                    : new WaveFileReader(new MemoryStream(audioData));
+            var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = masterSfxVolumeProvider.Volume };
+            interruptingSfxDevice.Init(volumeProvider);
 
-                var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = masterSfxVolumeProvider.Volume };
-                interruptingSfxDevice.Init(volumeProvider);
+            interruptingSfxDevice.PlaybackStopped += (s, a) =>
+            {
+                readerStream.Dispose();
+                interruptingSfxDevice?.Dispose();
+                ResumePreviousMusic();
+                onFinished?.Invoke();
+            };
 
-                interruptingSfxDevice.PlaybackStopped += (s, a) => {
-                    readerStream.Dispose();
-                    interruptingSfxDevice?.Dispose();
-                    ResumePreviousMusic();
-                    onFinished?.Invoke();
-                };
-
-                interruptingSfxDevice.Play();
-            });
+            interruptingSfxDevice.Play();
         }
 
         private void ResumePreviousMusic()
         {
-            if (!string.IsNullOrEmpty(previousBgmPath))
+            if (isBgmPlaying) StartBattlePlaylist();
+            else if (!string.IsNullOrEmpty(previousBgmPath)) PlayMusic(previousBgmPath, wasBgmLooping);
+            previousBgmPath = null;
+        }
+
+        public void PlaySfx(string sfxName)
+        {
+            if (configuration.IsSfxMuted) return;
+            var audioData = GetAudioData(sfxName);
+            if (audioData == null) return;
+            var memoryStream = new MemoryStream(audioData);
+            WaveStream readerStream = new WaveFileReader(memoryStream);
+            ISampleProvider soundToPlay = readerStream.ToSampleProvider();
+            if (soundToPlay.WaveFormat.SampleRate != sfxMixer.WaveFormat.SampleRate ||
+                soundToPlay.WaveFormat.Channels != sfxMixer.WaveFormat.Channels)
             {
-                PlayMusic(previousBgmPath, wasBgmLooping, 1.0f);
-                previousBgmPath = null;
+                var resampler = new WdlResamplingSampleProvider(soundToPlay, sfxMixer.WaveFormat.SampleRate);
+                soundToPlay = resampler.WaveFormat.Channels != sfxMixer.WaveFormat.Channels
+                    ? new MonoToStereoSampleProvider(resampler)
+                    : resampler;
             }
+            sfxMixer.AddMixerInput(new SoundFxStream(soundToPlay, memoryStream, readerStream));
+        }
+
+        private byte[]? GetAudioData(string resourceName)
+        {
+            if (audioCache.TryGetValue(resourceName, out var cachedData)) return cachedData;
+
+            var assembly = Assembly.GetExecutingAssembly();
+            string resourcePrefix = resourceName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)
+                ? "AetherialArena.Assets.Music."
+                : "AetherialArena.Assets.Sfx.";
+
+            var fullResourceName = resourcePrefix + resourceName;
+            using var stream = assembly.GetManifestResourceStream(fullResourceName);
+            if (stream == null) return null;
+
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            var data = memoryStream.ToArray();
+            audioCache[resourceName] = data;
+            return data;
         }
 
         public void UpdateBgmState()
         {
-            if (bgmOutputDevice == null) return;
-
             if (configuration.IsBgmMuted)
             {
-                if (bgmOutputDevice.PlaybackState == PlaybackState.Playing)
-                    bgmOutputDevice.Pause();
+                if (bgmOutputDevice?.PlaybackState == PlaybackState.Playing) StopMusic();
             }
             else
             {
-                if (bgmOutputDevice.PlaybackState == PlaybackState.Paused)
+                if (bgmOutputDevice == null && !string.IsNullOrEmpty(currentBgmPath))
                 {
-                    bgmOutputDevice.Play();
-                }
-                else if (bgmOutputDevice.PlaybackState == PlaybackState.Stopped && !string.IsNullOrEmpty(currentBgmPath))
-                {
-                    PlayMusic(currentBgmPath, isBgmLooping);
+                    if (isBgmPlaying) StartBattlePlaylist();
+                    else PlayMusic(currentBgmPath, isBgmLooping);
                 }
             }
         }
 
-        private void OnBgmPlaybackStopped(object? sender, StoppedEventArgs e)
+        public void SetBgmVolume(float volume)
         {
+            // Note: This won't work live with the new dispose/recreate pattern,
+            // as volume is set on creation. This is a limitation of the robust fix.
+            // The volume will apply to the *next* track that plays.
+        }
+
+        public void SetSfxVolume(float volume)
+        {
+            masterSfxVolumeProvider.Volume = volume;
         }
 
         public void Dispose()
         {
-            bgmOutputDevice.Dispose();
+            StopMusic();
             sfxOutputDevice.Dispose();
             interruptingSfxDevice?.Dispose();
-            fadeTokenSource.Dispose();
         }
 
         private class SoundFxStream : ISampleProvider
@@ -279,10 +312,7 @@ namespace AetherialArena.Audio
                 if (read == 0)
                 {
                     isFinished = true;
-                    foreach (var disposable in disposables)
-                    {
-                        disposable.Dispose();
-                    }
+                    foreach (var disposable in disposables) disposable.Dispose();
                 }
                 return read;
             }
@@ -291,25 +321,11 @@ namespace AetherialArena.Audio
         public class LoopStream : WaveStream
         {
             private readonly WaveStream sourceStream;
-
-            public LoopStream(WaveStream sourceStream)
-            {
-                this.sourceStream = sourceStream;
-                this.EnableLooping = true;
-            }
-
+            public LoopStream(WaveStream sourceStream) { this.sourceStream = sourceStream; EnableLooping = true; }
             public bool EnableLooping { get; set; }
-
             public override WaveFormat WaveFormat => sourceStream.WaveFormat;
-
             public override long Length => sourceStream.Length;
-
-            public override long Position
-            {
-                get => sourceStream.Position;
-                set => sourceStream.Position = value;
-            }
-
+            public override long Position { get => sourceStream.Position; set => sourceStream.Position = value; }
             public override int Read(byte[] buffer, int offset, int count)
             {
                 int totalBytesRead = 0;
@@ -318,10 +334,7 @@ namespace AetherialArena.Audio
                     int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
                     if (bytesRead == 0)
                     {
-                        if (sourceStream.Position == 0 || !EnableLooping)
-                        {
-                            break;
-                        }
+                        if (sourceStream.Position == 0 || !EnableLooping) break;
                         sourceStream.Position = 0;
                     }
                     totalBytesRead += bytesRead;

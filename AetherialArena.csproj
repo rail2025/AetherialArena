@@ -13,6 +13,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Icons\fire_boss_icon.png" />
+    <EmbeddedResource Include="Assets\Backgrounds\arenabackground.png" />
+    <EmbeddedResource Include="Assets\Icons\grass.png" />
+    <EmbeddedResource Include="Assets\Music\allcapmusic.mp3" />
+    <EmbeddedResource Include="Assets\Music\fightmusic2.mp3" />
+    <EmbeddedResource Include="Assets\Music\fightmusic3.mp3" />
     <EmbeddedResource Include="Assets\Icons\air_icon.png" />
     <EmbeddedResource Include="Assets\Icons\special_icon.png" />
     <EmbeddedResource Include="Assets\Icons\blunt_icon.png" />
@@ -25,6 +31,7 @@
     <EmbeddedResource Include="Assets\Icons\ice_icon.png" />
     <EmbeddedResource Include="Assets\Icons\magic_icon.png" />
     <EmbeddedResource Include="Assets\Backgrounds\hubbackground.png" />
+    <EmbeddedResource Include="Assets\Music\menuselect.wav" />
     <EmbeddedResource Include="Assets\Music\titlemusic.mp3" />
     <EmbeddedResource Include="Assets\Sfx\capture.mp3" />
     <EmbeddedResource Include="Assets\Sfx\heal.mp3" />

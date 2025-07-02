@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using AetherialArena.Models;
 using AetherialArena.Services;
 using Dalamud.Interface.Windowing;
@@ -38,7 +37,8 @@ namespace AetherialArena.Windows
 
         public override void OnClose()
         {
-            Task.Run(() => plugin.AudioManager.StopMusic(0.5f));
+            // MODIFIED: Call StopMusic() with no arguments, and no Task.Run is needed.
+            plugin.AudioManager.StopMusic();
         }
         public override void PreDraw()
         {
@@ -51,7 +51,6 @@ namespace AetherialArena.Windows
             {
                 Flags |= ImGuiWindowFlags.NoMove;
             }
-            // Reset state if the window is closed and re-opened
             if (!IsOpen)
             {
                 currentState = HubState.Default;
@@ -68,14 +67,10 @@ namespace AetherialArena.Windows
         {
             var drawList = ImGui.GetWindowDrawList();
             var outlineOffset = new Vector2(1, 1);
-
-            // Draw outline
             drawList.AddText(pos - outlineOffset, outlineColor, text);
             drawList.AddText(pos + new Vector2(outlineOffset.X, -outlineOffset.Y), outlineColor, text);
             drawList.AddText(pos + new Vector2(-outlineOffset.X, outlineOffset.Y), outlineColor, text);
             drawList.AddText(pos + outlineOffset, outlineColor, text);
-
-            // Draw main text
             drawList.AddText(pos, textColor, text);
         }
 
@@ -100,7 +95,7 @@ namespace AetherialArena.Windows
         {
             var cursorPos = ImGui.GetCursorScreenPos();
             DrawTextWithOutline(text, cursorPos, 0xFFFFFFFF, 0xFF000000);
-            ImGui.Dummy(ImGui.CalcTextSize(text)); // Advance cursor
+            ImGui.Dummy(ImGui.CalcTextSize(text));
         }
 
         public override void Draw()
@@ -112,12 +107,7 @@ namespace AetherialArena.Windows
                 var windowSize = ImGui.GetWindowSize();
                 ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
             }
-            // --- Player Level (Left-Aligned) ---
             ImGui.Text($"Player Level: {plugin.PlayerProfile.AttunedSpriteIDs.Count}");
-
-            // --- Aether ProgressBar (Right-Aligned) ---
-
-            // Keep the next elements on the same line
             ImGui.SameLine();
 
             var currentAether = plugin.PlayerProfile.CurrentAether;
@@ -126,16 +116,13 @@ namespace AetherialArena.Windows
             var overlay = $"{currentAether}/{maxAether}";
             var label = "Aether:";
 
-            // 1. Define widths for the right-aligned elements. Reduced bar width to prevent it being too long.
             var barWidth = 120f;
             var labelWidth = ImGui.CalcTextSize(label).X;
             var spacing = ImGui.GetStyle().ItemSpacing.X;
             var groupWidth = labelWidth + spacing + barWidth;
 
-            // 2. This is the crucial change: Calculate position based on the available space on the current line.
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - groupWidth);
 
-            // 3. Draw the right-aligned elements
             ImGui.Text(label);
             ImGui.SameLine();
 
@@ -146,7 +133,6 @@ namespace AetherialArena.Windows
             ImGui.PopItemWidth();
 
             ImGui.Separator();
-          
 
             switch (currentState)
             {
@@ -166,7 +152,6 @@ namespace AetherialArena.Windows
         {
             DrawLoadoutDisplay();
 
-            // Push buttons down to start at the halfway point
             ImGui.SetCursorPosY(ImGui.GetWindowHeight() * 0.5f);
 
             ImGui.Spacing();
@@ -179,15 +164,19 @@ namespace AetherialArena.Windows
             }
             if (DrawButtonWithOutline("SearchForSpriteButton", "Search for Sprite", buttonSize))
             {
-                Task.Run(async () => {
-                    await plugin.AudioManager.StopMusic(1.0f);
-                    plugin.AudioManager.PlaySfx("encountersearch.wav");
-                    await Task.Delay(1500); // Wait for the sfx to play
-                    plugin.QueueEncounterSearch();
-                });
+                plugin.AudioManager.PlaySfx("encountersearch.wav");
+                plugin.QueueEncounterSearch();
             }
 
             ImGui.Spacing();
+            if (plugin.PlayerProfile.AttunedSpriteIDs.Count >= 70)
+            {
+                if (ImGui.Button("Enter the Aetherial Arena", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+                {
+                    plugin.ArenaSelectionWindow.IsOpen = true;
+                }
+            }
+
             if (DrawButtonWithOutline("CodexButton", "Codex", buttonSize)) plugin.CodexWindow.Toggle();
             if (DrawButtonWithOutline("CollectionButton", "Collection", buttonSize)) plugin.CollectionWindow.Toggle();
             if (DrawButtonWithOutline("SettingsButton", "Settings", buttonSize)) plugin.ConfigWindow.Toggle();
@@ -208,12 +197,10 @@ namespace AetherialArena.Windows
         {
             DrawOutlinedText("Current Loadout:");
 
-            // Add vertical spacing to lower the sprites
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 30);
 
             ImGui.Indent();
 
-            // Icons are 20% bigger (64 * 1.2 = 76.8, rounded to 77)
             var iconSize = new Vector2(77, 77);
 
             for (int i = 0; i < plugin.PlayerProfile.Loadout.Count; i++)
@@ -236,7 +223,6 @@ namespace AetherialArena.Windows
         {
             DrawOutlinedText("Manage Your Loadout");
             ImGui.Separator();
-            // Add vertical spacing to lower the sprites
             ImGui.SetCursorPosY(ImGui.GetWindowHeight() * 0.5f);
             for (int i = 0; i < 3; i++)
             {

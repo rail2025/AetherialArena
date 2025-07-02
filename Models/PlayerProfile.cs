@@ -14,5 +14,7 @@ namespace AetherialArena.Models
 
         // Stores the IDs of the 3 sprites in the player's active loadout.
         public List<int> Loadout { get; set; } = new() { 1, 2, 3 };
+
+        public List<int> DefeatedArenaBosses { get; set; } = new List<int>();
     }
 }

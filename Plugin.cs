@@ -56,6 +56,7 @@ namespace AetherialArena
         private bool searchActionQueued = false;
         private ushort? queuedTerritoryOverride;
         private uint? queuedSubLocationOverride;
+        public ArenaSelectionWindow ArenaSelectionWindow { get; init; }
 
         public Plugin()
         {
@@ -79,6 +80,9 @@ namespace AetherialArena
             this.DebugWindow = new DebugWindow(this);
             this.CollectionWindow = new CollectionWindow(this);
             this.CodexWindow = new CodexWindow(this);
+            this.ArenaSelectionWindow = new ArenaSelectionWindow(this);
+            
+            this.WindowSystem.AddWindow(ArenaSelectionWindow);
 
             this.WindowSystem.AddWindow(HubWindow);
             this.WindowSystem.AddWindow(TitleWindow);
