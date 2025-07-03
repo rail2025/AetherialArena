@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 
 namespace AetherialArena.Models
 {
@@ -16,5 +17,7 @@ namespace AetherialArena.Models
         public List<int> Loadout { get; set; } = new() { 1, 2, 3 };
 
         public List<int> DefeatedArenaBosses { get; set; } = new List<int>();
+
+        public DateTime LastAetherRegenTimestamp { get; set; } = DateTime.UtcNow;
     }
 }

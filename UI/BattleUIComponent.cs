@@ -33,6 +33,9 @@ namespace AetherialArena.UI
         private Sprite? currentTarget;
         private bool isCurrentActionSelfBuff;
 
+        // --- NEW STATE for swapping ---
+        private bool isSwapping = false;
+
         private readonly Dictionary<CombatLogColor, uint> colorMap = new()
         {
             { CombatLogColor.Normal, 0xFFFFFFFF },
@@ -53,6 +56,12 @@ namespace AetherialArena.UI
         public void Update()
         {
             var deltaTime = (float)framework.UpdateDelta.TotalSeconds;
+
+            // Reset swap state if it's no longer the player's turn
+            if (!battleManager.IsPlayerTurn && isSwapping)
+            {
+                isSwapping = false;
+            }
 
             if (battleManager.AttackingSprite != null && animationTimer <= 0)
             {
@@ -218,15 +227,28 @@ namespace AetherialArena.UI
             var opponent = battleManager.OpponentSprite;
             if (activePlayer == null || opponent == null) return;
             var columnWidth = ImGui.GetContentRegionAvail().X / 2.0f;
+
             if (ImGui.BeginTable("BattleLayout", 2, ImGuiTableFlags.BordersInnerV))
             {
                 ImGui.TableSetupColumn("PlayerColumn", ImGuiTableColumnFlags.WidthFixed, columnWidth);
                 ImGui.TableSetupColumn("OpponentColumn", ImGuiTableColumnFlags.WidthFixed, columnWidth);
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
+
                 DrawSpritePanel(activePlayer);
-                DrawActionButtons(activePlayer);
+
+                // --- MODIFICATION: Show either actions or swap UI ---
+                if (isSwapping)
+                {
+                    DrawSwapSelection();
+                }
+                else
+                {
+                    DrawActionButtons(activePlayer);
+                }
+
                 DrawReservesPanel();
+
                 ImGui.TableSetColumnIndex(1);
                 DrawSpritePanel(opponent);
                 DrawTurnStatus();
@@ -249,24 +271,22 @@ namespace AetherialArena.UI
             ImGui.ProgressBar(atb, new Vector2(-1, 0), "ATB");
             ImGui.PopStyleColor();
 
-            // --- MODIFIED: Logic for icon size and positioning ---
             var iconSize = new Vector2(100, 100);
-            var spaceToReserve = iconSize; // By default, reserve standard space
+            var spaceToReserve = iconSize;
 
             if (sprite.Rarity == RarityTier.Boss)
             {
-                iconSize = new Vector2(400, 400); // 4x larger icon
+                iconSize = new Vector2(300, 300);
             }
 
             var baseDrawPos = ImGui.GetCursorScreenPos();
             var animationOffset = isOpponent ? opponentSpriteOffset : playerSpriteOffset;
 
-            // Manual positioning for overlap effect
             if (sprite.Rarity == RarityTier.Boss)
             {
                 var columnWidth = ImGui.GetColumnWidth();
-                baseDrawPos.X += (columnWidth - iconSize.X) / 2; // Center horizontally in the column
-                baseDrawPos.Y -= iconSize.Y / 3; // Move up to overlap bars
+                baseDrawPos.X += (columnWidth - iconSize.X) / 2;
+                baseDrawPos.Y -= iconSize.Y / 3;
             }
             else if (isOpponent)
             {
@@ -275,8 +295,6 @@ namespace AetherialArena.UI
             }
 
             var finalDrawPos = baseDrawPos + animationOffset;
-
-            // Use absolute positioning to draw the image, which allows it to overlap
             var drawList = ImGui.GetWindowDrawList();
             var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey, true);
             if (icon != null)
@@ -302,8 +320,6 @@ namespace AetherialArena.UI
                     }
                 }
             }
-
-            // Reserve space in the layout so other elements don't collapse into this area
             ImGui.Dummy(spaceToReserve);
         }
 
@@ -318,9 +334,14 @@ namespace AetherialArena.UI
                 ImGui.BeginDisabled();
             }
 
-            var buttonSize = new Vector2(-1, 0);
+            // Calculate width for two buttons per row, with spacing
+            var buttonWidth = ImGui.GetContentRegionAvail().X * 0.5f - ImGui.GetStyle().ItemSpacing.X * 0.5f;
+            var buttonSize = new Vector2(buttonWidth, 0);
 
+            // --- Row 1: Attack & Heal ---
             if (DrawButtonWithOutline("Attack", "Attack", buttonSize)) { battleManager.PlayerAttack(); }
+
+            ImGui.SameLine();
 
             bool canHeal = activePlayer.Mana >= 10;
             if (!canHeal) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
@@ -329,6 +350,15 @@ namespace AetherialArena.UI
                 if (canHeal) battleManager.PlayerHeal();
             }
             if (!canHeal) ImGui.PopStyleVar();
+
+
+            // --- Row 2: Swap & Special ---
+            if (DrawButtonWithOutline("Swap", "Swap", buttonSize))
+            {
+                isSwapping = true;
+            }
+
+            ImGui.SameLine();
 
             var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
             bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
@@ -339,9 +369,46 @@ namespace AetherialArena.UI
             }
             if (!canUseSpecial) ImGui.PopStyleVar();
 
+
             if (shouldBeDisabled)
             {
                 ImGui.EndDisabled();
+            }
+        }
+
+        // --- NEW METHOD for Swap Selection UI ---
+        private void DrawSwapSelection()
+        {
+            DrawOutlinedText("Select a Sprite to Swap In:");
+            ImGui.BeginChild("SwapSelection", new Vector2(0, 80), true);
+
+            var reserveSprites = battleManager.PlayerParty.Where(s => s.ID != battleManager.ActivePlayerSprite?.ID).ToList();
+
+            if (!reserveSprites.Any())
+            {
+                DrawOutlinedText("No reserves available.");
+            }
+            else
+            {
+                foreach (var reserve in reserveSprites)
+                {
+                    bool canSwap = reserve.Health > 0;
+                    if (!canSwap) ImGui.BeginDisabled();
+
+                    if (ImGui.Selectable($"{reserve.Name} (HP: {reserve.Health}/{reserve.MaxHealth})##{reserve.ID}"))
+                    {
+                        battleManager.PlayerSwap(reserve.ID);
+                        isSwapping = false; // Exit swap mode after selection
+                    }
+
+                    if (!canSwap) ImGui.EndDisabled();
+                }
+            }
+            ImGui.EndChild();
+
+            if (DrawButtonWithOutline("CancelSwap", "Cancel", new Vector2(-1, 0)))
+            {
+                isSwapping = false; // Exit swap mode
             }
         }
 

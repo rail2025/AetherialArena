@@ -13,6 +13,7 @@ using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Game.ClientState.Conditions;
 using AetherialArena.Audio;
 using ImGuiNET;
+using System;
 
 namespace AetherialArena
 {
@@ -50,9 +51,7 @@ namespace AetherialArena
         public readonly CollectionWindow CollectionWindow;
         public readonly CodexWindow CodexWindow;
 
-        private readonly Stopwatch regenTimer = new();
-        private readonly double regenIntervalMinutes = 10;
-
+        
         private bool searchActionQueued = false;
         private ushort? queuedTerritoryOverride;
         private uint? queuedSubLocationOverride;
@@ -101,7 +100,7 @@ namespace AetherialArena
             PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUi;
 
             Framework.Update += OnFrameworkUpdate;
-            regenTimer.Start();
+            
         }
 
         public void QueueEncounterSearch(ushort? territoryOverride = null, uint? subLocationOverride = null)
@@ -152,15 +151,24 @@ namespace AetherialArena
                 this.queuedSubLocationOverride = null;
             }
 
-            if (regenTimer.Elapsed.TotalMinutes >= this.regenIntervalMinutes)
+            var regenIntervalMinutes = 10;
+            var timeSinceLastRegen = DateTime.UtcNow - PlayerProfile.LastAetherRegenTimestamp;
+
+            if (timeSinceLastRegen.TotalMinutes >= regenIntervalMinutes)
             {
-                if (PlayerProfile.CurrentAether < PlayerProfile.MaxAether)
+                // Calculate how many full 10-minute intervals have passed
+                int intervalsPassed = (int)(timeSinceLastRegen.TotalMinutes / regenIntervalMinutes);
+                int aetherToRegen = intervalsPassed;
+
+                if (PlayerProfile.CurrentAether < PlayerProfile.MaxAether && aetherToRegen > 0)
                 {
-                    PlayerProfile.CurrentAether++;
+                    PlayerProfile.CurrentAether = Math.Min(PlayerProfile.MaxAether, PlayerProfile.CurrentAether + aetherToRegen);
                     SaveManager.SaveProfile(PlayerProfile);
                     Log.Info($"Aether regenerated. Current: {PlayerProfile.CurrentAether}/{PlayerProfile.MaxAether}");
                 }
-                regenTimer.Restart();
+
+                // Advance the timestamp by the intervals we just processed
+                PlayerProfile.LastAetherRegenTimestamp = PlayerProfile.LastAetherRegenTimestamp.AddMinutes(intervalsPassed * regenIntervalMinutes);
             }
         }
 

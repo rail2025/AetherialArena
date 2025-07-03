@@ -73,7 +73,9 @@ namespace AetherialArena.Models
         StatDebuff,
         Stun,
         DamageOverTime,
-        ManaDrain
+        ManaDrain,
+        LifeSteal,
+        Reflect
     }
 
     public enum Stat

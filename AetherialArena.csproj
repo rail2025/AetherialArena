@@ -13,6 +13,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Icons\water_boss_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\levin_boss_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\ice_boss_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\wind_boss_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\earth_boss_icon.png" />
     <EmbeddedResource Include="Assets\Icons\fire_boss_icon.png" />
     <EmbeddedResource Include="Assets\Backgrounds\arenabackground.png" />
     <EmbeddedResource Include="Assets\Icons\grass.png" />

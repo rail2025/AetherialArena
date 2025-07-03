@@ -61,7 +61,7 @@
         "Attack": 7,
         "Defense": -4,
         "Speed": 3,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Acid Spit",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -109,7 +109,7 @@
         "Attack": 7,
         "Defense": -4,
         "Speed": 3,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Wall Breaker",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -205,7 +205,7 @@
         "Attack": 7,
         "Defense": -4,
         "Speed": 3,
-        "SpecialAbility": "Stun",
+        "SpecialAbility": "Paper Tiger",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -253,7 +253,7 @@
         "Attack": 8,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Moldy Mead",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -301,7 +301,7 @@
         "Attack": 8,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Fortify",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -333,7 +333,7 @@
         "Attack": 7,
         "Defense": -4,
         "Speed": 3,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Second Breath",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -365,7 +365,7 @@
         "Attack": 6,
         "Defense": -5,
         "Speed": 0,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Mana Burn",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -429,7 +429,7 @@
         "Attack": 8,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Shocking Blow",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -461,7 +461,7 @@
         "Attack": 7,
         "Defense": -5,
         "Speed": 0,
-        "SpecialAbility": "Haste",
+        "SpecialAbility": "Glass Cannon",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -525,7 +525,7 @@
         "Attack": 6,
         "Defense": -5,
         "Speed": 0,
-        "SpecialAbility": "Haste",
+        "SpecialAbility": "Deep Wounds",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -541,7 +541,7 @@
         "Attack": 9,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Stun",
+        "SpecialAbility": "Blinding Fog",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -590,8 +590,8 @@
         "Mana": 54,
         "Attack": 8,
         "Defense": -4,
-        "Speed": 0,
-        "SpecialAbility": "Regen",
+        "Speed": 2,
+        "SpecialAbility": "Quick Step",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -703,7 +703,7 @@
         "Attack": 9,
         "Defense": -5,
         "Speed": 1,
-        "SpecialAbility": "Stun",
+        "SpecialAbility": "Focused Strike",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -783,7 +783,7 @@
         "Attack": 9,
         "Defense": -5,
         "Speed": 1,
-        "SpecialAbility": "Haste",
+        "SpecialAbility": "Void Blast",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -799,7 +799,7 @@
         "Attack": 9,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Haste",
+        "SpecialAbility": "Draining Shock",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -815,7 +815,7 @@
         "Attack": 8,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Rally",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -863,7 +863,7 @@
         "Attack": 8,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Vampiric Strike",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -911,7 +911,7 @@
         "Attack": 7,
         "Defense": -5,
         "Speed": 2,
-        "SpecialAbility": "Regen",
+        "SpecialAbility": "Blade Wall",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -943,7 +943,7 @@
         "Attack": 9,
         "Defense": -4,
         "Speed": 0,
-        "SpecialAbility": "Haste",
+        "SpecialAbility": "Mana Siphon",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -959,7 +959,7 @@
         "Attack": 6,
         "Defense": -5,
         "Speed": -2,
-        "SpecialAbility": "Haste",
+        "SpecialAbility": "Corrosive Spikes",
         "BaseHeal": "Heals 75% of base attack (10) at MP cost"
     },
     {
@@ -1148,9 +1148,9 @@
         "Rarity": "Boss",
         "MaxHealth": 600,
         "MaxMana": 50,
-        "Attack": 80,
-        "Defense": 100,
-        "Speed": 40,
+        "Attack": 10,
+        "Defense": 4,
+        "Speed": 7,
         "AttackType": [ "Ground" ],
         "Weaknesses": [ "Air" ],
         "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Ground", "Blunt", "Magic" ],
@@ -1165,9 +1165,9 @@
         "Rarity": "Boss",
         "MaxHealth": 450,
         "MaxMana": 60,
-        "Attack": 60,
-        "Defense": 60,
-        "Speed": 120,
+        "Attack": 10,
+        "Defense": 4,
+        "Speed": 8,
         "AttackType": [ "Air" ],
         "Weaknesses": [ "Ice" ],
         "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Blunt", "Magic" ],
@@ -1182,9 +1182,9 @@
         "Rarity": "Boss",
         "MaxHealth": 550,
         "MaxMana": 60,
-        "Attack": 70,
-        "Defense": 90,
-        "Speed": 60,
+        "Attack": 10,
+        "Defense": 5,
+        "Speed": 6,
         "AttackType": [ "Ice", "Piercing" ],
         "Weaknesses": [ "Blunt" ],
         "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Ground", "Magic" ],
@@ -1199,9 +1199,9 @@
         "Rarity": "Boss",
         "MaxHealth": 500,
         "MaxMana": 70,
-        "Attack": 75,
-        "Defense": 75,
-        "Speed": 70,
+        "Attack": 10,
+        "Defense": 4,
+        "Speed": 7,
         "AttackType": [ "Blunt" ],
         "Weaknesses": [ "Electric" ],
         "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Ground", "Magic" ],
@@ -1216,9 +1216,9 @@
         "Rarity": "Boss",
         "MaxHealth": 480,
         "MaxMana": 80,
-        "Attack": 90,
-        "Defense": 70,
-        "Speed": 90,
+        "Attack": 10,
+        "Defense": 4,
+        "Speed": 9,
         "AttackType": [ "Electric" ],
         "Weaknesses": [ "Fire" ],
         "Resistances": [ "Ice", "Wind", "Electric", "Air", "Ground", "Blunt", "Magic" ],
@@ -1233,9 +1233,9 @@
         "Rarity": "Boss",
         "MaxHealth": 999,
         "MaxMana": 100,
-        "Attack": 120,
-        "Defense": 120,
-        "Speed": 80,
+        "Attack": 12,
+        "Defense": 10,
+        "Speed": 8,
         "AttackType": [ "Physical" ],
         "Weaknesses": [ "Magic" ],
         "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Ground", "Blunt" ],

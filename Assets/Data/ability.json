@@ -73,6 +73,326 @@
         ]
     },
     {
+        "ID": 6,
+        "Name": "Acid Spit",
+        "Description": "Deals 15 damage per turn and lowers Defense by 25% for 3 turns.",
+        "ManaCost": 20,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "DamageOverTime",
+                "StatAffected": "None",
+                "Potency": 15,
+                "Duration": 3
+            },
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Defense",
+                "Potency": 0.75,
+                "Duration": 3
+            }
+        ]
+    },
+    {
+        "ID": 7,
+        "Name": "Wall Breaker",
+        "Description": "Drastically reduces the opponent's Defense for 4 turns.",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Defense",
+                "Potency": 0.50,
+                "Duration": 4
+
+            }
+        ]
+    },
+    {
+        "ID": 8,
+        "Name": "Paper Tiger",
+        "Description": "Saps the opponent's strength, reducing their Attack by 25% for 4 turns.",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Attack",
+                "Potency": 0.75,
+                "Duration": 4
+            }
+        ]
+    },
+    {
+        "ID": 9,
+        "Name": "Moldy Mead",
+        "Description": "Poisons the opponent, dealing damage over time and slowing them.",
+        "ManaCost": 18,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "DamageOverTime",
+                "Potency": 10,
+                "Duration": 4
+            },
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Speed",
+                "Potency": 0.80,
+                "Duration": 4
+            }
+        ]
+    },
+    {
+        "ID": 10,
+        "Name": "Fortify",
+        "Description": "Massively increases Defense for 2 turns to weather a heavy blow.",
+        "ManaCost": 20,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "StatBuff",
+                "StatAffected": "Defense",
+                "Potency": 2.0,
+                "Duration": 2
+            }
+        ]
+    },
+    {
+        "ID": 11,
+        "Name": "Second Breath",
+        "Description": "Provides a small immediate heal and applies a Regen effect.",
+        "ManaCost": 25,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "Heal",
+                "Potency": 15,
+                "Duration": 0
+            },
+            {
+                "EffectType": "Heal",
+                "Potency": 10,
+                "Duration": 3
+            }
+        ]
+    },
+    {
+        "ID": 12,
+        "Name": "Mana Burn",
+        "Description": "Burns away a large amount of the opponent's mana.",
+        "ManaCost": 8,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "ManaDrain",
+                "Potency": 30,
+                "Duration": 0
+            }
+        ]
+    },
+    {
+        "ID": 13,
+        "Name": "Shocking Blow",
+        "Description": "A heavy strike that can leave the opponent stunned.",
+        "ManaCost": 22,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Damage",
+                "Potency": 40,
+                "Duration": 0
+            },
+            {
+                "EffectType": "Stun",
+                "Potency": 1,
+                "Duration": 1
+            }
+        ]
+    },
+    {
+        "ID": 14,
+        "Name": "Glass Cannon",
+        "Description": "Massively boosts your Attack for 3 turns, but sharply lowers your own Defense.",
+        "ManaCost": 15,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "StatBuff",
+                "StatAffected": "Attack",
+                "Potency": 1.75,
+                "Duration": 3
+            },
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Defense",
+                "Potency": 0.75,
+                "Duration": 3
+            }
+        ]
+    },
+    {
+        "ID": 15,
+        "Name": "Deep Wounds",
+        "Description": "Inflicts a bleeding effect that deals damage over a long duration.",
+        "ManaCost": 18,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "DamageOverTime",
+                "Potency": 8,
+                "Duration": 6
+            }
+        ]
+    },
+    {
+        "ID": 16,
+        "Name": "Blinding fog",
+        "Description": "Obscures the vision of the opponent, reducing both their Attack and Speed.",
+        "ManaCost": 16,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Attack",
+                "Potency": 0.85,
+                "Duration": 3
+            },
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Speed",
+                "Potency": 0.85,
+                "Duration": 3
+            }
+        ]
+    },
+    {
+        "ID": 17,
+        "Name": "Quick Step",
+        "Description": "Drastically increases Speed for 4 turns, allowing you to act more frequently.",
+        "ManaCost": 20,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "StatBuff",
+                "StatAffected": "Speed",
+                "Potency": 1.50,
+                "Duration": 4
+            }
+        ]
+    },
+    {
+        "ID": 18,
+        "Name": "Focused Strike",
+        "Description": "A precise attack that also buffs the user's Attack for their next turn.",
+        "ManaCost": 20,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Damage",
+                "Potency": 20,
+                "Duration": 0
+            },
+            {
+                "EffectType": "StatBuff",
+                "StatAffected": "Attack",
+                "Potency": 2.25,
+                "Duration": 2
+            }
+        ]
+    },
+    {
+        "ID": 19,
+        "Name": "Void Blast",
+        "Description": "A pure, high-cost, high-damage magical explosion.",
+        "ManaCost": 40,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Damage",
+                "Potency": 80,
+                "Duration": 0
+            }
+        ]
+    },
+    {
+        "ID": 20,
+        "Name": "Draining Shock",
+        "Description": "A weak attack that drains a small amount of mana and slows the opponent.",
+        "ManaCost": 10,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "ManaDrain",
+                "Potency": 15,
+                "Duration": 0
+            },
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Speed",
+                "Potency": 0.90,
+                "Duration": 2
+            }
+        ]
+    },
+    {
+        "ID": 21,
+        "Name": "Rally",
+        "Description": "The user lets out a rallying cry, healing themselves and bolstering their defense.",
+        "ManaCost": 18,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "Heal",
+                "Potency": 40,
+                "Duration": 0
+            },
+            {
+                "EffectType": "StatBuff",
+                "StatAffected": "Defense",
+                "Potency": 1.15,
+                "Duration": 3
+            }
+        ]
+    },
+    {
+        "ID": 22,
+        "Name": "Vampiric Strike",
+        "Description": "An attack that heals the user for 50% of the damage dealt.",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "Damage",
+                "StatAffected": "None",
+                "Potency": 20,
+                "Duration": 0
+            },
+            {
+                "EffectType": "LifeSteal",
+                "StatAffected": "None",
+                "Potency": 0.5,
+                "Duration": 0
+            }
+        ]
+    },
+    {
+        "ID": 23,
+        "Name": "Blade wall",
+        "Description": "For 3 turns, reflect 25% of damage received back at the attacker.",
+        "ManaCost": 20,
+        "Target": "Self",
+        "Effects": [
+            {
+                "EffectType": "Reflect",
+                "StatAffected": "None",
+                "Potency": 0.25,
+                "Duration": 3
+            }
+        ]
+    },
+    {
         "ID": 100,
         "Name": "Mana Siphon",
         "Description": "Drains 25 mana from the opponent.",
@@ -83,6 +403,27 @@
                 "EffectType": "ManaDrain",
                 "Potency": 25,
                 "Duration": 0
+            }
+        ]
+    },
+    {
+        "ID": 108,
+        "Name": "Corrosive Spikes",
+        "Description": "Deals 15 damage per turn and lowers Defense by 25% for 3 turns.",
+        "ManaCost": 20,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "DamageOverTime",
+                "StatAffected": "None",
+                "Potency": 15,
+                "Duration": 3
+            },
+            {
+                "EffectType": "StatDebuff",
+                "StatAffected": "Defense",
+                "Potency": 0.75,
+                "Duration": 3
             }
         ]
     },
