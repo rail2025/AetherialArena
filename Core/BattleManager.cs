@@ -27,6 +27,8 @@ namespace AetherialArena.Core
         private double actionDelay = 0;
         private const int HEAL_MANA_COST = 10;
         private const int ACTION_GAUGE_MAX = 1000;
+        private const int DEVASTATION_STATION_ID = 77; // Set this to the correct ID for Devastation Station
+        private const int EARTH_BOSS_ID = 72;  // Set this to the correct ID for Earth Slam
         private bool isArenaBattle = false;
 
         private List<float> aiSpecialAbilityHpThresholdsUsed = new();
@@ -50,12 +52,21 @@ namespace AetherialArena.Core
 
         private class ActiveAbilityEffect
         {
-            public AbilityEffect Effect { get; }
+            public AbilityEffect Effect { get; set; } // Changed to allow modification
             public int TurnsRemaining { get; set; }
             public string SourceAbilityName { get; }
+            public bool IsTriggered { get; set; } = false;
             public ActiveAbilityEffect(AbilityEffect effect, string sourceAbilityName)
             {
-                Effect = effect;
+                Effect = new AbilityEffect
+                {
+                    EffectType = effect.EffectType,
+                    StatAffected = effect.StatAffected,
+                    Potency = effect.Potency,
+                    Duration = effect.Duration,
+                    InitialDelay = effect.InitialDelay,
+                    Stacks = effect.Stacks
+                };
                 TurnsRemaining = effect.Duration;
                 SourceAbilityName = sourceAbilityName;
             }
@@ -113,7 +124,7 @@ namespace AetherialArena.Core
                     OpponentSprite.MaxHealth *= 3;
                     OpponentSprite.Health = OpponentSprite.MaxHealth;
                 }
-                actionGauges[OpponentSprite] = random.Next(0, 200);
+                actionGauges[OpponentSprite] = new Random().Next(0, 200);
                 activeEffects[OpponentSprite] = new List<ActiveAbilityEffect>();
             }
 
@@ -236,9 +247,7 @@ namespace AetherialArena.Core
             int h = (int)(p.Attack * 1.5f);
             p.Health = Math.Min(p.MaxHealth, p.Health + h);
             AddToLog($"{p.Name} heals for {h} HP.", CombatLogColor.Heal);
-            AttackingSprite = p;
-            TargetSprite = p;
-            IsHealAction = true;
+            AttackingSprite = p; TargetSprite = p; IsHealAction = true;
             audioManager.PlaySfx("heal.wav");
         });
 
@@ -252,7 +261,6 @@ namespace AetherialArena.Core
             ApplyAbility(p, OpponentSprite, ability);
         });
 
-        // --- NEW METHOD for Sprite Swapping ---
         public void PlayerSwap(int reserveSpriteId) => ExecutePlayerAction(p =>
         {
             var currentSprite = p;
@@ -261,7 +269,6 @@ namespace AetherialArena.Core
             if (reserveSprite == null || reserveSprite.Health <= 0)
             {
                 AddToLog("Cannot swap to that sprite.", CombatLogColor.Status);
-                // Note: This still consumes the turn as a penalty for a failed action.
                 return;
             }
 
@@ -270,7 +277,6 @@ namespace AetherialArena.Core
 
             if (currentIndex != -1 && reserveIndex != -1)
             {
-                // Simple swap in the list. The ActivePlayerSprite property will find the new first healthy one.
                 var temp = PlayerParty[0];
                 PlayerParty[0] = PlayerParty[reserveIndex];
                 PlayerParty[reserveIndex] = temp;
@@ -294,10 +300,23 @@ namespace AetherialArena.Core
             }
 
             float hpPercent = (float)aiSprite.Health / aiSprite.MaxHealth;
-            bool canAffordHeal = aiSprite.Mana >= HEAL_MANA_COST;
             var specialAbility = plugin.DataManager.GetAbility(aiSprite.SpecialAbilityID);
-            bool canAffordSpecial = specialAbility != null && aiSprite.Mana >= specialAbility.ManaCost;
 
+            // Special AI Logic for Devastation Station
+            if (aiSprite.ID == DEVASTATION_STATION_ID && specialAbility != null)
+            {
+                bool canAffordSpecialForBoss = aiSprite.Mana >= specialAbility.ManaCost;
+                if (hpPercent <= 0.15f && canAffordSpecialForBoss && !activeEffects[aiSprite].Any(e => e.Effect.EffectType == EffectType.Casting))
+                {
+                    aiSprite.Mana -= specialAbility.ManaCost;
+                    AddToLog($"{aiSprite.Name} begins casting Total Annihilation!", CombatLogColor.Status);
+                    activeEffects[aiSprite].Add(new ActiveAbilityEffect(specialAbility.Effects.First(), specialAbility.Name));
+                    goto EndAITurn;
+                }
+            }
+
+            // Standard AI Heal Logic
+            bool canAffordHeal = aiSprite.Mana >= HEAL_MANA_COST;
             float[] healThresholds = { 0.25f, 0.5f };
             foreach (var threshold in healThresholds)
             {
@@ -313,9 +332,11 @@ namespace AetherialArena.Core
                 }
             }
 
-            float[] specialThresholds = { 0.90f, 0.66f, 0.40f };
+            // Standard AI Special Ability Logic
+            bool canAffordSpecial = specialAbility != null && aiSprite.Mana >= specialAbility.ManaCost;
             if (canAffordSpecial && specialAbility != null)
             {
+                float[] specialThresholds = { 0.90f, 0.66f, 0.40f };
                 foreach (var threshold in specialThresholds)
                 {
                     if (hpPercent <= threshold && !aiSpecialAbilityHpThresholdsUsed.Contains(threshold))
@@ -329,6 +350,7 @@ namespace AetherialArena.Core
                 }
             }
 
+            // Default action: a standard attack
             var result = CalculateDamage(aiSprite, playerSprite);
             LogAttackResult(aiSprite, playerSprite, result);
             DealDamage(aiSprite, playerSprite, result.Damage);
@@ -342,11 +364,11 @@ namespace AetherialArena.Core
 
         private void SetActionDelay() { actionDelay = 1.5; }
         private bool HandlePreTurnChecks(Sprite s) { if (IsStunned(s)) { AddToLog($"{s.Name} is stunned and cannot act!", CombatLogColor.Status); return true; } return false; }
+
+        // This is the simplified, correct version.
         private void HandlePostTurnActions(Sprite actingSprite)
         {
             TickDownEffects(actingSprite);
-            var otherCombatant = (actingSprite == ActivePlayerSprite) ? OpponentSprite : ActivePlayerSprite;
-            if (otherCombatant != null) TickDownStunEffect(otherCombatant);
             CheckForWinner();
         }
 
@@ -354,22 +376,25 @@ namespace AetherialArena.Core
         {
             AttackingSprite = source;
             IsSelfBuff = ability.Target == TargetType.Self;
-            TargetSprite = IsSelfBuff ? source : primaryTarget;
             LastAttackTypes = new List<string> { "special" };
-
-            var mainTarget = ability.Target == TargetType.Self ? source : primaryTarget;
             int damageDealtThisAbility = 0;
 
+            // Pre-calculate damage if a LifeSteal effect exists, as it depends on the damage dealt.
             var damageEffect = ability.Effects.FirstOrDefault(e => e.EffectType == EffectType.Damage);
             if (damageEffect != null)
             {
-                var damageResult = CalculateDamage(source, mainTarget);
-                damageDealtThisAbility = damageResult.Damage;
+                damageDealtThisAbility = CalculateDamage(source, primaryTarget).Damage;
             }
 
             foreach (var effect in ability.Effects)
             {
-                var currentTarget = ability.Target == TargetType.Self ? source : primaryTarget;
+                // CORRECTED LOGIC: Check for the effect's own target, but fall back to the ability's target if it's not specified.
+                var finalTargetType = effect.Target ?? ability.Target;
+                var currentTarget = (finalTargetType == TargetType.Self) ? source : primaryTarget;
+
+                // Set properties for the UI to display the action correctly
+                IsSelfBuff = currentTarget == source;
+                TargetSprite = currentTarget;
 
                 switch (effect.EffectType)
                 {
@@ -389,43 +414,51 @@ namespace AetherialArena.Core
                         break;
 
                     case EffectType.Heal:
-                    case EffectType.StatBuff:
-                    case EffectType.StatDebuff:
-                    case EffectType.Stun:
-                    case EffectType.Reflect:
-                    case EffectType.DamageOverTime:
-                        if (effect.Duration > 0)
-                        {
-                            activeEffects[currentTarget].Add(new ActiveAbilityEffect(effect, ability.Name));
-                        }
-                        else
-                        {
-                            ApplyInstantEffect(effect, currentTarget);
-                        }
+                    case EffectType.ManaDrain:
+                        ApplyInstantEffect(effect, currentTarget, source);
                         break;
 
-                    case EffectType.ManaDrain:
-                        int manaDrained = (int)effect.Potency;
-                        currentTarget.Mana = Math.Max(0, currentTarget.Mana - manaDrained);
-                        AddToLog($"{source.Name} drains {manaDrained} mana from {currentTarget.Name}!", CombatLogColor.Status);
+                    default: // All other effects are duration-based (Stun, Reflect, DoT, Buffs, Debuffs, etc.)
+                        activeEffects[currentTarget].Add(new ActiveAbilityEffect(effect, ability.Name));
                         break;
                 }
             }
             audioManager.PlaySfx("heal.wav");
         }
 
-        private void ApplyInstantEffect(AbilityEffect e, Sprite t)
+        private void ApplyInstantEffect(AbilityEffect e, Sprite t, Sprite s)
         {
             if (e.EffectType == EffectType.Heal)
             {
                 t.Health = Math.Min(t.MaxHealth, t.Health + (int)e.Potency);
                 AddToLog($"{t.Name} heals for {e.Potency} HP.", CombatLogColor.Heal);
             }
+            if (e.EffectType == EffectType.ManaDrain)
+            {
+                int manaDrained = (int)e.Potency;
+                t.Mana = Math.Max(0, t.Mana - manaDrained);
+                AddToLog($"{s.Name} drains {manaDrained} mana from {t.Name}!", CombatLogColor.Status);
+            }
         }
 
         private void DealDamage(Sprite attacker, Sprite defender, int damageAmount, bool playSound = true)
         {
             if (State != BattleState.InProgress) return;
+
+            // Entomb Trigger Logic 
+            // If the attacker is the Earth Boss, check if the defender has the Entomb curse.
+            if (attacker.ID == EARTH_BOSS_ID)
+            {
+                // Find an untriggered curse on the defender.
+                var entombCurse = activeEffects.GetValueOrDefault(defender, new List<ActiveAbilityEffect>())
+                                             .FirstOrDefault(e => e.SourceAbilityName == "Entomb's Curse" && !e.IsTriggered);
+                if (entombCurse != null)
+                {
+                    entombCurse.IsTriggered = true; // Mark the curse as "primed"
+                    AddToLog($"{defender.Name}'s earthen prison becomes unstable!", CombatLogColor.Status);
+                }
+            }
+            
 
             var reflectEffect = activeEffects[defender].FirstOrDefault(e => e.Effect.EffectType == EffectType.Reflect);
 
@@ -437,7 +470,6 @@ namespace AetherialArena.Core
                     attacker.Health -= reflectedDamage;
                     AddToLog($"{defender.Name}'s shield reflects {reflectedDamage} damage!", CombatLogColor.Damage);
                     if (playSound) audioManager.PlaySfx("hit.wav");
-
                     CheckForWinner();
                     if (State != BattleState.InProgress) return;
                 }
@@ -456,8 +488,7 @@ namespace AetherialArena.Core
 
         private void LogAttackResult(Sprite a, Sprite d, DamageResult r)
         {
-            AttackingSprite = a;
-            TargetSprite = d;
+            AttackingSprite = a; TargetSprite = d;
             LastAttackTypes = a.AttackType.Any() ? new List<string>(a.AttackType) : new List<string> { "physical" };
             IsHealAction = false;
             var t = a.AttackType.Any() ? string.Join(" & ", a.AttackType) : "physical";
@@ -467,58 +498,130 @@ namespace AetherialArena.Core
         }
         private void AddToLog(string m, CombatLogColor color = CombatLogColor.Normal) { CombatLog.Add(new CombatLogEntry(m, color)); if (CombatLog.Count > 50) CombatLog.RemoveAt(0); ShouldScrollLog = true; }
 
-        private void TickDownEffects(Sprite s)
+
+        private void TickDownEffects(Sprite actingSprite)
         {
-            if (!activeEffects.ContainsKey(s)) return;
-            var effectsForSprite = activeEffects[s];
+            var allCombatants = new List<Sprite>(PlayerParty);
+            if (OpponentSprite != null) allCombatants.Add(OpponentSprite);
 
-            foreach (var activeEffect in effectsForSprite.Where(x => x.Effect.EffectType == EffectType.DamageOverTime))
+            foreach (var s in allCombatants)
             {
-                int dotDamage = (int)activeEffect.Effect.Potency;
-                s.Health -= dotDamage;
-                AddToLog($"{s.Name} takes {dotDamage} damage from {activeEffect.SourceAbilityName}.", CombatLogColor.Damage);
-                audioManager.PlaySfx("hit.wav");
-            }
-            CheckForWinner();
-            if (State != BattleState.InProgress) return;
+                if (!activeEffects.ContainsKey(s)) continue;
+                var effectsForSprite = activeEffects[s];
 
-
-            foreach (var activeEffect in effectsForSprite.Where(x => x.Effect.EffectType == EffectType.Heal && x.Effect.Duration > 0))
-            {
-                int healAmount = (int)activeEffect.Effect.Potency;
-                s.Health = Math.Min(s.MaxHealth, s.Health + healAmount);
-                AddToLog($"{s.Name} is healed for {healAmount} HP by {activeEffect.SourceAbilityName}.", CombatLogColor.Heal);
-                audioManager.PlaySfx("heal.wav");
-            }
-            for (int i = effectsForSprite.Count - 1; i >= 0; i--)
-            {
-                var effect = effectsForSprite[i];
-                if (effect.Effect.EffectType == EffectType.Stun) continue;
-                effect.TurnsRemaining--;
-                if (effect.TurnsRemaining <= 0)
+                for (int i = effectsForSprite.Count - 1; i >= 0; i--)
                 {
-                    AddToLog($"{s.Name}'s {effect.SourceAbilityName} has worn off.", CombatLogColor.Status);
-                    effectsForSprite.RemoveAt(i);
+                    var activeEffect = effectsForSprite[i];
+
+                    if (activeEffect.Effect.EffectType == EffectType.Stun && s == actingSprite) continue;
+
+                    if (activeEffect.Effect.InitialDelay > 0)
+                    {
+                        activeEffect.Effect.InitialDelay--;
+                        continue;
+                    }
+
+                    bool effectHandledAndRemoved = false;
+                    switch (activeEffect.Effect.EffectType)
+                    {
+                        case EffectType.DelayedStun:
+                            AddToLog($"{s.Name} is entombed and stunned!", CombatLogColor.Status);
+                            activeEffect.Effect = new AbilityEffect { EffectType = EffectType.Stun, Duration = 2 };
+                            activeEffect.TurnsRemaining = 2;
+                            effectsForSprite.Add(new ActiveAbilityEffect(new AbilityEffect { EffectType = EffectType.ConditionalDamage, Potency = 60, Duration = 2 }, "Entomb's Curse"));
+                            break;
+
+                        case EffectType.DelayedDamage:
+                            if (s == ActivePlayerSprite)
+                            {
+                                if (OpponentSprite != null)
+                                {
+                                    AddToLog($"{s.Name} is struck by a massive gale!", CombatLogColor.Damage);
+                                    DealDamage(OpponentSprite, s, (int)activeEffect.Effect.Potency);
+                                }
+                            }
+                            else
+                            {
+                                AddToLog($"{s.Name} avoided the gale by being in reserve!", CombatLogColor.Status);
+                            }
+                            effectsForSprite.RemoveAt(i);
+                            effectHandledAndRemoved = true;
+                            break;
+
+                        case EffectType.Casting:
+                            if (activeEffect.TurnsRemaining == 1)
+                            {
+                                AddToLog($"{s.Name} unleashes Total Annihilation!", CombatLogColor.Damage);
+                                DealDamage(s, PlayerParty.First(), (int)activeEffect.Effect.Potency);
+                                effectsForSprite.RemoveAt(i);
+                                effectHandledAndRemoved = true;
+                            }
+                            else
+                            {
+                                AddToLog($"{s.Name}'s attack is charging... {activeEffect.TurnsRemaining - 1} turns remaining.", CombatLogColor.Status);
+                            }
+                            break;
+
+                        case EffectType.ChanceToStunOverTime:
+                            if (random.NextDouble() < activeEffect.Effect.Potency)
+                            {
+                                AddToLog($"{s.Name}'s aether erupts! They are stunned!", CombatLogColor.Status);
+                                effectsForSprite.Add(new ActiveAbilityEffect(new AbilityEffect { EffectType = EffectType.Stun, Duration = 2 }, "Judgment Stun"));
+                            }
+                            break;
+
+                        case EffectType.DamageOverTime:
+                            int dotDamage = (int)activeEffect.Effect.Potency;
+                            s.Health -= dotDamage;
+                            AddToLog($"{s.Name} takes {dotDamage} damage from {activeEffect.SourceAbilityName}.", CombatLogColor.Damage);
+                            audioManager.PlaySfx("hit.wav");
+                            break;
+
+                        case EffectType.Heal:
+                            if (activeEffect.Effect.Duration > 0)
+                            {
+                                int healAmount = (int)activeEffect.Effect.Potency;
+                                s.Health = Math.Min(s.MaxHealth, s.Health + healAmount);
+                                AddToLog($"{s.Name} is healed for {healAmount} HP by {activeEffect.SourceAbilityName}.", CombatLogColor.Heal);
+                                audioManager.PlaySfx("heal.wav");
+                            }
+                            break;
+                    }
+
+                    if (effectHandledAndRemoved) continue;
+
+                    // Entomb Expiration Logic
+                    if (activeEffect.Effect.EffectType == EffectType.Stun && activeEffect.TurnsRemaining == 1)
+                    {
+                        var entombCurse = effectsForSprite.FirstOrDefault(e => e.SourceAbilityName == "Entomb's Curse");
+                        if (entombCurse != null)
+                        {
+                            // Only deal damage if the curse was triggered by a hit.
+                            if (entombCurse.IsTriggered)
+                            {
+                                int damage = (int)entombCurse.Effect.Potency;
+                                AddToLog($"{s.Name} takes {damage} damage as the tomb shatters!", CombatLogColor.Damage);
+                                s.Health -= damage;
+                                audioManager.PlaySfx("hit.wav");
+                                CheckForWinner();
+                            }
+                            // Always remove the curse when the stun wears off.
+                            effectsForSprite.Remove(entombCurse);
+                        }
+                    }
+                    
+
+                    activeEffect.TurnsRemaining--;
+                    if (activeEffect.TurnsRemaining <= 0)
+                    {
+                        if (activeEffect.Effect.EffectType != EffectType.Casting) AddToLog($"{s.Name}'s {activeEffect.SourceAbilityName} has worn off.", CombatLogColor.Status);
+                        effectsForSprite.RemoveAt(i);
+                    }
                 }
             }
         }
 
-        private void TickDownStunEffect(Sprite s)
-        {
-            if (!activeEffects.ContainsKey(s)) return;
-            var effectsForSprite = activeEffects[s];
-            for (int i = effectsForSprite.Count - 1; i >= 0; i--)
-            {
-                var effect = effectsForSprite[i];
-                if (effect.Effect.EffectType != EffectType.Stun) continue;
-                effect.TurnsRemaining--;
-                if (effect.TurnsRemaining <= 0)
-                {
-                    AddToLog($"{s.Name}'s {effect.SourceAbilityName} has worn off.", CombatLogColor.Status);
-                    effectsForSprite.RemoveAt(i);
-                }
-            }
-        }
+        
 
         private bool IsStunned(Sprite s) => activeEffects.ContainsKey(s) && activeEffects[s].Any(e => e.Effect.EffectType == EffectType.Stun);
 
@@ -616,7 +719,18 @@ namespace AetherialArena.Core
             }
         }
 
-        private float GetStatMultiplier(Sprite s, Stat st) { float m = 1.0f; if (activeEffects.TryGetValue(s, out var e)) { foreach (var ae in e.Where(x => x.Effect.StatAffected == st)) { m *= ae.Effect.Potency; } } return m; }
+        private float GetStatMultiplier(Sprite s, Stat st)
+        {
+            float m = 1.0f;
+            if (activeEffects.TryGetValue(s, out var e))
+            {
+                foreach (var ae in e.Where(x => x.Effect.StatAffected == st))
+                {
+                    m *= ae.Effect.Potency;
+                }
+            }
+            return m;
+        }
 
         public void ForceWinAndCapture()
         {
@@ -633,6 +747,21 @@ namespace AetherialArena.Core
             OpponentSprite.Health = 0;
             State = BattleState.PlayerVictory;
             HandleVictory();
+        }
+
+        public void Debug_HealPlayerToFull()
+        {
+            if (State != BattleState.InProgress || ActivePlayerSprite == null) return;
+            ActivePlayerSprite.Health = ActivePlayerSprite.MaxHealth;
+            AddToLog($"DEBUG: Healed {ActivePlayerSprite.Name} to full health.", CombatLogColor.Heal);
+        }
+
+        public void Debug_DealDamageToOpponent(int damageAmount)
+        {
+            if (State != BattleState.InProgress || OpponentSprite == null) return;
+            OpponentSprite.Health -= damageAmount;
+            AddToLog($"DEBUG: Dealt {damageAmount} damage to {OpponentSprite.Name}.", CombatLogColor.Damage);
+            CheckForWinner();
         }
     }
 }

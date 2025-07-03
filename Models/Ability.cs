@@ -17,4 +17,7 @@ public class AbilityEffect
     public Stat StatAffected { get; set; } = Stat.None;
     public float Potency { get; set; }
     public int Duration { get; set; }
+    public int InitialDelay { get; set; } = 0; // For DelayedStun and DelayedDamage
+    public int Stacks { get; set; } = 1; // For StackingDebuff
+    public TargetType? Target { get; set; }
 }

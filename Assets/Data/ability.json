@@ -443,37 +443,53 @@
     },
     {
         "ID": 102,
-        "Name": "Seismic Slam",
-        "Description": "Slams the opponent, stunning them for 1 turn.",
+        "Name": "Entomb",
+        "Description": "After a 2-turn delay, the target is stunned for 2 turns. If hit by the caster while stunned, this effect deals 60 damage when it expires. The combat log should say 'Earth Slam uses Entomb on [target]! Run away or die!'",
         "ManaCost": 15,
         "Target": "Enemy",
         "Effects": [
             {
-                "EffectType": "Stun",
-                "Potency": 1,
-                "Duration": 1
+                "EffectType": "DelayedStun",
+                "Potency": 2,
+                "Duration": 4,
+                "InitialDelay": 2
             }
         ]
     },
     {
         "ID": 103,
         "Name": "Gale Force",
-        "Description": "Greatly increases self speed for 5 turns.",
+        "Description": "Targets the opponent with a debuff. After 2 turns, it inflicts massive wind damage unless the target is in the reserve lineup.",
         "ManaCost": 15,
-        "Target": "Self",
+        "Target": "Enemy",
         "Effects": [
             {
-                "EffectType": "StatBuff",
-                "Potency": 1.5,
-                "Duration": 5,
-                "StatAffected": "Speed"
+                "EffectType": "DelayedDamage",
+                "Potency": 150,
+                "Duration": 2,
+                "InitialDelay": 2
             }
         ]
     },
     {
         "ID": 104,
         "Name": "Glacial Edge",
-        "Description": "Slashes the opponent, reducing their defense.",
+        "Description": "Slashes the opponent, reducing their defense for 5 turns. This effect can stack. The combat log should say 'Ice Blade uses Glacial Edge! Be wary of a second application or suffer!'",
+        "ManaCost": 15,
+        "Target": "Enemy",
+        "Effects": [
+            {
+                "EffectType": "StackingDebuff",
+                "StatAffected": "Defense",
+                "Potency": 2.5,
+                "Duration": 5
+            }
+        ]
+    },
+    {
+        "ID": 105,
+        "Name": "Tidal Lash",
+        "Description": "Whips the opponent, reducing their defense and granting the user a powerful reflect shield (125%) for 4 turns.",
         "ManaCost": 15,
         "Target": "Enemy",
         "Effects": [
@@ -482,49 +498,45 @@
                 "Potency": 0.75,
                 "Duration": 5,
                 "StatAffected": "Defense"
-            }
-        ]
-    },
-    {
-        "ID": 105,
-        "Name": "Tidal Lash",
-        "Description": "Whips the opponent, reducing their attack.",
-        "ManaCost": 15,
-        "Target": "Enemy",
-        "Effects": [
+            },
             {
-                "EffectType": "StatDebuff",
-                "Potency": 0.75,
-                "Duration": 5,
-                "StatAffected": "Attack"
+                "EffectType": "Reflect",
+                "Potency": 1.25,
+                "Duration": 4,
+                "Target": "Self"
             }
         ]
     },
     {
         "ID": 106,
         "Name": "Thunderlord's Judgment",
-        "Description": "Calls down a massive bolt of lightning.",
+        "Description": "Deals 50 damage and applies a debuff for 6 turns, giving a 33% chance each turn to stun the target for 1 turn. The combat log should say 'Levin Lord uses Thunderlord's Judgement! The white-hot attack has affected [target]'s aether and [target] may lose control of itself!'",
         "ManaCost": 25,
         "Target": "Enemy",
         "Effects": [
             {
                 "EffectType": "Damage",
-                "Potency": 150,
+                "Potency": 50,
                 "Duration": 0
+            },
+            {
+                "EffectType": "ChanceToStunOverTime",
+                "Potency": 0.33,
+                "Duration": 6
             }
         ]
     },
     {
         "ID": 107,
         "Name": "Total Annihilation",
-        "Description": "Fires a devastating beam of energy.",
+        "Description": "A devastating attack that can only be used below 15% HP and requires 5 turns to charge.",
         "ManaCost": 50,
         "Target": "Enemy",
         "Effects": [
             {
-                "EffectType": "Damage",
+                "EffectType": "Casting",
                 "Potency": 250,
-                "Duration": 0
+                "Duration": 5
             }
         ]
     }

@@ -1170,7 +1170,7 @@
         "Speed": 8,
         "AttackType": [ "Air" ],
         "Weaknesses": [ "Ice" ],
-        "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Blunt", "Magic" ],
+        "Resistances": [ "Fire", "Wind", "Electric", "Air", "Blunt", "Magic" ],
         "SpecialAbilityID": 103
     },
     {
@@ -1204,7 +1204,7 @@
         "Speed": 7,
         "AttackType": [ "Blunt" ],
         "Weaknesses": [ "Electric" ],
-        "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Ground", "Magic" ],
+        "Resistances": [ "Fire", "Ice", "Wind", "Air", "Ground", "Magic" ],
         "SpecialAbilityID": 105
     },
     {
@@ -1237,7 +1237,7 @@
         "Defense": 10,
         "Speed": 8,
         "AttackType": [ "Physical" ],
-        "Weaknesses": [ "Magic" ],
+        "Weaknesses": [ "Magic","Physical" ],
         "Resistances": [ "Fire", "Ice", "Wind", "Electric", "Air", "Ground", "Blunt" ],
         "SpecialAbilityID": 107
     }

@@ -75,7 +75,13 @@ namespace AetherialArena.Models
         DamageOverTime,
         ManaDrain,
         LifeSteal,
-        Reflect
+        Reflect,
+        DelayedStun,
+        DelayedDamage,
+        StackingDebuff,
+        ChanceToStunOverTime,
+        Casting,
+        ConditionalDamage
     }
 
     public enum Stat

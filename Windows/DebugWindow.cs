@@ -80,6 +80,16 @@ namespace AetherialArena.Windows
                 plugin.BattleManager.ForceWinAndCapture();
             }
 
+            if (ImGui.Button("Heal Player to Full"))
+            {
+                plugin.BattleManager.Debug_HealPlayerToFull();
+            }
+
+            if (ImGui.Button("Deal 50 Damage to Opponent"))
+            {
+                plugin.BattleManager.Debug_DealDamageToOpponent(50);
+            }
+
             if (!inBattle)
             {
                 ImGui.EndDisabled();

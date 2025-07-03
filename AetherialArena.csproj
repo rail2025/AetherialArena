@@ -13,6 +13,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Icons\mech_boss_icon.png" />
     <EmbeddedResource Include="Assets\Icons\water_boss_icon.png" />
     <EmbeddedResource Include="Assets\Icons\levin_boss_icon.png" />
     <EmbeddedResource Include="Assets\Icons\ice_boss_icon.png" />

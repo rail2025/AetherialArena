@@ -113,7 +113,28 @@ namespace AetherialArena.Windows
             var currentAether = plugin.PlayerProfile.CurrentAether;
             var maxAether = plugin.PlayerProfile.MaxAether;
             var fraction = maxAether > 0 ? (float)currentAether / maxAether : 0f;
-            var overlay = $"{currentAether}/{maxAether}";
+            
+            string timerText;
+            // Only show a timer if aether is not full
+            if (currentAether < maxAether)
+            {
+                var regenInterval = TimeSpan.FromMinutes(5);
+                var timeSinceLastRegen = DateTime.UtcNow - plugin.PlayerProfile.LastAetherRegenTimestamp;
+                var timeUntilNextRegen = regenInterval - timeSinceLastRegen;
+
+                // Display the countdown, or "00:00" if a regen is imminent
+                timerText = timeUntilNextRegen.TotalSeconds > 0 ? timeUntilNextRegen.ToString(@"mm\:ss") : "00:00";
+            }
+            else
+            {
+                // Display placeholder text if aether is already full
+                timerText = "--:--";
+            }
+
+            // Construct the new overlay string with the timer
+            var overlay = $"{timerText} | {currentAether}/{maxAether}";
+            
+            
             var label = "Aether:";
 
             var barWidth = 120f;

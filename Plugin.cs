@@ -151,12 +151,12 @@ namespace AetherialArena
                 this.queuedSubLocationOverride = null;
             }
 
-            var regenIntervalMinutes = 10;
+            var regenIntervalMinutes = 5;
             var timeSinceLastRegen = DateTime.UtcNow - PlayerProfile.LastAetherRegenTimestamp;
 
             if (timeSinceLastRegen.TotalMinutes >= regenIntervalMinutes)
             {
-                // Calculate how many full 10-minute intervals have passed
+                // Calculate how many full 5-minute intervals have passed
                 int intervalsPassed = (int)(timeSinceLastRegen.TotalMinutes / regenIntervalMinutes);
                 int aetherToRegen = intervalsPassed;
 
