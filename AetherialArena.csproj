@@ -13,6 +13,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Music\bossmusic1.mp3" />
+    <EmbeddedResource Include="Assets\Music\bossmusic2.mp3" />
+    <EmbeddedResource Include="Assets\Music\bossmusic3.mp3" />
+    <EmbeddedResource Include="Assets\Icons\tidallash_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\totalannihilation_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\scorchingwhip_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\galeforce_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\glacialedge_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\entomb_icon.png" />
+    <EmbeddedResource Include="Assets\Icons\bolt_icon.png" />
     <EmbeddedResource Include="Assets\Icons\mech_boss_icon.png" />
     <EmbeddedResource Include="Assets\Icons\water_boss_icon.png" />
     <EmbeddedResource Include="Assets\Icons\levin_boss_icon.png" />
