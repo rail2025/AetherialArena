@@ -1232,7 +1232,7 @@
         "Type": "Mechanical",
         "Rarity": "Boss",
         "MaxHealth": 999,
-        "MaxMana": 100,
+        "MaxMana": 160,
         "Attack": 12,
         "Defense": 10,
         "Speed": 8,

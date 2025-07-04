@@ -66,6 +66,12 @@ namespace AetherialArena.Windows
                 plugin.PlayerProfile.AttunedSpriteIDs.AddRange(new[] { 1, 2, 3 });
             }
 
+            if (ImGui.Button("Unlock All 70 Sprites"))
+            {
+                plugin.UnlockAllSprites();
+            }
+            
+
             ImGui.Separator();
             ImGui.Text("Battle Cheats");
 

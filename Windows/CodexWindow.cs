@@ -21,7 +21,6 @@ namespace AetherialArena.Windows
         private CodexState currentState = CodexState.List;
         private Sprite? selectedSprite;
 
-
         private readonly DataManager dataManager;
         private readonly PlayerProfile playerProfile;
         private readonly Plugin plugin;
@@ -54,7 +53,6 @@ namespace AetherialArena.Windows
             this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
         }
 
-
         public override void Draw()
         {
             var backgroundTexture = this.assetManager.GetIcon("aacodex.png");
@@ -66,7 +64,7 @@ namespace AetherialArena.Windows
             }
 
             var contentRegion = ImGui.GetContentRegionAvail();
-            var containerSize = new Vector2(400, 280); 
+            var containerSize = new Vector2(400, 280);
             var containerPos = (contentRegion - containerSize) / 2;
             ImGui.SetCursorPos(containerPos);
 
@@ -100,10 +98,20 @@ namespace AetherialArena.Windows
             }
 
             var s = selectedSprite;
+            playerProfile.CapturedSpriteData.TryGetValue(s.ID, out var playerData);
 
             var nameSize = ImGui.CalcTextSize(s.Name);
             ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - nameSize.X) / 2);
             ImGui.TextColored(new Vector4(0.9f, 0.9f, 0.9f, 1.0f), s.Name);
+
+            if (playerData != null)
+            {
+                string expString = playerData.Level >= 5 ? "MAX" : $"{playerData.Experience} / {GetExpToNextLevel(playerData.Level)}";
+                string levelInfo = $"Level: {playerData.Level} | EXP: {expString}";
+                var levelInfoSize = ImGui.CalcTextSize(levelInfo);
+                ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - levelInfoSize.X) / 2);
+                ImGui.Text(levelInfo);
+            }
 
             var typeInfo = $"{s.Rarity} / {s.Type}" + (string.IsNullOrEmpty(s.SubType) ? "" : $" / {s.SubType}");
             var typeInfoSize = ImGui.CalcTextSize(typeInfo);
@@ -114,12 +122,28 @@ namespace AetherialArena.Windows
             ImGui.Text("Stats");
             ImGui.Indent();
             ImGui.Columns(2, "StatsColumns", false);
-            ImGui.Text($"HP: {s.MaxHealth}");
-            ImGui.Text($"Attack: {s.Attack}");
-            ImGui.Text($"Speed: {s.Speed}");
+
+            // --- Column 1 ---
+            ImGui.Text($"HP: {s.MaxHealth + (playerData?.AllocatedHP ?? 0)}");
+            ImGui.Text($"Attack: {s.Attack + (playerData?.AllocatedAttack ?? 0)}");
+            ImGui.Text($"Speed: {s.Speed + (playerData?.AllocatedSpeed ?? 0)}");
+
+            // --- Column 2 ---
             ImGui.NextColumn();
-            ImGui.Text($"MP: {s.MaxMana}");
-            ImGui.Text($"Defense: {s.Defense}");
+            ImGui.Text($"MP: {s.MaxMana + (playerData?.AllocatedMP ?? 0)}");
+            ImGui.Text($"Defense: {s.Defense + (playerData?.AllocatedDefense ?? 0)}");
+
+            // --- "Assign Stats" button placed in the empty space ---
+            ImGui.Spacing();
+            if (playerData != null)
+            {
+                if (ImGui.Button("Assign Stats##DetailView", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+                {
+                    plugin.UpgradeWindow.Open(selectedSprite);
+                    this.IsOpen = false; // Close codex to prevent state issues
+                }
+            }
+
             ImGui.Columns(1);
             ImGui.Unindent();
             ImGui.Separator();
@@ -136,10 +160,8 @@ namespace AetherialArena.Windows
             ImGui.Unindent();
             ImGui.Separator();
 
-            ImGui.Spacing();
-            ImGui.Spacing();
-
-            if (ImGui.Button("Back to Codex", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+            // This button is now at the very bottom, physically separate from the other button
+            if (ImGui.Button("Back to List##CodexDetailsBack", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 selectedSprite = null;
                 currentState = CodexState.List;
@@ -155,8 +177,7 @@ namespace AetherialArena.Windows
                 ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 45);
                 ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableSetupColumn("Rarity", ImGuiTableColumnFlags.WidthFixed, 60);
-                ImGui.TableSetupColumn("Status / Location", ImGuiTableColumnFlags.WidthStretch); 
-                
+                ImGui.TableSetupColumn("Status / Location", ImGuiTableColumnFlags.WidthStretch);
 
                 var pagedSprites = dataManager.Sprites.Skip(currentPage * RowsPerPage).Take(RowsPerPage).ToList();
                 foreach (var sprite in pagedSprites)
@@ -189,7 +210,6 @@ namespace AetherialArena.Windows
                     ImGui.TableSetColumnIndex(3);
                     ImGui.Text(isKnown ? sprite.Rarity.ToString() : "???");
 
-                    // --- MODIFIED: The content of the 5th column is now contextual ---
                     ImGui.TableSetColumnIndex(4);
                     ImGui.TextWrapped(GetStatusOrLocation(sprite));
                 }
@@ -230,21 +250,17 @@ namespace AetherialArena.Windows
             ImGui.EndGroup();
         }
 
-        // --- NEW: Contextual helper method for the final column ---
         private string GetStatusOrLocation(Sprite sprite)
         {
-            // If the sprite is captured, show "Captured".
             if (playerProfile.AttunedSpriteIDs.Contains(sprite.ID))
                 return "Captured";
 
-            // If the sprite has defeat progress, show that.
             if (playerProfile.DefeatCounts.TryGetValue(sprite.ID, out int defeatCount))
             {
                 int defeatsNeeded = GetDefeatsNeeded(sprite.Rarity);
                 return $"{defeatCount} / {defeatsNeeded}";
             }
 
-            // If it's a Common sprite and not known, show its location.
             if (sprite.Rarity == RarityTier.Common)
             {
                 string location = dataManager.GetLocation(sprite.ID);
@@ -254,7 +270,6 @@ namespace AetherialArena.Windows
                 }
             }
 
-            // Fallback for everything else (un-captured, non-common sprites): show the hint.
             string hint = dataManager.GetHint(sprite.ID);
             return !string.IsNullOrEmpty(hint) ? hint : "Not Found";
         }
@@ -267,6 +282,13 @@ namespace AetherialArena.Windows
                 RarityTier.Rare => 5,
                 _ => 1,
             };
+        }
+
+        private int GetExpToNextLevel(int currentLevel)
+        {
+            if (currentLevel >= 5) return 0;
+            int[] expToLevel = { 0, 40, 60, 80, 100 };
+            return expToLevel[currentLevel];
         }
     }
 }

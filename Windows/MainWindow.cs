@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using AetherialArena.Core;
@@ -84,7 +85,6 @@ namespace AetherialArena.Windows
         {
             var windowSize = ImGui.GetWindowSize();
 
-            // --- NEW: Check for the special victory condition ---
             if (battleManager.AllSpritesCaptured)
             {
                 var background = assetManager.GetIcon("grass.png");
@@ -102,19 +102,33 @@ namespace AetherialArena.Windows
                 ImGui.SetCursorPosY(windowSize.Y * 0.2f);
                 DrawTextWithOutline(line1, ImGui.GetCursorScreenPos(), 0xFFFFFFFF, 0xFF000000);
 
-                ImGui.Dummy(new Vector2(0, line1Size.Y)); // Spacer
+                ImGui.Dummy(new Vector2(0, line1Size.Y));
 
                 var line2Size = ImGui.CalcTextSize(line2);
                 ImGui.SetCursorPosX((windowSize.X - line2Size.X) * 0.5f);
                 DrawTextWithOutline(line2, ImGui.GetCursorScreenPos(), 0xFFFFFFFF, 0xFF000000);
 
             }
-            else // --- Normal win/loss screen ---
+            else
             {
                 var textSize = ImGui.CalcTextSize(message);
                 ImGui.SetCursorPosX((windowSize.X - textSize.X) * 0.5f);
-                ImGui.SetCursorPosY(windowSize.Y / 3);
+                ImGui.SetCursorPosY(windowSize.Y * 0.15f);
                 ImGui.Text(message);
+
+                if (battleManager.VictoryMessages.Any())
+                {
+                    var childSize = new Vector2(windowSize.X * 0.8f, 120);
+                    ImGui.SetCursorPosX((windowSize.X - childSize.X) * 0.5f);
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20);
+
+                    ImGui.BeginChild("VictoryLog", childSize, true);
+                    foreach (var victoryMessage in battleManager.VictoryMessages)
+                    {
+                        ImGui.TextWrapped(victoryMessage);
+                    }
+                    ImGui.EndChild();
+                }
 
                 if (!string.IsNullOrEmpty(battleManager.UnlockMessage))
                 {
@@ -129,13 +143,12 @@ namespace AetherialArena.Windows
                 }
             }
 
-            // --- Common "Return to Hub" button for all end screens ---
             var buttonText = "Return to Hub";
             var buttonTextSize = ImGui.CalcTextSize(buttonText) + ImGui.GetStyle().FramePadding * 2;
             ImGui.SetCursorPosX((windowSize.X - buttonTextSize.X) * 0.5f);
-            ImGui.SetCursorPosY(windowSize.Y * 0.6f);
+            ImGui.SetCursorPosY(windowSize.Y * 0.75f);
 
-            if (ImGui.Button(buttonText))
+            if (ImGui.Button(buttonText, new Vector2(buttonTextSize.X, 0)))
             {
                 plugin.AudioManager.PlaySfx("menuselect.wav");
                 plugin.AudioManager.StopMusic();

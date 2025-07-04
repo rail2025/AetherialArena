@@ -19,5 +19,8 @@ namespace AetherialArena.Models
         public List<int> DefeatedArenaBosses { get; set; } = new List<int>();
 
         public DateTime LastAetherRegenTimestamp { get; set; } = DateTime.UtcNow;
+        
+        public Dictionary<int, PlayerSpriteData> CapturedSpriteData { get; set; } = new();
+
     }
 }

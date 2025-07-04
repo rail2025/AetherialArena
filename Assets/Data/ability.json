@@ -2,7 +2,7 @@
     {
         "ID": 1,
         "Name": "Empower",
-        "Description": "Increases Attack by 25% for 4 turns.",
+        "Description": "Increases Attack by 25% for 5 turns.",
         "ManaCost": 15,
         "Target": "Self",
         "Effects": [
@@ -10,7 +10,7 @@
                 "EffectType": "StatBuff",
                 "StatAffected": "Attack",
                 "Potency": 1.25,
-                "Duration": 4
+                "Duration": 5
             }
         ]
     },

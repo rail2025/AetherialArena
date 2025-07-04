@@ -190,11 +190,24 @@ namespace AetherialArena.Windows
             }
 
             ImGui.Spacing();
-            if (plugin.PlayerProfile.AttunedSpriteIDs.Count >= 70)
+            bool canEnterArena = plugin.PlayerProfile.AttunedSpriteIDs.Count >= 70;
+
+            if (!canEnterArena)
             {
-                if (ImGui.Button("Enter the Aetherial Arena", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+                ImGui.BeginDisabled();
+            }
+
+            if (DrawButtonWithOutline("EnterArenaHub", "Aetherial Arena", buttonSize))
+            {
+                plugin.ArenaSelectionWindow.IsOpen = true;
+            }
+
+            if (!canEnterArena)
+            {
+                ImGui.EndDisabled();
+                if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                 {
-                    plugin.ArenaSelectionWindow.IsOpen = true;
+                    ImGui.SetTooltip("You must collect all 70 sprites to enter the Aetherial Arena.");
                 }
             }
 

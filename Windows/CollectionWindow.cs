@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Dalamud.Interface.Textures.TextureWraps;
 
 namespace AetherialArena.Windows
 {
@@ -58,6 +59,8 @@ namespace AetherialArena.Windows
                 foreach (var sprite in dataManager.Sprites.OrderBy(s => s.ID))
                 {
                     bool isCaptured = playerProfile.AttunedSpriteIDs.Contains(sprite.ID);
+                    bool hasProgress = playerProfile.DefeatCounts.ContainsKey(sprite.ID);
+                    bool isKnown = isCaptured || hasProgress;
                     bool isMinionOwned = false;
                     string minionToUnlock = "N/A";
 
@@ -71,50 +74,53 @@ namespace AetherialArena.Windows
                     }
 
                     ImGui.TableNextRow();
-                    ImGui.TableSetColumnIndex(0);
+                    ImGui.TableSetColumnIndex(0); //Rarity
 
                     var (rarityChar, rarityColor) = GetRarityDisplay(sprite.Rarity);
                     ImGui.TextColored(rarityColor, rarityChar);
 
-                    ImGui.TableSetColumnIndex(1);
+                    ImGui.TableSetColumnIndex(1); //Icon
 
-                    var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
+                    IDalamudTextureWrap? icon;
+                    if (isKnown)
+                    {
+                        icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
+                    }
+                    else
+                    {
+                        icon = assetManager.GetIcon("placeholder_icon.png");
+                    }
+
                     if (icon != null)
                     {
-                        // Icon is visible if minion is owned
-                        var tint = isMinionOwned ? new Vector4(1, 1, 1, 1) : new Vector4(0.3f, 0.3f, 0.3f, 1);
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, tint);
+                        ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40));
                     }
                     else
                     {
                         ImGui.Dummy(new Vector2(40, 40));
                     }
 
-                    ImGui.TableSetColumnIndex(2);
-                    ImGui.Text(isMinionOwned ? sprite.Name : "???");
+                    ImGui.TableSetColumnIndex(2); //Name
+                    ImGui.Text(isKnown ? sprite.Name : "???");
 
-                    ImGui.TableSetColumnIndex(3);
+                    ImGui.TableSetColumnIndex(3); // Capture Status
 
-                    // Show capture status only if the sprite has been revealed by owning the minion
-                    if (isMinionOwned)
+                    
+                    if (isKnown)
                     {
                         if (isCaptured)
                         {
                             ImGui.Text("Captured!");
                         }
-                        else if (playerProfile.DefeatCounts.TryGetValue(sprite.ID, out var defeatCount))
+                        else // hasProgress must be true
                         {
                             int defeatsNeeded = GetDefeatsNeeded(sprite.Rarity);
-                            ImGui.Text($"{defeatCount} / {defeatsNeeded}");
-                        }
-                        else
-                        {
-                            ImGui.Text("Not Found");
+                            ImGui.Text($"{playerProfile.DefeatCounts[sprite.ID]} / {defeatsNeeded}");
                         }
                     }
                     else
                     {
-                        ImGui.Text("---");
+                        ImGui.Text("Not Found");
                     }
 
 

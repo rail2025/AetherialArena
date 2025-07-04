@@ -33,6 +33,8 @@ namespace AetherialArena.Models
         public int Health { get; set; }
         [JsonIgnore]
         public int Mana { get; set; }
+        [JsonIgnore]
+        public List<int> SpecialAbilityIDs { get; set; } = new();
 
         public Sprite() { }
 
@@ -59,6 +61,7 @@ namespace AetherialArena.Models
             this.AttackType = s.AttackType;
             this.Weaknesses = s.Weaknesses;
             this.Resistances = s.Resistances;
+            this.SpecialAbilityIDs.Add(s.SpecialAbilityID);
         }
     }
 }

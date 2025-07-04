@@ -25,23 +25,30 @@ namespace AetherialArena.UI
         private Vector2 playerSpriteOffset = Vector2.Zero;
         private Vector2 opponentSpriteOffset = Vector2.Zero;
 
-        private readonly List<(string iconName, Sprite target)> damageIconsToShow = new();
+        private readonly List<(string iconName, Sprite target, bool isBossSpecial)> damageIconsToShow = new();
         private float damageIconTimer = 0;
         private const float DAMAGE_ICON_DURATION = 0.8f;
+        private const float BOSS_DAMAGE_ICON_DURATION = 2.0f;
 
         private Sprite? currentAttacker;
         private Sprite? currentTarget;
         private bool isCurrentActionSelfBuff;
 
-        // --- NEW STATE for swapping ---
         private bool isSwapping = false;
+        private bool isChoosingSpecial = false;
 
         private readonly Dictionary<CombatLogColor, uint> colorMap = new()
         {
-            { CombatLogColor.Normal, 0xFFFFFFFF },
-            { CombatLogColor.Damage, 0xFF7979FF },
-            { CombatLogColor.Heal,   0xFF79FF79 },
-            { CombatLogColor.Status, 0xFF79FFFF }
+            { CombatLogColor.Normal, 0xFFFFFFFF }, { CombatLogColor.Damage, 0xFF7979FF },
+            { CombatLogColor.Heal, 0xFF79FF79 }, { CombatLogColor.Status, 0xFF79FFFF }
+        };
+
+        private readonly Dictionary<int, string> bossSpecialIcons = new()
+        {
+            { 101, "scorchingwhip_icon.png" }, { 102, "entomb_icon.png" },
+            { 103, "galeforce_icon.png" }, { 104, "glacialedge_icon.png" },
+            { 105, "tidallash_icon.png" }, { 106, "bolt_icon.png" },
+            { 107, "totalannihilation_icon.png" }
         };
 
         public BattleUIComponent(Plugin plugin, IFramework framework)
@@ -57,25 +64,46 @@ namespace AetherialArena.UI
         {
             var deltaTime = (float)framework.UpdateDelta.TotalSeconds;
 
-            // Reset swap state if it's no longer the player's turn
-            if (!battleManager.IsPlayerTurn && isSwapping)
+            if (!battleManager.IsPlayerTurn)
             {
-                isSwapping = false;
+                if (isSwapping) isSwapping = false;
+                if (isChoosingSpecial) isChoosingSpecial = false;
+            }
+
+            if (battleManager.AnimationTrigger.HasValue)
+            {
+                var (iconName, displayOn) = battleManager.AnimationTrigger.Value;
+                damageIconsToShow.Add((iconName, displayOn, true));
+                damageIconTimer = BOSS_DAMAGE_ICON_DURATION;
+                battleManager.ConsumeAnimationTrigger();
             }
 
             if (battleManager.AttackingSprite != null && animationTimer <= 0)
             {
                 animationTimer = ANIMATION_DURATION;
-                damageIconTimer = DAMAGE_ICON_DURATION;
                 currentAttacker = battleManager.AttackingSprite;
                 currentTarget = battleManager.TargetSprite;
                 isCurrentActionSelfBuff = battleManager.IsSelfBuff;
                 damageIconsToShow.Clear();
-                if ((!battleManager.IsHealAction || isCurrentActionSelfBuff) && currentTarget != null)
+
+                bool isBossSpecial = battleManager.LastAbilityUsedId.HasValue && bossSpecialIcons.ContainsKey(battleManager.LastAbilityUsedId.Value);
+                damageIconTimer = isBossSpecial ? BOSS_DAMAGE_ICON_DURATION : DAMAGE_ICON_DURATION;
+
+                if (isBossSpecial)
+                {
+                    if (currentTarget != null)
+                    {
+                        
+                        int abilityId = battleManager.LastAbilityUsedId!.Value;
+                        damageIconsToShow.Add((bossSpecialIcons[abilityId], currentTarget, true));
+                        
+                    }
+                }
+                else if ((!battleManager.IsHealAction || isCurrentActionSelfBuff) && currentTarget != null)
                 {
                     foreach (var attackType in battleManager.LastAttackTypes)
                     {
-                        damageIconsToShow.Add(($"{attackType.ToLowerInvariant()}_icon.png", currentTarget));
+                        damageIconsToShow.Add(($"{attackType.ToLowerInvariant()}_icon.png", currentTarget, false));
                     }
                 }
                 battleManager.ClearLastAction();
@@ -237,10 +265,13 @@ namespace AetherialArena.UI
 
                 DrawSpritePanel(activePlayer);
 
-                // --- MODIFICATION: Show either actions or swap UI ---
                 if (isSwapping)
                 {
                     DrawSwapSelection();
+                }
+                else if (isChoosingSpecial)
+                {
+                    DrawSpecialSelection();
                 }
                 else
                 {
@@ -305,14 +336,15 @@ namespace AetherialArena.UI
 
                 if (damageIconTimer > 0)
                 {
-                    foreach (var (iconName, target) in damageIconsToShow)
+                    foreach (var (iconName, target, isBossSpecial) in damageIconsToShow)
                     {
                         if (target == sprite)
                         {
                             var damageIcon = assetManager.GetIcon(iconName, true);
                             if (damageIcon != null)
                             {
-                                var overlaySize = new Vector2(98, 98);
+                                var normalSize = new Vector2(98, 98);
+                                var overlaySize = isBossSpecial ? normalSize * 3 : normalSize;
                                 var overlayPos = finalDrawPos + (iconSize - overlaySize) / 2;
                                 drawList.AddImage(damageIcon.ImGuiHandle, overlayPos, overlayPos + overlaySize);
                             }
@@ -334,11 +366,9 @@ namespace AetherialArena.UI
                 ImGui.BeginDisabled();
             }
 
-            // Calculate width for two buttons per row, with spacing
             var buttonWidth = ImGui.GetContentRegionAvail().X * 0.5f - ImGui.GetStyle().ItemSpacing.X * 0.5f;
             var buttonSize = new Vector2(buttonWidth, 0);
 
-            // --- Row 1: Attack & Heal ---
             if (DrawButtonWithOutline("Attack", "Attack", buttonSize)) { battleManager.PlayerAttack(); }
 
             ImGui.SameLine();
@@ -351,8 +381,6 @@ namespace AetherialArena.UI
             }
             if (!canHeal) ImGui.PopStyleVar();
 
-
-            // --- Row 2: Swap & Special ---
             if (DrawButtonWithOutline("Swap", "Swap", buttonSize))
             {
                 isSwapping = true;
@@ -360,15 +388,29 @@ namespace AetherialArena.UI
 
             ImGui.SameLine();
 
-            var specialAbility = dataManager.GetAbility(activePlayer.SpecialAbilityID);
-            bool canUseSpecial = specialAbility != null && activePlayer.Mana >= specialAbility.ManaCost;
-            if (!canUseSpecial) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
+            bool canUseAnySpecial = activePlayer.SpecialAbilityIDs.Any(id =>
+            {
+                var ab = dataManager.GetAbility(id);
+                return ab != null && activePlayer.Mana >= ab.ManaCost;
+            });
+
+            if (!canUseAnySpecial) ImGui.PushStyleVar(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f);
+
             if (DrawButtonWithOutline("Special", "Special", buttonSize))
             {
-                if (canUseSpecial) battleManager.PlayerUseSpecial();
+                if (canUseAnySpecial)
+                {
+                    if (activePlayer.SpecialAbilityIDs.Count > 1)
+                    {
+                        isChoosingSpecial = true;
+                    }
+                    else if (activePlayer.SpecialAbilityIDs.Count == 1)
+                    {
+                        battleManager.PlayerUseSpecial(activePlayer.SpecialAbilityIDs[0]);
+                    }
+                }
             }
-            if (!canUseSpecial) ImGui.PopStyleVar();
-
+            if (!canUseAnySpecial) ImGui.PopStyleVar();
 
             if (shouldBeDisabled)
             {
@@ -376,7 +418,6 @@ namespace AetherialArena.UI
             }
         }
 
-        // --- NEW METHOD for Swap Selection UI ---
         private void DrawSwapSelection()
         {
             DrawOutlinedText("Select a Sprite to Swap In:");
@@ -398,7 +439,7 @@ namespace AetherialArena.UI
                     if (ImGui.Selectable($"{reserve.Name} (HP: {reserve.Health}/{reserve.MaxHealth})##{reserve.ID}"))
                     {
                         battleManager.PlayerSwap(reserve.ID);
-                        isSwapping = false; // Exit swap mode after selection
+                        isSwapping = false;
                     }
 
                     if (!canSwap) ImGui.EndDisabled();
@@ -408,7 +449,40 @@ namespace AetherialArena.UI
 
             if (DrawButtonWithOutline("CancelSwap", "Cancel", new Vector2(-1, 0)))
             {
-                isSwapping = false; // Exit swap mode
+                isSwapping = false;
+            }
+        }
+
+        private void DrawSpecialSelection()
+        {
+            var activePlayer = battleManager.ActivePlayerSprite;
+            if (activePlayer == null) return;
+
+            DrawOutlinedText("Select a Special Ability:");
+            ImGui.BeginChild("SpecialSelection", new Vector2(0, 80), true);
+
+            foreach (var abilityId in activePlayer.SpecialAbilityIDs)
+            {
+                var ability = dataManager.GetAbility(abilityId);
+                if (ability != null)
+                {
+                    bool canUse = activePlayer.Mana >= ability.ManaCost;
+                    if (!canUse) ImGui.BeginDisabled();
+
+                    if (ImGui.Selectable($"{ability.Name} (MP: {ability.ManaCost})##{ability.ID}"))
+                    {
+                        battleManager.PlayerUseSpecial(ability.ID);
+                        isChoosingSpecial = false;
+                    }
+
+                    if (!canUse) ImGui.EndDisabled();
+                }
+            }
+            ImGui.EndChild();
+
+            if (DrawButtonWithOutline("CancelSpecial", "Cancel", new Vector2(-1, 0)))
+            {
+                isChoosingSpecial = false;
             }
         }
 

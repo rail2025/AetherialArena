@@ -14,6 +14,7 @@ using Dalamud.Game.ClientState.Conditions;
 using AetherialArena.Audio;
 using ImGuiNET;
 using System;
+using System.Linq;
 
 namespace AetherialArena
 {
@@ -31,31 +32,32 @@ namespace AetherialArena
         [PluginService] internal static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
 
         public readonly WindowSystem WindowSystem = new("AetherialArena");
-        public readonly Configuration Configuration;
-        public readonly BattleManager BattleManager;
-        public readonly DataManager DataManager;
-        public readonly SaveManager SaveManager;
-        public readonly EncounterManager EncounterManager;
-        public readonly AssetManager AssetManager;
-        public readonly PlayerProfile PlayerProfile;
-        public readonly AudioManager AudioManager;
-        public readonly BattleUIComponent BattleUIComponent;
-        public readonly IPluginManifest PluginManifest;
+        public Configuration Configuration;
+        public BattleManager BattleManager;
+        public DataManager DataManager;
+        public SaveManager SaveManager;
+        public PlayerProfile PlayerProfile;
+        public EncounterManager EncounterManager;
+        public AssetManager AssetManager;
+        public AudioManager AudioManager;
+        public BattleUIComponent BattleUIComponent;
+        public IPluginManifest PluginManifest;
 
-        public readonly HubWindow HubWindow;
-        public readonly TitleWindow TitleWindow;
-        public readonly AboutWindow AboutWindow;
-        public readonly MainWindow MainWindow;
-        public readonly ConfigWindow ConfigWindow;
-        public readonly DebugWindow DebugWindow;
-        public readonly CollectionWindow CollectionWindow;
-        public readonly CodexWindow CodexWindow;
+        public HubWindow HubWindow;
+        public TitleWindow TitleWindow;
+        public AboutWindow AboutWindow;
+        public MainWindow MainWindow;
+        public ConfigWindow ConfigWindow;
+        public DebugWindow DebugWindow;
+        public CollectionWindow CollectionWindow;
+        public CodexWindow CodexWindow;
+        public UpgradeWindow UpgradeWindow;
+        public SpecialAbilitySelectionWindow SpecialAbilitySelectionWindow;
+        public ArenaSelectionWindow ArenaSelectionWindow;
 
-        
         private bool searchActionQueued = false;
         private ushort? queuedTerritoryOverride;
         private uint? queuedSubLocationOverride;
-        public ArenaSelectionWindow ArenaSelectionWindow { get; init; }
 
         public Plugin()
         {
@@ -67,7 +69,7 @@ namespace AetherialArena
             this.DataManager = new DataManager();
             this.SaveManager = new SaveManager();
             this.PlayerProfile = this.SaveManager.LoadProfile();
-            
+
             this.BattleManager = new BattleManager(this, Framework);
             this.EncounterManager = new EncounterManager(this);
             this.BattleUIComponent = new BattleUIComponent(this, Framework);
@@ -79,10 +81,11 @@ namespace AetherialArena
             this.DebugWindow = new DebugWindow(this);
             this.CollectionWindow = new CollectionWindow(this);
             this.CodexWindow = new CodexWindow(this);
+            this.UpgradeWindow = new UpgradeWindow(this);
+            this.SpecialAbilitySelectionWindow = new SpecialAbilitySelectionWindow(this);
             this.ArenaSelectionWindow = new ArenaSelectionWindow(this);
-            
-            this.WindowSystem.AddWindow(ArenaSelectionWindow);
 
+            this.WindowSystem.AddWindow(ArenaSelectionWindow);
             this.WindowSystem.AddWindow(HubWindow);
             this.WindowSystem.AddWindow(TitleWindow);
             this.WindowSystem.AddWindow(AboutWindow);
@@ -91,6 +94,8 @@ namespace AetherialArena
             this.WindowSystem.AddWindow(DebugWindow);
             this.WindowSystem.AddWindow(CollectionWindow);
             this.WindowSystem.AddWindow(CodexWindow);
+            this.WindowSystem.AddWindow(UpgradeWindow);
+            this.WindowSystem.AddWindow(SpecialAbilitySelectionWindow);
 
             CommandManager.AddHandler("/aarena", new CommandInfo(OnCommand) { HelpMessage = "Opens the Aetherial Arena main window." });
             CommandManager.AddHandler("/aadebug", new CommandInfo(OnDebugCommand) { HelpMessage = "Opens the Aetherial Arena debug window." });
@@ -100,8 +105,44 @@ namespace AetherialArena
             PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUi;
 
             Framework.Update += OnFrameworkUpdate;
-            
         }
+
+        public void ResetPlayerProfile()
+        {
+            var profile = this.PlayerProfile;
+
+            profile.CurrentAether = 10;
+            profile.MaxAether = 10;
+            profile.AttunedSpriteIDs.Clear();
+            profile.AttunedSpriteIDs.AddRange(new[] { 1, 2, 3 });
+            profile.DefeatCounts.Clear();
+            profile.Loadout.Clear();
+            profile.Loadout.AddRange(new[] { 1, 2, 3 });
+            profile.DefeatedArenaBosses.Clear();
+            profile.LastAetherRegenTimestamp = DateTime.UtcNow;
+            profile.CapturedSpriteData.Clear();
+
+            this.SaveManager.SaveProfile(profile);
+            Log.Info("Player profile has been reset to default.");
+        }
+
+        public void UnlockAllSprites()
+        {
+            var profile = this.PlayerProfile;
+
+            profile.AttunedSpriteIDs.Clear();
+            profile.DefeatCounts.Clear();
+
+            profile.AttunedSpriteIDs.AddRange(Enumerable.Range(1, 70));
+
+            int newMaxAether = Math.Min(20, 10 + (profile.AttunedSpriteIDs.Count / 5));
+            profile.MaxAether = newMaxAether;
+            profile.CurrentAether = newMaxAether;
+
+            this.SaveManager.SaveProfile(profile);
+            Log.Info("DEBUG: Unlocked all 70 sprites.");
+        }
+
 
         public void QueueEncounterSearch(ushort? territoryOverride = null, uint? subLocationOverride = null)
         {
@@ -156,7 +197,6 @@ namespace AetherialArena
 
             if (timeSinceLastRegen.TotalMinutes >= regenIntervalMinutes)
             {
-                // Calculate how many full 5-minute intervals have passed
                 int intervalsPassed = (int)(timeSinceLastRegen.TotalMinutes / regenIntervalMinutes);
                 int aetherToRegen = intervalsPassed;
 
@@ -167,7 +207,6 @@ namespace AetherialArena
                     Log.Info($"Aether regenerated. Current: {PlayerProfile.CurrentAether}/{PlayerProfile.MaxAether}");
                 }
 
-                // Advance the timestamp by the intervals we just processed
                 PlayerProfile.LastAetherRegenTimestamp = PlayerProfile.LastAetherRegenTimestamp.AddMinutes(intervalsPassed * regenIntervalMinutes);
             }
         }
@@ -175,24 +214,16 @@ namespace AetherialArena
         private void OnCommand(string command, string args) => TitleWindow.Toggle();
         private void OnDebugCommand(string command, string args) => DebugWindow.Toggle();
 
-
         private void DrawUI()
         {
-            
-            // 1. Store the original global scale that Dalamud has set for this frame.
             float originalScale = ImGui.GetIO().FontGlobalScale;
-
             try
             {
-                // 2. Set the scale for our plugin's windows by *multiplying* the original scale by our custom value. 
                 ImGui.GetIO().FontGlobalScale = originalScale * this.Configuration.CustomUiScale;
-
                 this.WindowSystem.Draw();
             }
             finally
             {
-                // 3. Restore the original scale in a 'finally' block. The scale is reset even if an error occurs
-                //    while drawing, preventing it from breaking other plugins.
                 ImGui.GetIO().FontGlobalScale = originalScale;
             }
         }

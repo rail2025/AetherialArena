@@ -9,10 +9,11 @@ namespace AetherialArena.Windows
     {
         private readonly Plugin plugin;
         private readonly Configuration configuration;
+        private bool isConfirmResetPopupOpen = true;
 
         public ConfigWindow(Plugin plugin) : base("Aetherial Arena - Settings")
         {
-            this.Size = new Vector2(300, 250); // Adjusted size for the new slider
+            this.Size = new Vector2(300, 350);
             this.SizeCondition = ImGuiCond.FirstUseEver;
 
             this.plugin = plugin;
@@ -41,11 +42,10 @@ namespace AetherialArena.Windows
             ImGui.Separator();
             ImGui.Text("UI Scaling");
 
-            // --- Corrected UI Scale Slider ---
-            var tempScale = configuration.CustomUiScale; // 1. Use a temporary variable
+            var tempScale = configuration.CustomUiScale;
             if (ImGui.SliderFloat("Overall Scale", ref tempScale, 0.5f, 3.0f))
             {
-                configuration.CustomUiScale = tempScale; // 2. Update config from the temp variable
+                configuration.CustomUiScale = tempScale;
                 configuration.Save();
             }
             if (ImGui.IsItemHovered())
@@ -56,7 +56,6 @@ namespace AetherialArena.Windows
             ImGui.Separator();
             ImGui.Text("Audio");
 
-            // Mute Checkboxes
             var isBgmMuted = configuration.IsBgmMuted;
             if (ImGui.Checkbox("Mute Music", ref isBgmMuted))
             {
@@ -74,8 +73,7 @@ namespace AetherialArena.Windows
                 configuration.Save();
             }
 
-            // --- Corrected Volume Sliders ---
-            var musicVolume = configuration.MusicVolume; // Use temp variable
+            var musicVolume = configuration.MusicVolume;
             if (ImGui.SliderFloat("Music Volume", ref musicVolume, 0.0f, 1.0f))
             {
                 configuration.MusicVolume = musicVolume;
@@ -86,7 +84,7 @@ namespace AetherialArena.Windows
                 configuration.Save();
             }
 
-            var sfxVolume = configuration.SfxVolume; // Use temp variable
+            var sfxVolume = configuration.SfxVolume;
             if (ImGui.SliderFloat("SFX Volume", ref sfxVolume, 0.0f, 1.0f))
             {
                 configuration.SfxVolume = sfxVolume;
@@ -95,6 +93,46 @@ namespace AetherialArena.Windows
             {
                 plugin.AudioManager.PlaySfx("menuselect.wav");
                 configuration.Save();
+            }
+
+            ImGui.Separator();
+            ImGui.Text("Data Management");
+
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.2f, 0.2f, 1.0f));
+            ImGui.TextWrapped("WARNING: This will delete all of your captured sprites, levels, and progress.");
+            ImGui.PopStyleColor();
+
+            if (ImGui.Button("Reset All Player Data"))
+            {
+                ImGui.OpenPopup("Confirm Reset");
+            }
+
+            var center = ImGui.GetMainViewport().GetCenter();
+            ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+
+            // Corrected the call to BeginPopupModal by passing a 'ref bool'
+            if (ImGui.BeginPopupModal("Confirm Reset", ref isConfirmResetPopupOpen, ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                ImGui.Text("Are you absolutely sure?\nThis cannot be undone.");
+                ImGui.Separator();
+
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.6f, 0.1f, 0.1f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.8f, 0.2f, 0.2f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.5f, 0.05f, 0.05f, 1.0f));
+                if (ImGui.Button("Yes, Reset Everything", new Vector2(180, 0)))
+                {
+                    plugin.ResetPlayerProfile();
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.PopStyleColor(3);
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.EndPopup();
             }
         }
     }
