@@ -30,6 +30,7 @@ namespace AetherialArena.Core
         private const int DEVASTATION_STATION_ID = 77;
         private const int EARTH_BOSS_ID = 72;
         private bool isArenaBattle = false;
+        public bool ShouldRollCredits { get; private set; } = false;
 
         private Dictionary<int, List<float>> bossHpSpecialTriggersUsed = new Dictionary<int, List<float>>();
         private List<float> aiHealHpThresholdsUsed = new();
@@ -143,6 +144,7 @@ namespace AetherialArena.Core
             aiHealHpThresholdsUsed.Clear();
             aiTurnCounter = 0;
             VictoryMessages.Clear();
+            ShouldRollCredits = false;
 
             foreach (var id in playerSpriteIDs)
             {
@@ -782,6 +784,16 @@ namespace AetherialArena.Core
         private void HandleVictory()
         {
             if (OpponentSprite == null || uiState == null) return;
+
+            if (OpponentSprite.ID == DEVASTATION_STATION_ID)
+            {
+                ShouldRollCredits = true;
+                State = BattleState.PlayerVictory;
+                return; 
+            }
+
+
+
 
             if (State == BattleState.PlayerVictory && !isArenaBattle)
             {

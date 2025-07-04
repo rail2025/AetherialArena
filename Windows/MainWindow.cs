@@ -56,6 +56,18 @@ namespace AetherialArena.Windows
             battleManager.Update();
             battleUIComponent.Update();
 
+
+            if (battleManager.ShouldRollCredits)
+            {
+                if (this.IsOpen)
+                {
+                    this.IsOpen = false;
+                    plugin.CreditsWindow.IsOpen = true;
+                }
+                return; 
+            }
+
+
             switch (battleManager.State)
             {
                 case BattleManager.BattleState.InProgress:

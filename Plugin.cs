@@ -54,6 +54,7 @@ namespace AetherialArena
         public UpgradeWindow UpgradeWindow;
         public SpecialAbilitySelectionWindow SpecialAbilitySelectionWindow;
         public ArenaSelectionWindow ArenaSelectionWindow;
+        public CreditsWindow CreditsWindow;
 
         private bool searchActionQueued = false;
         private ushort? queuedTerritoryOverride;
@@ -84,6 +85,7 @@ namespace AetherialArena
             this.UpgradeWindow = new UpgradeWindow(this);
             this.SpecialAbilitySelectionWindow = new SpecialAbilitySelectionWindow(this);
             this.ArenaSelectionWindow = new ArenaSelectionWindow(this);
+            this.CreditsWindow = new CreditsWindow(this);
 
             this.WindowSystem.AddWindow(ArenaSelectionWindow);
             this.WindowSystem.AddWindow(HubWindow);
@@ -96,6 +98,7 @@ namespace AetherialArena
             this.WindowSystem.AddWindow(CodexWindow);
             this.WindowSystem.AddWindow(UpgradeWindow);
             this.WindowSystem.AddWindow(SpecialAbilitySelectionWindow);
+            this.WindowSystem.AddWindow(CreditsWindow);
 
             CommandManager.AddHandler("/aarena", new CommandInfo(OnCommand) { HelpMessage = "Opens the Aetherial Arena main window." });
             CommandManager.AddHandler("/aadebug", new CommandInfo(OnDebugCommand) { HelpMessage = "Opens the Aetherial Arena debug window." });

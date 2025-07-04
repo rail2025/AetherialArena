@@ -13,6 +13,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <EmbeddedResource Include="Assets\Music\credits.mp3" />
     <EmbeddedResource Include="Assets\Sfx\wave.mp3" />
     <EmbeddedResource Include="Assets\Sfx\thunder.mp3" />
     <EmbeddedResource Include="Assets\Sfx\totalannihilation.mp3" />
