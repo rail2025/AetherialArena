@@ -4,13 +4,13 @@
         "Name": "Aetherial Arena",
         "Punchline": "Find and collect creatures to fight.",
         "Description": "Open with /aarena. Search and discover more creatures around the world.",
-        "Changelog": "v0.9.0.0: added boss arena, boss music/gfx, leveling system, upgrades, minor bg bug left",
+        "Changelog": "v0.9.9.0: balance testing pre-release",
         "IsHide": false,
         "InternalName": "AetherialArena",
-        "AssemblyVersion": "0.9.0.0",
-        "TestingAssemblyVersion": "0.9.0.0",
+        "AssemblyVersion": "0.9.9.0",
+        "TestingAssemblyVersion": "0.9.9.0",
         "IsTestingExclusive": false,
-        "RepoUrl": "https://github.com/rail2025/AetherialArena",
+        "RepoUrl": "https://github.com/rail2025/AetherArena",
         "ApplicableVersion": "any",
         "Tags": [
             "game",
@@ -19,11 +19,11 @@
         ],
         "DalamudApiLevel": 12,
         "TestingDalamudApiLevel": 12,
-        "DownloadLinkInstall": "https://github.com/rail2025/AetherialArena/releases/download/v0.9.0.0/latest.zip",
-        "DownloadLinkUpdate": "https://github.com/rail2025/AetherialArena/releases/download/v0.9.0.0/latest.zip",
-        "DownloadLinkTesting": "https://github.com/rail2025/AetherialArena/releases/download/v0.9.0.0/latest.zip",
+        "DownloadLinkInstall": "https://github.com/rail2025/AetherArena/releases/download/v0.9.9.0/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/rail2025/AetherArena/releases/download/v0.9.9.0/latest.zip",
+        "DownloadLinkTesting": "https://github.com/rail2025/AetherArena/releases/download/v0.9.9.0/latest.zip",
         "LoadPriority": 0,
         "SupportsProfiles": true,
-        "IconUrl": "https://raw.githubusercontent.com/rail2025/AetherialArena/refs/heads/master/icon.png"
+        "IconUrl": "https://raw.githubusercontent.com/rail2025/AetherArena/refs/heads/master/icon.png"
     }
 ]

@@ -55,6 +55,8 @@ namespace AetherialArena.Core
         public string? UnlockMessage { get; private set; }
         public bool AllSpritesCaptured { get; private set; } = false;
         public List<string> VictoryMessages { get; private set; } = new List<string>();
+        public int CurrentOpponentId { get; private set; } = 0;
+        public bool IsBossBattle { get; private set; } = false;
 
         private class ActiveAbilityEffect
         {
@@ -145,6 +147,7 @@ namespace AetherialArena.Core
             aiTurnCounter = 0;
             VictoryMessages.Clear();
             ShouldRollCredits = false;
+            CurrentOpponentId = opponentSpriteID;
 
             foreach (var id in playerSpriteIDs)
             {
@@ -161,6 +164,7 @@ namespace AetherialArena.Core
             var opponentData = plugin.DataManager.GetSpriteData(opponentSpriteID);
             if (opponentData != null)
             {
+                IsBossBattle = opponentData.Rarity == RarityTier.Boss;
                 OpponentSprite = new Sprite(opponentData);
 
                 if (OpponentSprite.ID == DEVASTATION_STATION_ID)
@@ -513,6 +517,30 @@ namespace AetherialArena.Core
 
             this.LastAbilityUsedId = abilityId;
             AddToLog($"{aiSprite.Name} uses {ability.Name}!", CombatLogColor.Status);
+            switch (abilityId)
+            {
+                case 101:
+                    audioManager.PlaySfx("fire_whip.mp3");
+                    break;
+                case 102:
+                    audioManager.PlaySfx("entomb.mp3");
+                    break;
+                case 103:
+                    audioManager.PlaySfx("gale.mp3");
+                    break;
+                case 104:
+                    audioManager.PlaySfx("glacialedge.mp3");
+                    break;
+                case 105:
+                    audioManager.PlaySfx("wave.mp3");
+                    break;
+                case 106:
+                    audioManager.PlaySfx("thunder.mp3");
+                    break;
+                case 107:
+                    audioManager.PlaySfx("totalannihilation.mp3");
+                    break;
+            }
             ApplyAbility(aiSprite, playerSprite, ability);
         }
 
@@ -789,7 +817,7 @@ namespace AetherialArena.Core
             {
                 ShouldRollCredits = true;
                 State = BattleState.PlayerVictory;
-                return; 
+                return;
             }
 
 

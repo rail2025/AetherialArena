@@ -31,7 +31,15 @@ namespace AetherialArena.Windows
 
         public override void OnOpen()
         {
-            plugin.AudioManager.StartBattlePlaylist();
+            if (battleManager.IsBossBattle)
+            {
+                string bossMusic = $"bossmusic{battleManager.CurrentOpponentId - 70}.mp3";
+                plugin.AudioManager.PlayMusic(bossMusic, true);
+            }
+            else
+            {
+                plugin.AudioManager.StartBattlePlaylist();
+            }
         }
 
         public override void OnClose() { }
@@ -64,7 +72,7 @@ namespace AetherialArena.Windows
                     this.IsOpen = false;
                     plugin.CreditsWindow.IsOpen = true;
                 }
-                return; 
+                return;
             }
 
 

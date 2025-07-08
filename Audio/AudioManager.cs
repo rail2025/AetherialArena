@@ -98,8 +98,6 @@ namespace AetherialArena.Audio
             var audioData = GetAudioData(bgmName);
             if (audioData == null)
             {
-                // ** THIS IS THE FIX **
-                // Call the event handler with proper arguments instead of null.
                 OnBgmPlaybackStopped(this, EventArgs.Empty);
                 return;
             }
@@ -223,7 +221,15 @@ namespace AetherialArena.Audio
             var audioData = GetAudioData(sfxName);
             if (audioData == null) return;
             var memoryStream = new MemoryStream(audioData);
-            WaveStream readerStream = new WaveFileReader(memoryStream);
+            WaveStream readerStream;
+            if (sfxName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                readerStream = new Mp3FileReader(memoryStream);
+            }
+            else
+            {
+                readerStream = new WaveFileReader(memoryStream);
+            }
             ISampleProvider soundToPlay = readerStream.ToSampleProvider();
             if (soundToPlay.WaveFormat.SampleRate != sfxMixer.WaveFormat.SampleRate ||
                 soundToPlay.WaveFormat.Channels != sfxMixer.WaveFormat.Channels)
@@ -241,9 +247,18 @@ namespace AetherialArena.Audio
             if (audioCache.TryGetValue(resourceName, out var cachedData)) return cachedData;
 
             var assembly = Assembly.GetExecutingAssembly();
-            string resourcePrefix = resourceName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)
-                ? "AetherialArena.Assets.Music."
-                : "AetherialArena.Assets.Sfx.";
+            string resourcePrefix;
+
+            var musicFiles = new HashSet<string> { "titlemusic.mp3", "credits.mp3", "allcapmusic.mp3", "victory.mp3", "capture.mp3", "ko.wav" };
+            if (musicFiles.Contains(resourceName) || resourceName.StartsWith("fightmusic") || resourceName.StartsWith("bossmusic"))
+            {
+                resourcePrefix = "AetherialArena.Assets.Music.";
+            }
+            else
+            {
+                resourcePrefix = "AetherialArena.Assets.Sfx.";
+            }
+
 
             var fullResourceName = resourcePrefix + resourceName;
             using var stream = assembly.GetManifestResourceStream(fullResourceName);
@@ -274,9 +289,7 @@ namespace AetherialArena.Audio
 
         public void SetBgmVolume(float volume)
         {
-            // Note: This won't work live with the new dispose/recreate pattern,
-            // as volume is set on creation. This is a limitation of the robust fix.
-            // The volume will apply to the *next* track that plays.
+            // Note:The volume will apply to the *next* track that plays.
         }
 
         public void SetSfxVolume(float volume)

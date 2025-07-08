@@ -101,7 +101,7 @@ namespace AetherialArena
             this.WindowSystem.AddWindow(CreditsWindow);
 
             CommandManager.AddHandler("/aarena", new CommandInfo(OnCommand) { HelpMessage = "Opens the Aetherial Arena main window." });
-            CommandManager.AddHandler("/aadebug", new CommandInfo(OnDebugCommand) { HelpMessage = "Opens the Aetherial Arena debug window." });
+            CommandManager.AddHandler("/aadebug", new CommandInfo(OnDebugCommand) {ShowInHelp = false });
 
             PluginInterface.UiBuilder.Draw += DrawUI;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUi;
