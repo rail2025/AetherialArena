@@ -343,7 +343,7 @@ namespace AetherialArena.UI
                             var damageIcon = assetManager.GetIcon(iconName, true);
                             if (damageIcon != null)
                             {
-                                var normalSize = new Vector2(98, 98);
+                                var normalSize = new Vector2(98, 98) * plugin.Configuration.CustomUiScale;
                                 var overlaySize = isBossSpecial ? normalSize * 3 : normalSize;
                                 var overlayPos = finalDrawPos + (iconSize - overlaySize) / 2;
                                 drawList.AddImage(damageIcon.ImGuiHandle, overlayPos, overlayPos + overlaySize);
@@ -504,7 +504,7 @@ namespace AetherialArena.UI
                 var tint = reserve.Health > 0 ? new Vector4(1, 1, 1, 1) : new Vector4(0.5f, 0.5f, 0.5f, 0.7f);
                 var reserveIcon = assetManager.GetRecoloredIcon(reserve.IconName, reserve.RecolorKey, true);
                 if (reserveIcon != null) ImGui.Image(reserveIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, tint);
-                else ImGui.Dummy(new Vector2(40, 40));
+                else ImGui.Dummy(new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                 if (i < reserveSprites.Count - 1) ImGui.SameLine();
             }
         }

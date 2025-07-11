@@ -42,7 +42,19 @@ namespace AetherialArena.Windows
             ImGui.Separator();
             ImGui.Text("UI Scaling");
 
+            if (ImGui.Button("Reset##Scale"))
+            {
+                configuration.CustomUiScale = 1.0f;
+                configuration.Save();
+            }
+            ImGui.SameLine();
             var tempScale = configuration.CustomUiScale;
+            if (ImGui.InputFloat("##CustomScaleInput", ref tempScale, 0.1f, 0.2f, "%.2f"))
+            {
+                configuration.CustomUiScale = Math.Clamp(tempScale, 0.5f, 3.0f);
+                configuration.Save();
+            }
+                        
             if (ImGui.SliderFloat("Overall Scale", ref tempScale, 0.5f, 3.0f))
             {
                 configuration.CustomUiScale = tempScale;
@@ -52,6 +64,8 @@ namespace AetherialArena.Windows
             {
                 ImGui.SetTooltip("Adjust the size of all Arena windows and elements.");
             }
+
+            
 
             ImGui.Separator();
             ImGui.Text("Audio");

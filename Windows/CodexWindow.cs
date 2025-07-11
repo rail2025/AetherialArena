@@ -36,11 +36,11 @@ namespace AetherialArena.Windows
             this.playerProfile = plugin.PlayerProfile;
             this.assetManager = plugin.AssetManager;
 
-            this.Size = new Vector2(640, 535);
+            this.Size = new Vector2(640, 535) * plugin.Configuration.CustomUiScale;
             this.SizeConstraints = new WindowSizeConstraints
             {
-                MinimumSize = new Vector2(400, 300),
-                MaximumSize = new Vector2(1280, 1024)
+                MinimumSize = new Vector2(400, 300) * plugin.Configuration.CustomUiScale,
+                MaximumSize = new Vector2(1280, 1024) * plugin.Configuration.CustomUiScale
             };
 
             this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
@@ -48,7 +48,7 @@ namespace AetherialArena.Windows
 
         public override void PreDraw()
         {
-            var baseSize = new Vector2(640, 535);
+            var baseSize = new Vector2(640, 535) * plugin.Configuration.CustomUiScale;
             this.Size = baseSize * plugin.Configuration.CustomUiScale;
             this.Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
         }
@@ -64,7 +64,7 @@ namespace AetherialArena.Windows
             }
 
             var contentRegion = ImGui.GetContentRegionAvail();
-            var containerSize = new Vector2(400, 280);
+            var containerSize = new Vector2(400, 280) * plugin.Configuration.CustomUiScale;
             var containerPos = (contentRegion - containerSize) / 2;
             ImGui.SetCursorPos(containerPos);
 
@@ -170,7 +170,7 @@ namespace AetherialArena.Windows
 
         private void DrawSpriteTable()
         {
-            ImGui.BeginChild("TableContainer", new Vector2(0, 240), false, ImGuiWindowFlags.None);
+            ImGui.BeginChild("TableContainer", new Vector2(0, 240) * plugin.Configuration.CustomUiScale, false, ImGuiWindowFlags.None);
             if (ImGui.BeginTable("codexTable", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.ScrollY))
             {
                 ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 30);
@@ -202,7 +202,7 @@ namespace AetherialArena.Windows
                     IDalamudTextureWrap? icon;
                     if (isKnown) { icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey); }
                     else { icon = assetManager.GetIcon("placeholder_icon.png"); }
-                    if (icon != null) { ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40)); } else { ImGui.Dummy(new Vector2(40, 40)); }
+                    if (icon != null) { ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale); } else { ImGui.Dummy(new Vector2(40, 40) * plugin.Configuration.CustomUiScale); }
 
                     ImGui.TableSetColumnIndex(2);
                     ImGui.Text(isKnown ? sprite.Name : "???");

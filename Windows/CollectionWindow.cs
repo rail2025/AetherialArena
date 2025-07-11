@@ -93,11 +93,11 @@ namespace AetherialArena.Windows
 
                     if (icon != null)
                     {
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40));
+                        ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                     }
                     else
                     {
-                        ImGui.Dummy(new Vector2(40, 40));
+                        ImGui.Dummy(new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                     }
 
                     ImGui.TableSetColumnIndex(2); //Name

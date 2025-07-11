@@ -235,7 +235,7 @@ namespace AetherialArena.Windows
 
             ImGui.Indent();
 
-            var iconSize = new Vector2(77, 77);
+            var iconSize = new Vector2(77, 77) * plugin.Configuration.CustomUiScale;
 
             for (int i = 0; i < plugin.PlayerProfile.Loadout.Count; i++)
             {
@@ -265,7 +265,7 @@ namespace AetherialArena.Windows
                 if (sprite != null)
                 {
                     var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
-                    if (icon != null) ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40));
+                    if (icon != null) ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                     else ImGui.Dummy(new Vector2(40, 40));
 
                     ImGui.SameLine();

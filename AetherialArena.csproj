@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/12.0.2">
   <PropertyGroup>
-    <Version>0.9.9.0</Version>
+    <Version>0.9.9.1</Version>
     <Description>A collectable battling mini game</Description>
     <PackageProjectUrl>https://github.com/rail2025/AetherialArena</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
