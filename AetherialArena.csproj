@@ -2,6 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/13.0.0">
   <PropertyGroup>
     <Version>0.9.9.2</Version>
+      <TargetFramework>net9.0</TargetFramework>
     <Description>A collectable battling mini game</Description>
     <PackageProjectUrl>https://github.com/rail2025/AetherialArena</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
