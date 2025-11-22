@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using AetherialArena.Services;
 using AetherialArena.Models;
 using System.Linq;
@@ -93,7 +93,7 @@ namespace AetherialArena.Windows
 
                     if (icon != null)
                     {
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
+                        ImGui.Image(icon.Handle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                     }
                     else
                     {

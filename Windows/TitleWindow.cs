@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using AetherialArena.Services;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AetherialArena.Windows
 {
@@ -16,13 +16,13 @@ namespace AetherialArena.Windows
         {
             this.plugin = plugin;
             this.assetManager = plugin.AssetManager;
-            this.Size = new Vector2(600, 425);
-            this.SizeCondition = ImGuiCond.FirstUseEver;
+            //this.Size = new Vector2(425, 600);
+            //this.SizeCondition = ImGuiCond.FirstUseEver;
         }
 
         public override void PreDraw()
         {
-            var baseSize = new Vector2(600, 425);
+            var baseSize = new Vector2(625, 600);
             this.Size = baseSize * plugin.Configuration.CustomUiScale;
             Flags = plugin.Configuration.ShowDalamudTitleBars ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoTitleBar;
             Flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar;
@@ -60,7 +60,7 @@ namespace AetherialArena.Windows
 
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
-                ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
+                ImGui.GetWindowDrawList().AddImage(backgroundTexture.Handle, windowPos, windowPos + windowSize);
             }
 
             var windowHeight = ImGui.GetWindowHeight();

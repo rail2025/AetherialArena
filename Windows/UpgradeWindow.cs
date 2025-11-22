@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using AetherialArena.Models;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AetherialArena.Windows
 {
@@ -12,7 +12,6 @@ namespace AetherialArena.Windows
         private Sprite? currentSprite;
         private PlayerSpriteData? spriteData;
 
-        // Temporary values for editing in the UI to avoid ref issues
         private int tempAllocatedHp;
         private int tempAllocatedMp;
         private int tempAllocatedAtk;
@@ -42,7 +41,6 @@ namespace AetherialArena.Windows
                 plugin.PlayerProfile.CapturedSpriteData[sprite.ID] = this.spriteData;
             }
 
-            // Initialize temporary values for the editing session
             tempAllocatedHp = this.spriteData.AllocatedHP;
             tempAllocatedMp = this.spriteData.AllocatedMP;
             tempAllocatedAtk = this.spriteData.AllocatedAttack;

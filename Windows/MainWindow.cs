@@ -4,7 +4,7 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 using AetherialArena.Core;
 using AetherialArena.UI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using AetherialArena.Services;
 
 namespace AetherialArena.Windows
@@ -58,7 +58,7 @@ namespace AetherialArena.Windows
             {
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
-                ImGui.GetWindowDrawList().AddImage(background.ImGuiHandle, windowPos, windowPos + windowSize);
+                ImGui.GetWindowDrawList().AddImage(background.Handle, windowPos, windowPos + windowSize);
             }
 
             battleManager.Update();
@@ -111,7 +111,7 @@ namespace AetherialArena.Windows
                 if (background != null)
                 {
                     var windowPos = ImGui.GetWindowPos();
-                    ImGui.GetWindowDrawList().AddImage(background.ImGuiHandle, windowPos, windowPos + windowSize);
+                    ImGui.GetWindowDrawList().AddImage(background.Handle, windowPos, windowPos + windowSize);
                 }
 
                 string line1 = "Congratulations! In case you forgot, here's what outside looks like:";

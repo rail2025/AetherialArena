@@ -2,7 +2,7 @@ using AetherialArena.Core;
 using AetherialArena.Models;
 using AetherialArena.Services;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -332,7 +332,7 @@ namespace AetherialArena.UI
             {
                 var uv0 = new Vector2(isOpponent ? 1 : 0, 0);
                 var uv1 = new Vector2(isOpponent ? 0 : 1, 1);
-                drawList.AddImage(icon.ImGuiHandle, finalDrawPos, finalDrawPos + iconSize, uv0, uv1);
+                drawList.AddImage(icon.Handle, finalDrawPos, finalDrawPos + iconSize, uv0, uv1);
 
                 if (damageIconTimer > 0)
                 {
@@ -346,7 +346,7 @@ namespace AetherialArena.UI
                                 var normalSize = new Vector2(98, 98) * plugin.Configuration.CustomUiScale;
                                 var overlaySize = isBossSpecial ? normalSize * 3 : normalSize;
                                 var overlayPos = finalDrawPos + (iconSize - overlaySize) / 2;
-                                drawList.AddImage(damageIcon.ImGuiHandle, overlayPos, overlayPos + overlaySize);
+                                drawList.AddImage(damageIcon.Handle, overlayPos, overlayPos + overlaySize);
                             }
                         }
                     }
@@ -503,7 +503,7 @@ namespace AetherialArena.UI
                 var reserve = reserveSprites[i];
                 var tint = reserve.Health > 0 ? new Vector4(1, 1, 1, 1) : new Vector4(0.5f, 0.5f, 0.5f, 0.7f);
                 var reserveIcon = assetManager.GetRecoloredIcon(reserve.IconName, reserve.RecolorKey, true);
-                if (reserveIcon != null) ImGui.Image(reserveIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, tint);
+                if (reserveIcon != null) ImGui.Image(reserveIcon.Handle, new Vector2(40, 40), Vector2.Zero, Vector2.One, tint);
                 else ImGui.Dummy(new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                 if (i < reserveSprites.Count - 1) ImGui.SameLine();
             }

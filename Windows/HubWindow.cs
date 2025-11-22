@@ -4,7 +4,7 @@ using System.Numerics;
 using AetherialArena.Models;
 using AetherialArena.Services;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AetherialArena.Windows
 {
@@ -37,7 +37,6 @@ namespace AetherialArena.Windows
 
         public override void OnClose()
         {
-            // MODIFIED: Call StopMusic() with no arguments, and no Task.Run is needed.
             plugin.AudioManager.StopMusic();
         }
         public override void PreDraw()
@@ -105,7 +104,7 @@ namespace AetherialArena.Windows
             {
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
-                ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
+                ImGui.GetWindowDrawList().AddImage(backgroundTexture.Handle, windowPos, windowPos + windowSize);
             }
             ImGui.Text($"Player Level: {plugin.PlayerProfile.AttunedSpriteIDs.Count}");
             ImGui.SameLine();
@@ -127,11 +126,9 @@ namespace AetherialArena.Windows
             }
             else
             {
-                // Display placeholder text if aether is already full
                 timerText = "--:--";
             }
 
-            // Construct the new overlay string with the timer
             var overlay = $"{timerText} | {currentAether}/{maxAether}";
             
             
@@ -244,7 +241,7 @@ namespace AetherialArena.Windows
                 if (sprite != null)
                 {
                     var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
-                    if (icon != null) ImGui.Image(icon.ImGuiHandle, iconSize);
+                    if (icon != null) ImGui.Image(icon.Handle, iconSize);
                     else ImGui.Dummy(iconSize);
 
                     if (i < plugin.PlayerProfile.Loadout.Count - 1) ImGui.SameLine();
@@ -265,7 +262,7 @@ namespace AetherialArena.Windows
                 if (sprite != null)
                 {
                     var icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey);
-                    if (icon != null) ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
+                    if (icon != null) ImGui.Image(icon.Handle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale);
                     else ImGui.Dummy(new Vector2(40, 40));
 
                     ImGui.SameLine();

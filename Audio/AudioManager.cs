@@ -289,7 +289,7 @@ namespace AetherialArena.Audio
 
         public void SetBgmVolume(float volume)
         {
-            // Note:The volume will apply to the *next* track that plays.
+            // The volume will apply to the *next* track that plays.
         }
 
         public void SetSfxVolume(float volume)

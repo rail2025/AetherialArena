@@ -62,7 +62,7 @@ namespace AetherialArena.Core
             if (availableSpriteIds == null || !availableSpriteIds.Any())
             {
                 Plugin.Log.Warning("Could not find a valid sprite list ('" + (subLocationKey ?? "Default") + "') for this location in encountertables.json.");
-                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                plugin.PlayerProfile.CurrentAether++;
                 return SearchResult.NoSpritesFound;
             }
 
@@ -70,7 +70,7 @@ namespace AetherialArena.Core
             if (!availableSprites.Any())
             {
                 Plugin.Log.Warning("Encounter list was found, but no matching sprites were loaded from sprites.json.");
-                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                plugin.PlayerProfile.CurrentAether++;
                 return SearchResult.NoSpritesFound;
             }
 
@@ -87,15 +87,13 @@ namespace AetherialArena.Core
             if (!weightedList.Any())
             {
                 Plugin.Log.Warning("Could not determine an encounter (weighted list was empty).");
-                plugin.PlayerProfile.CurrentAether++; // Refund Aether
+                plugin.PlayerProfile.CurrentAether++;
                 return SearchResult.NoSpritesFound;
             }
 
             var opponentData = weightedList[random.Next(weightedList.Count)];
 
-            // Added for audio
             plugin.AudioManager.PlaySfx("encounterfound.wav");
-            // MODIFIED: Pass the currentTerritory to the StartBattle method
             plugin.BattleManager.StartBattle(plugin.PlayerProfile.Loadout, opponentData.ID, currentTerritory);
 
             plugin.HubWindow.IsOpen = false;

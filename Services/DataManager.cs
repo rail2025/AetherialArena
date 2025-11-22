@@ -66,23 +66,18 @@ namespace AetherialArena.Services
         {
             if (TerritoryBackgrounds.TryGetValue(territoryId, out var backgroundList) && backgroundList.Any())
             {
-                // Randomly choose one from the list for the specified zone
                 return backgroundList[random.Next(backgroundList.Count)];
             }
 
-            // Fallback to a completely random background if no specific list is found
             return $"background{random.Next(1, 8)}.png";
         }
 
-        // MODIFIED: This method now defines lists of backgrounds for each zone group.
         private void LoadBackgroundMappings()
         {
-            // --- Define your background lists here ---
-            
             var laNosceaBgs = new List<string> { "background5.png", "background2.png", "background1.png" };
             var thanalanBgs = new List<string> { "background3.png", "background2.png", "background1.png" };
             var shroudBgs = new List<string> { "background4.png", "background2.png", "background1.png" };
-            var coerthasBgs = new List<string> { "background7.png", "background2.png", "background1.png" }; // Can use the same one if you only have one
+            var coerthasBgs = new List<string> { "background7.png", "background2.png", "background1.png" };
             var morDhonaBgs = new List<string> { "background6.png", "background2.png", "background1.png" };
 
             // --- Assign lists to territory IDs ---
@@ -93,7 +88,6 @@ namespace AetherialArena.Services
             new ushort[] { 156 }.ToList().ForEach(id => TerritoryBackgrounds[id] = morDhonaBgs);
         }
 
-        // --- METHOD REWRITTEN FOR ROBUST PARSING ---
         private void LoadLocations()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -105,13 +99,11 @@ namespace AetherialArena.Services
             using var reader = new StreamReader(stream);
 
             string? line;
-            // First line is the header, so we skip it.
             reader.ReadLine();
             while ((line = reader.ReadLine()) != null)
             {
                 var parts = line.Split(',');
 
-                // Check for a minimum number of columns to safely parse from the end.
                 // sprite ID is at index 1. Location name is the 4th from the end.
                 if (parts.Length >= 5 && int.TryParse(parts[1], out int spriteId))
                 {

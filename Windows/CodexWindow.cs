@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using AetherialArena.Models;
 using AetherialArena.Services;
@@ -60,7 +60,7 @@ namespace AetherialArena.Windows
             {
                 var windowPos = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
-                ImGui.GetWindowDrawList().AddImage(backgroundTexture.ImGuiHandle, windowPos, windowPos + windowSize);
+                ImGui.GetWindowDrawList().AddImage(backgroundTexture.Handle, windowPos, windowPos + windowSize);
             }
 
             var contentRegion = ImGui.GetContentRegionAvail();
@@ -160,7 +160,6 @@ namespace AetherialArena.Windows
             ImGui.Unindent();
             ImGui.Separator();
 
-            // This button is now at the very bottom, physically separate from the other button
             if (ImGui.Button("Back to List##CodexDetailsBack", new Vector2(ImGui.GetContentRegionAvail().X, 0)))
             {
                 selectedSprite = null;
@@ -202,7 +201,7 @@ namespace AetherialArena.Windows
                     IDalamudTextureWrap? icon;
                     if (isKnown) { icon = assetManager.GetRecoloredIcon(sprite.IconName, sprite.RecolorKey); }
                     else { icon = assetManager.GetIcon("placeholder_icon.png"); }
-                    if (icon != null) { ImGui.Image(icon.ImGuiHandle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale); } else { ImGui.Dummy(new Vector2(40, 40) * plugin.Configuration.CustomUiScale); }
+                    if (icon != null) { ImGui.Image(icon.Handle, new Vector2(40, 40) * plugin.Configuration.CustomUiScale); } else { ImGui.Dummy(new Vector2(40, 40) * plugin.Configuration.CustomUiScale); }
 
                     ImGui.TableSetColumnIndex(2);
                     ImGui.Text(isKnown ? sprite.Name : "???");

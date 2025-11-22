@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -34,7 +34,7 @@ namespace AetherialArena.Windows
                 if (ImGui.Button(boss.Name, new Vector2(-1, 0)))
                 {
                     plugin.BattleManager.StartArenaBattle(boss.ID);
-                    plugin.MainWindow.IsOpen = true; // This line opens the battle window
+                    plugin.MainWindow.IsOpen = true;
                     this.IsOpen = false;
                 }
             }
@@ -55,7 +55,7 @@ namespace AetherialArena.Windows
                 if (ImGui.Button(finalBoss.Name, new Vector2(-1, 0)))
                 {
                     plugin.BattleManager.StartArenaBattle(finalBoss.ID);
-                    plugin.MainWindow.IsOpen = true; // This line opens the battle window
+                    plugin.MainWindow.IsOpen = true;
                     this.IsOpen = false;
                 }
             }

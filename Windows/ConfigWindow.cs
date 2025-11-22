@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AetherialArena.Windows
 {
@@ -124,7 +124,6 @@ namespace AetherialArena.Windows
             var center = ImGui.GetMainViewport().GetCenter();
             ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
 
-            // Corrected the call to BeginPopupModal by passing a 'ref bool'
             if (ImGui.BeginPopupModal("Confirm Reset", ref isConfirmResetPopupOpen, ImGuiWindowFlags.AlwaysAutoResize))
             {
                 ImGui.Text("Are you absolutely sure?\nThis cannot be undone.");

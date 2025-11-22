@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AetherialArena.Windows
 {
@@ -13,7 +13,6 @@ namespace AetherialArena.Windows
 
         private readonly Plugin plugin;
         private float scrollY;
-        private float finalLineYPosition = -1; 
         private float holdTimer;
         private float fadeTimer;
 
@@ -36,7 +35,7 @@ namespace AetherialArena.Windows
 
             currentState = CreditsState.Scrolling;
             scrollY = 0;
-            finalLineYPosition = -1;
+            
             holdTimer = HOLD_DURATION;
             fadeTimer = FADE_DURATION;
 
@@ -54,17 +53,21 @@ namespace AetherialArena.Windows
         public override void Draw()
         {
             ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0, 0, 0, 1.0f));
-
             ImGui.SetCursorPos(Vector2.Zero);
+
+            var viewportHeight = ImGui.GetWindowHeight();
+
             ImGui.BeginChild("CreditsScrollRegion", new Vector2(-1, 0), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoInputs);
 
-            
-            RenderCreditsContent();
+            RenderCreditsContent(viewportHeight);
+
+            var scrollMaxY = ImGui.GetScrollMaxY();
+            var lastLineHeight = ImGui.GetTextLineHeightWithSpacing();
 
             ImGui.SetScrollY(scrollY);
             ImGui.EndChild();
 
-            HandleStateMachine();
+            HandleStateMachine(viewportHeight, scrollMaxY, lastLineHeight);
 
             if (this.Position.HasValue)
             {
@@ -78,11 +81,11 @@ namespace AetherialArena.Windows
             {
                 this.IsOpen = false;
             }
-
+            
             ImGui.PopStyleColor();
         }
 
-        private void HandleStateMachine()
+        private void HandleStateMachine(float viewportHeight, float scrollMaxY, float lastLineHeight)
         {
             var io = ImGui.GetIO();
             var scrollSpeed = 0.5f * plugin.Configuration.CustomUiScale;
@@ -90,9 +93,16 @@ namespace AetherialArena.Windows
             switch (currentState)
             {
                 case CreditsState.Scrolling:
-                    float stopPosition = finalLineYPosition - (ImGui.GetWindowHeight() / 2f);
+                    // If there's nothing to scroll, just exit
+                    if (scrollMaxY <= 0)
+                    {
+                        currentState = CreditsState.Holding;
+                        return;
+                    }
 
-                    if (finalLineYPosition > 0 && scrollY >= stopPosition)
+                    float stopPosition = scrollMaxY - (viewportHeight / 2f);
+
+                    if (scrollY >= stopPosition)
                     {
                         scrollY = stopPosition;
                         currentState = CreditsState.Holding;
@@ -112,6 +122,7 @@ namespace AetherialArena.Windows
                     break;
 
                 case CreditsState.FadingOut:
+         
                     fadeTimer -= io.DeltaTime;
                     float fadeAlpha = Math.Clamp(1.0f - (fadeTimer / FADE_DURATION), 0, 1);
 
@@ -127,28 +138,20 @@ namespace AetherialArena.Windows
             }
         }
 
-        private void RenderCreditsContent()
+        private void RenderCreditsContent(float initialY)
         {
-            
-            float initialY = ImGui.GetWindowHeight();
+
+            // Use the passed-in height instead of calling GetWindowHeight()
             ImGui.SetCursorPosY(initialY);
 
             for (int i = 0; i < credits.Count; i++)
             {
                 var (text, isHeader) = credits[i];
-
-                
-                if (i == credits.Count - 1)
-                {
-                    finalLineYPosition = ImGui.GetCursorPosY();
-                }
-
-                if (string.IsNullOrEmpty(text))
+               if (string.IsNullOrEmpty(text))
                 {
                     ImGui.Spacing();
                     continue;
                 }
-
                 if (isHeader)
                 {
                     ImGui.Spacing();
@@ -178,6 +181,8 @@ namespace AetherialArena.Windows
                     ImGui.Text(name);
                 }
             }
+            // This gives the last line "room" to scroll up into the center of the screen.
+            ImGui.Dummy(new Vector2(0, initialY));
         }
 
         private List<(string text, bool isHeader)> GetCreditsList()
@@ -215,15 +220,9 @@ namespace AetherialArena.Windows
                 ("", false),
                 ("Programming & Engineering", true),
                 ("Technical Director:rail", false),
-                ("Lead Programmer:rail", false),
-                ("Senior Gameplay Programmer:rail", false),
-                ("Gameplay Programmer:rail", false),
-                ("AI Programmer:rail", false),
-                ("UI Programmer:rail", false),
-                ("Engine Programmer:rail", false),
-                ("Tools Programmer:rail", false),
-                ("Network Programmer:rail", false),
-                ("Junior Programmer:rail", false),
+                ("Lead Designer:rail", false),
+                ("Engine Designer:rail", false),
+                ("Intern Manager:rail", false),
                 ("", false),
                 ("Quality Assurance", true),
                 ("QA Director:rail", false),
@@ -275,7 +274,7 @@ namespace AetherialArena.Windows
                 ("You, The Player", false),
                 ("", false),("", false),
                 ("Aetherial Arena", true),
-                ("Fin.", false)
+                ("Fin", true)
             };
         }
     }

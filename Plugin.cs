@@ -12,7 +12,7 @@ using System.Diagnostics;
 using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Game.ClientState.Conditions;
 using AetherialArena.Audio;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Linq;
 

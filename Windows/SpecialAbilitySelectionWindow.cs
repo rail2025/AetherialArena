@@ -2,7 +2,7 @@ using System.Linq;
 using System.Numerics;
 using AetherialArena.Models;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AetherialArena.Windows
 {
@@ -56,7 +56,6 @@ namespace AetherialArena.Windows
                     }
 
                     ImGui.TableSetColumnIndex(1);
-                    // FIX: Replace single '%' with '%%' to correctly display the percent sign
                     string correctedDescription = ability.Description.Replace("%", "%%");
                     ImGui.TextWrapped(correctedDescription);
                 }
