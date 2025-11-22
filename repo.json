@@ -3,14 +3,14 @@
         "Author": "rail",
         "Name": "Aetherial Arena",
         "Punchline": "Find and collect creatures to fight.",
-        "Description": "Open with /aarena. Search and discover more creatures around the world.",
+        "Description": "Pokemon cline mini battler game. Open with /aarena. Search and discover more creatures around the world.",
         "Changelog": "v0.9.9.2:Update to Dalamud api 13/patch 7.3, fix credits scrolling bug\nv0.9.9.1: reset ui scaling button, manual input",
         "IsHide": false,
         "InternalName": "AetherialArena",
         "AssemblyVersion": "0.9.9.2",
         "TestingAssemblyVersion": "0.9.9.2",
         "IsTestingExclusive": false,
-        "RepoUrl": "https://github.com/rail2025/AetherArena",
+        "RepoUrl": "https://github.com/rail2025/AetherialArena",
         "ApplicableVersion": "any",
         "Tags": [
             "game",
@@ -19,11 +19,11 @@
         ],
         "DalamudApiLevel": 13,
         "TestingDalamudApiLevel": 13,
-        "DownloadLinkInstall": "https://github.com/rail2025/AetherArena/releases/download/v0.9.9.2/latest.zip",
-        "DownloadLinkUpdate": "https://github.com/rail2025/AetherArena/releases/download/v0.9.9.2/latest.zip",
-        "DownloadLinkTesting": "https://github.com/rail2025/AetherArena/releases/download/v0.9.9.2/latest.zip",
+        "DownloadLinkInstall": "https://github.com/rail2025/AetherialArena/releases/download/v0.9.9.2/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/rail2025/AetherialArena/releases/download/v0.9.9.2/latest.zip",
+        "DownloadLinkTesting": "https://github.com/rail2025/AetherialArena/releases/download/v0.9.9.2/latest.zip",
         "LoadPriority": 0,
         "SupportsProfiles": true,
-        "IconUrl": "https://raw.githubusercontent.com/rail2025/AetherArena/refs/heads/master/icon.png"
+        "IconUrl": "https://raw.githubusercontent.com/rail2025/AetherialArena/refs/heads/master/icon.png"
     }
 ]
