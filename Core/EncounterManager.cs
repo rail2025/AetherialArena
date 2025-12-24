@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Dalamud.Game.ClientState.Conditions;
-using System.Threading.Tasks; // Added for audio
+using System.Threading.Tasks;
 
 namespace AetherialArena.Core
 {
@@ -20,7 +20,7 @@ namespace AetherialArena.Core
 
         public SearchResult SearchForEncounter(ushort? overrideTerritory = null, uint? overrideSubLocationId = null)
         {
-            if (Plugin.ClientState.LocalPlayer == null || Plugin.Condition[ConditionFlag.InCombat] || Plugin.Condition[ConditionFlag.Mounted])
+            if (Plugin.ObjectTable.LocalPlayer == null || Plugin.Condition[ConditionFlag.InCombat] || Plugin.Condition[ConditionFlag.Mounted])
             {
                 return SearchResult.InvalidState;
             }

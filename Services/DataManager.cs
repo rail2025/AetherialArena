@@ -107,7 +107,7 @@ namespace AetherialArena.Services
                 // sprite ID is at index 1. Location name is the 4th from the end.
                 if (parts.Length >= 5 && int.TryParse(parts[1], out int spriteId))
                 {
-                    // The location name is consistently the 4th element from the end of the row
+                    // The location name is the 4th element from the end of the row
                     string locationName = parts[parts.Length - 4].Trim().Replace("\"", "");
                     if (!string.IsNullOrEmpty(locationName))
                     {

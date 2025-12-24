@@ -16,6 +16,7 @@ namespace AetherialArena.Audio
 
         private WaveOutEvent? bgmOutputDevice;
         private IDisposable? currentBgmStream;
+        private VolumeSampleProvider? currentBgmVolumeProvider;
 
         private readonly WaveOutEvent sfxOutputDevice;
         private readonly MixingSampleProvider sfxMixer;
@@ -104,11 +105,11 @@ namespace AetherialArena.Audio
 
             var readerStream = new Mp3FileReader(new MemoryStream(audioData));
             currentBgmStream = readerStream;
-            var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.MusicVolume };
+            currentBgmVolumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.MusicVolume };
 
             bgmOutputDevice = new WaveOutEvent();
             bgmOutputDevice.PlaybackStopped += OnBgmPlaybackStopped;
-            bgmOutputDevice.Init(volumeProvider);
+            bgmOutputDevice.Init(currentBgmVolumeProvider);
             bgmOutputDevice.Play();
 
             currentBgmPath = bgmName;
@@ -150,11 +151,11 @@ namespace AetherialArena.Audio
             }
 
             currentBgmStream = readerStream;
-            var volumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.MusicVolume };
+            currentBgmVolumeProvider = new VolumeSampleProvider(readerStream.ToSampleProvider()) { Volume = configuration.MusicVolume };
 
             bgmOutputDevice = new WaveOutEvent();
             if (loop) bgmOutputDevice.PlaybackStopped += OnBgmPlaybackStopped;
-            bgmOutputDevice.Init(volumeProvider);
+            bgmOutputDevice.Init(currentBgmVolumeProvider);
             bgmOutputDevice.Play();
 
             currentBgmPath = musicName;
@@ -289,7 +290,10 @@ namespace AetherialArena.Audio
 
         public void SetBgmVolume(float volume)
         {
-            // The volume will apply to the *next* track that plays.
+            if (currentBgmVolumeProvider != null)
+            {
+                currentBgmVolumeProvider.Volume = volume;
+            }
         }
 
         public void SetSfxVolume(float volume)

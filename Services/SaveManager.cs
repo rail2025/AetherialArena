@@ -42,7 +42,7 @@ namespace AetherialArena.Services
 
                         if (intervalsPassed > 0)
                         {
-                            Plugin.Log.Info($"Player was offline for {timePassed.TotalMinutes:F0} minutes. Granting {intervalsPassed} Aether.");
+                            //Plugin.Log.Info($"Player was offline for {timePassed.TotalMinutes:F0} minutes. Granting {intervalsPassed} Aether.");
                             profile.CurrentAether = Math.Min(profile.MaxAether, profile.CurrentAether + intervalsPassed);
                             profile.LastAetherRegenTimestamp = profile.LastAetherRegenTimestamp.AddMinutes(intervalsPassed * regenIntervalMinutes);
                         }
